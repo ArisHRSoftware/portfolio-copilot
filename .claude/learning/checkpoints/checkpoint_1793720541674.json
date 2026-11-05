@@ -1,0 +1,418 @@
+{
+  "id": "checkpoint_1793720541674",
+  "name": "pre-compact-1793720541674",
+  "created_at": "2026-11-03T15:42:21.677Z",
+  "observations": [
+    {
+      "timestamp": "2026-11-03T10:35:46.299Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "id": "obs_1793702167693_xou3nb4r7",
+      "timestamp": "2026-11-03T10:36:07.693Z",
+      "type": "connection_pattern",
+      "data": {
+        "framework": "core-sdk",
+        "active_workflows": [],
+        "critical_patterns": {
+          "hasDataFlowModels": false,
+          "hasNexusApp": false,
+          "hasKaizenAgent": false,
+          "hasCyclicWorkflow": false,
+          "hasAsyncRuntime": false
+        },
+        "recently_modified_count": 2
+      },
+      "context": {
+        "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+        "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+        "framework": "unknown"
+      }
+    },
+    {
+      "type": "session_start",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+      "timestamp": "2026-11-03T10:38:28.779Z",
+      "envExists": true,
+      "framework": "core-sdk",
+      "models": {},
+      "keyCount": 8,
+      "validationFailures": []
+    },
+    {
+      "id": "obs_1793703287447_23dxjn7r8",
+      "timestamp": "2026-11-03T10:54:47.447Z",
+      "type": "connection_pattern",
+      "data": {
+        "framework": "core-sdk",
+        "active_workflows": [],
+        "critical_patterns": {
+          "hasDataFlowModels": false,
+          "hasNexusApp": false,
+          "hasKaizenAgent": false,
+          "hasCyclicWorkflow": false,
+          "hasAsyncRuntime": false
+        },
+        "recently_modified_count": 2
+      },
+      "context": {
+        "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+        "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+        "framework": "unknown"
+      }
+    },
+    {
+      "type": "session_start",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+      "timestamp": "2026-11-03T10:56:32.668Z",
+      "envExists": true,
+      "framework": "core-sdk",
+      "models": {},
+      "keyCount": 8,
+      "validationFailures": []
+    },
+    {
+      "id": "obs_1793703635003_z0k7pz884",
+      "timestamp": "2026-11-03T11:00:35.003Z",
+      "type": "test_pattern",
+      "data": {
+        "test_tier": "unit",
+        "test_path": null,
+        "is_pytest": false,
+        "command_flags": []
+      },
+      "context": {
+        "session_id": "unknown",
+        "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+        "framework": "unknown"
+      }
+    },
+    {
+      "timestamp": "2026-11-03T12:00:22.417Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T12:01:34.597Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "id": "obs_1793707717927_0ji467z0z",
+      "timestamp": "2026-11-03T12:08:37.927Z",
+      "type": "connection_pattern",
+      "data": {
+        "framework": "core-sdk",
+        "active_workflows": [],
+        "critical_patterns": {
+          "hasDataFlowModels": false,
+          "hasNexusApp": false,
+          "hasKaizenAgent": false,
+          "hasCyclicWorkflow": false,
+          "hasAsyncRuntime": false
+        },
+        "recently_modified_count": 0
+      },
+      "context": {
+        "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+        "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+        "framework": "unknown"
+      }
+    },
+    {
+      "type": "session_start",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+      "timestamp": "2026-11-03T12:10:37.598Z",
+      "envExists": true,
+      "framework": "core-sdk",
+      "models": {},
+      "keyCount": 8,
+      "validationFailures": []
+    },
+    {
+      "timestamp": "2026-11-03T12:42:37.689Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "id": "obs_1793709807099_09rqju2qf",
+      "timestamp": "2026-11-03T12:43:27.099Z",
+      "type": "connection_pattern",
+      "data": {
+        "framework": "core-sdk",
+        "active_workflows": [],
+        "critical_patterns": {
+          "hasDataFlowModels": false,
+          "hasNexusApp": false,
+          "hasKaizenAgent": false,
+          "hasCyclicWorkflow": false,
+          "hasAsyncRuntime": false
+        },
+        "recently_modified_count": 0
+      },
+      "context": {
+        "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+        "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+        "framework": "unknown"
+      }
+    },
+    {
+      "type": "session_start",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+      "timestamp": "2026-11-03T12:45:24.998Z",
+      "envExists": true,
+      "framework": "core-sdk",
+      "models": {},
+      "keyCount": 8,
+      "validationFailures": []
+    },
+    {
+      "timestamp": "2026-11-03T12:50:24.179Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T12:50:30.475Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T12:50:38.357Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T12:50:55.858Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T12:51:52.069Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T13:00:40.005Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "id": "obs_1793711045531_kxvwj6ekb",
+      "timestamp": "2026-11-03T13:04:05.531Z",
+      "type": "connection_pattern",
+      "data": {
+        "framework": "core-sdk",
+        "active_workflows": [],
+        "critical_patterns": {
+          "hasDataFlowModels": false,
+          "hasNexusApp": false,
+          "hasKaizenAgent": false,
+          "hasCyclicWorkflow": false,
+          "hasAsyncRuntime": false
+        },
+        "recently_modified_count": 0
+      },
+      "context": {
+        "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+        "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+        "framework": "unknown"
+      }
+    },
+    {
+      "type": "session_start",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+      "timestamp": "2026-11-03T13:06:11.945Z",
+      "envExists": true,
+      "framework": "core-sdk",
+      "models": {},
+      "keyCount": 8,
+      "validationFailures": []
+    },
+    {
+      "timestamp": "2026-11-03T14:35:58.579Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:36:05.140Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:36:19.625Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:37:04.735Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:38:05.383Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:38:10.571Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:38:15.036Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:38:23.522Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:39:22.072Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:41:59.668Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T14:52:58.049Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T15:16:33.997Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T15:18:11.923Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T15:27:51.115Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T15:28:33.729Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T15:37:01.310Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "timestamp": "2026-11-03T15:41:15.443Z",
+      "type": "stop",
+      "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+      "reason": "signal",
+      "success": true
+    },
+    {
+      "id": "obs_1793720541666_t82xz73wv",
+      "timestamp": "2026-11-03T15:42:21.666Z",
+      "type": "connection_pattern",
+      "data": {
+        "framework": "core-sdk",
+        "active_workflows": [],
+        "critical_patterns": {
+          "hasDataFlowModels": false,
+          "hasNexusApp": false,
+          "hasKaizenAgent": false,
+          "hasCyclicWorkflow": false,
+          "hasAsyncRuntime": false
+        },
+        "recently_modified_count": 0
+      },
+      "context": {
+        "session_id": "5d3c7b57-d679-4caa-8198-a92e72b2943f",
+        "cwd": "C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web",
+        "framework": "unknown"
+      }
+    }
+  ],
+  "instincts": {},
+  "identity": {
+    "system": "kailash-coc-claude-py",
+    "version": "2.0.0",
+    "created_at": "2026-11-03T10:35:46.298Z",
+    "learning_enabled": true,
+    "per_project": true,
+    "focus_areas": [
+      "workflow-patterns",
+      "error-fixes",
+      "dataflow-patterns",
+      "testing-patterns",
+      "framework-selection"
+    ]
+  },
+  "stats": {
+    "observation_count": 39,
+    "instinct_categories": 0
+  }
+}
