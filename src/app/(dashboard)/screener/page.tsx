@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { canAccessScreener, getTierInfo } from "@/lib/tier-gating";
 import { getTopCompanies } from "@/lib/supabase/queries";
-import { SECTOR_NAMES } from "@/lib/constants/sectors";
+import { SECTORS } from "@/lib/constants/sectors";
 import { ScreenerPanel } from "./screener-panel";
 import { Button } from "@/components/ui/button";
 import {
@@ -62,7 +62,7 @@ export default async function ScreenerPage() {
   return (
     <ScreenerPanel
       companies={companies}
-      sectors={SECTOR_NAMES}
+      sectors={SECTORS}
     />
   );
 }
