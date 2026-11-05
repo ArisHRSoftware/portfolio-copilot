@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Portfolio Copilot
+
+AI-powered SEC filing intelligence for 7,600+ US-listed companies. Get instant AI summaries, significance scores, insider trade alerts, and plain-English analysis for every SEC filing.
+
+## What It Does
+
+- **EDGAR Pipeline** — Automatically polls SEC EDGAR for new filings (10-K, 10-Q, 8-K, Form 4, DEF 14A, SC 13D, SC 13G, 13F-HR), runs AI analysis via Claude, and stores structured results
+- **7,600+ Stock Pages** — Every NYSE and Nasdaq company has a dedicated page with company overview, filing history, insider activity, FAQ, and peer companies
+- **Alert System** — Users create custom alert rules (filing type, significance threshold, insider activity, keywords). Real-time email alerts for Plus/Pro subscribers
+- **B2B API** — Filing Intelligence API with 4 endpoints, SHA-256 key auth, and daily rate limiting
+- **Content Pipeline** — AI-generated newsletters and blog posts with mandatory founder approval before publishing
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 16, React 19, Tailwind CSS 4, shadcn/ui |
+| Database | Supabase (PostgreSQL + Auth + RLS) |
+| AI | Anthropic Claude (filing analysis) |
+| Payments | Razorpay (INR + USD) |
+| Email | Resend |
+| Cron | Upstash QStash |
+| Cache | Upstash Redis |
+| Analytics | PostHog |
+| Hosting | Vercel |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 20+
+- A Supabase project
+- API keys for services you want to activate (see `.env.example`)
+
+### Setup
 
 ```bash
+# Install dependencies
+cd apps/web
+npm install
+
+# Copy env template and fill in your keys
+cp .env.example .env
+
+# Run the database migration (paste into Supabase SQL Editor)
+# File: supabase-migration.sql
+
+# Import 7,600+ companies from SEC EDGAR
+npx tsx scripts/import-companies.ts
+
+# Start dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The minimum required for localhost:
 
-## Learn More
+```
+NEXT_PUBLIC_SUPABASE_URL=     # From Supabase dashboard > Settings > API
+NEXT_PUBLIC_SUPABASE_ANON_KEY= # Same page
+SUPABASE_SERVICE_ROLE_KEY=     # Same page (keep secret)
+```
 
-To learn more about Next.js, take a look at the following resources:
+See `.env.example` for all available configuration.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── (dashboard)/        # Authenticated pages (dashboard, portfolio, settings, admin)
+│   ├── api/                # API routes (cron jobs, v1 API, webhooks, newsletter)
+│   ├── stocks/[ticker]/    # 7,600+ stock pages with SEO + JSON-LD
+│   ├── filings/[slug]/     # Filing detail pages with AI analysis
+│   ├── sectors/[sector]/   # Sector hub pages
+│   └── auth/               # Login, signup, forgot password
+├── lib/
+│   ├── edgar/              # EDGAR pipeline (poller, parser, AI analysis, orchestrator)
+│   ├── supabase/           # Database clients (server, static, webhook, client)
+│   ├── constants/          # Tiers, sectors
+│   └── seo/                # ISR revalidation cascade
+├── components/             # UI components (shadcn/ui + custom)
+└── tests/                  # 240 unit + integration tests, ~164 E2E tests
+```
 
-## Deploy on Vercel
+## Testing
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+npm test              # 240 unit + integration tests (Vitest)
+npm run test:e2e      # E2E tests (Playwright, requires dev server)
+npm run lighthouse    # Lighthouse CI audit
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## License
+
+Private — all rights reserved.
