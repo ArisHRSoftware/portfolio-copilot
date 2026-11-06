@@ -60,11 +60,11 @@ export function SiteHeader() {
 
           {/* Mobile menu */}
           <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm" className="sm:hidden">
-                <Menu className="size-5" />
-                <span className="sr-only">Menu</span>
-              </Button>
+            <SheetTrigger
+              className="sm:hidden inline-flex shrink-0 items-center justify-center rounded-md p-1.5 text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Menu className="size-5" />
+              <span className="sr-only">Menu</span>
             </SheetTrigger>
             <SheetContent side="right" className="w-64">
               <SheetTitle className="text-lg font-semibold">Brefyr</SheetTitle>
