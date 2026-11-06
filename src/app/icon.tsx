@@ -13,19 +13,19 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#0f172a",
+          background: "#0a1a0f",
           borderRadius: 6,
         }}
       >
         <span
           style={{
-            fontSize: 18,
+            fontSize: 17,
             fontWeight: 800,
-            color: "#3b82f6",
-            letterSpacing: -1,
+            color: "#4ade80",
+            letterSpacing: -0.5,
           }}
         >
-          PC
+          Bf
         </span>
       </div>
     ),

@@ -13,7 +13,7 @@ export default function AppleIcon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
+          background: "linear-gradient(135deg, #0a1a0f 0%, #0d2818 100%)",
           borderRadius: 36,
         }}
       >
@@ -21,11 +21,11 @@ export default function AppleIcon() {
           style={{
             fontSize: 80,
             fontWeight: 800,
-            color: "#3b82f6",
-            letterSpacing: -4,
+            color: "#4ade80",
+            letterSpacing: -3,
           }}
         >
-          PC
+          Bf
         </span>
       </div>
     ),
