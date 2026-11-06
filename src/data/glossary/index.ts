@@ -1,5 +1,6 @@
 import type { GlossaryTerm } from "../types";
 
+import { term13FFiling } from "./13f-filing";
 import { term10KFiling } from "./10k-filing";
 import { term10QFiling } from "./10q-filing";
 import { term8KFiling } from "./8k-filing";
@@ -18,12 +19,14 @@ import { termPeRatio } from "./pe-ratio";
 import { termFilerCategory } from "./filer-category";
 import { termProxyStatement } from "./proxy-statement";
 import { termRevenueRecognition } from "./revenue-recognition";
+import { termRsu } from "./rsu";
 import { termSecEdgar } from "./sec-edgar";
 import { termSicCode } from "./sic-code";
 import { termSmallCap } from "./small-cap";
 
 /** All glossary terms, sorted alphabetically by term name */
 export const glossaryTerms: GlossaryTerm[] = [
+  term13FFiling,
   term10KFiling,
   term10QFiling,
   term8KFiling,
@@ -42,6 +45,7 @@ export const glossaryTerms: GlossaryTerm[] = [
   termPeRatio,
   termProxyStatement,
   termRevenueRecognition,
+  termRsu,
   termSecEdgar,
   termSicCode,
   termSmallCap,
