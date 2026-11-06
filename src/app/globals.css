@@ -197,25 +197,44 @@
   color: oklch(0.93 0 0);
 }
 
-.prose :where(p, li, dd, blockquote, td, th, figcaption, caption) {
-  color: oklch(0.93 0 0);
+/* Force prose element colors with !important — the typography plugin uses
+   :where() selectors which have zero specificity, but Tailwind v4 may
+   still override via cascade order. !important guarantees our colors win. */
+.prose p,
+.prose li,
+.prose dd,
+.prose blockquote,
+.prose td,
+.prose th,
+.prose figcaption,
+.prose caption,
+.prose span {
+  color: oklch(0.93 0 0) !important;
 }
 
-.prose :where(h1, h2, h3, h4, h5, h6, strong, b, thead th) {
-  color: oklch(0.95 0 0);
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+.prose strong,
+.prose b,
+.prose thead th {
+  color: oklch(0.95 0 0) !important;
 }
 
-.prose :where(a) {
-  color: oklch(0.75 0.2 155);
+.prose a {
+  color: oklch(0.75 0.2 155) !important;
 }
 
-.prose :where(code) {
-  color: oklch(0.90 0 0);
+.prose code {
+  color: oklch(0.90 0 0) !important;
 }
 
-.prose :where(ol > li)::marker,
-.prose :where(ul > li)::marker {
-  color: oklch(0.65 0 0);
+.prose ol > li::marker,
+.prose ul > li::marker {
+  color: oklch(0.65 0 0) !important;
 }
 
 /* Light mode prose overrides */
@@ -226,14 +245,26 @@
   color: oklch(0.20 0 0);
 }
 
-.light .prose :where(p, li, dd, blockquote, td, th) {
-  color: oklch(0.20 0 0);
+.light .prose p,
+.light .prose li,
+.light .prose dd,
+.light .prose blockquote,
+.light .prose td,
+.light .prose th {
+  color: oklch(0.20 0 0) !important;
 }
 
-.light .prose :where(h1, h2, h3, h4, h5, h6, strong, b) {
-  color: oklch(0.12 0 0);
+.light .prose h1,
+.light .prose h2,
+.light .prose h3,
+.light .prose h4,
+.light .prose h5,
+.light .prose h6,
+.light .prose strong,
+.light .prose b {
+  color: oklch(0.12 0 0) !important;
 }
 
-.light .prose :where(a) {
-  color: oklch(0.50 0.18 155);
+.light .prose a {
+  color: oklch(0.50 0.18 155) !important;
 }

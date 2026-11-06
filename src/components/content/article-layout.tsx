@@ -97,9 +97,10 @@ export function ArticleLayout({
 
       <Separator />
 
-      {/* Article Body */}
+      {/* Article Body — inline style forces color over typography plugin defaults */}
       <article
         className="prose prose-lg max-w-none prose-headings:scroll-mt-20 prose-p:mb-6 prose-p:leading-relaxed prose-headings:mt-10 prose-headings:mb-4 prose-li:mb-2 prose-ul:my-6 prose-ol:my-6 prose-blockquote:my-6 prose-table:my-6 prose-hr:my-8"
+        style={{ color: "oklch(0.93 0 0)" }}
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(body, {
             ALLOWED_TAGS,
