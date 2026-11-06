@@ -169,7 +169,7 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
  * analysis including key facts, insider trades, risk flags, earnings impact,
  * significance score, summaries, and FAQs.
  *
- * Falls back to Anthropic if GOOGLE_API_KEY is not set but ANTHROPIC_API_KEY is.
+ * Requires GOOGLE_API_KEY environment variable.
  */
 export async function analyzeFilingWithClaude(
   filingText: string,

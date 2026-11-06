@@ -15,10 +15,10 @@ export async function POST(request: Request): Promise<Response> {
   const supabase = createWebhookClient();
   const startedAt = new Date().toISOString();
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     return Response.json(
-      { error: "ANTHROPIC_API_KEY not configured" },
+      { error: "GOOGLE_API_KEY not configured" },
       { status: 500 }
     );
   }
@@ -83,26 +83,17 @@ export async function POST(request: Request): Promise<Response> {
       })
       .join("\n");
 
-    // 3. Generate newsletter with Claude
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const anthropic = new Anthropic({ apiKey });
-    const model = process.env.ANTHROPIC_MODEL;
-    if (!model) {
-      return Response.json(
-        { error: "ANTHROPIC_MODEL not configured" },
-        { status: 500 }
-      );
-    }
+    // 3. Generate newsletter with Gemini
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const genModel = genAI.getGenerativeModel({
+      model: process.env.GEMINI_FILING_MODEL || "gemini-2.5-flash",
+      generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
+    });
 
     const dateRange = `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 
-    const response = await anthropic.messages.create({
-      model,
-      max_tokens: 2000,
-      messages: [
-        {
-          role: "user",
-          content: `Write a weekly newsletter body for "Brefyr" covering small-cap SEC filings from ${dateRange}.
+    const result = await genModel.generateContent(`Write a weekly newsletter body for "Brefyr" covering small-cap SEC filings from ${dateRange}.
 
 Top filings this week:
 ${filingSummaries}
@@ -116,13 +107,9 @@ Write clean HTML (just the content section, no <html>/<head>/<body> wrapper tags
 3. "Insider Activity" section if there were insider trades
 4. A brief closing line
 
-Use <h2> for section headers. Keep it concise and actionable. No fluff.`,
-        },
-      ],
-    });
+Use <h2> for section headers. Keep it concise and actionable. No fluff.`);
 
-    const newsletterBody =
-      response.content[0].type === "text" ? response.content[0].text : "";
+    const newsletterBody = result.response.text();
     const subject = `This Week in Small-Cap Filings — ${dateRange}`;
 
     // 4. Insert into content_queue with type='newsletter', status='pending_review'

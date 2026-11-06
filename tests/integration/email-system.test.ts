@@ -36,22 +36,24 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Mock: Anthropic SDK (for newsletter generation)
-// The route uses `const { default: Anthropic } = await import(...)`
-// then `new Anthropic({ apiKey })`, so the default export must be a class.
+// Mock: Google Generative AI SDK (for newsletter generation)
+// The route uses `const { GoogleGenerativeAI } = await import(...)`
 // ---------------------------------------------------------------------------
 
-const mockAnthropicCreate = vi.fn();
+const mockGeminiGenerate = vi.fn().mockResolvedValue({
+  response: {
+    text: () => "<h2>Top Filings</h2><p>ACME filed a 10-K...</p>",
+    usageMetadata: { promptTokenCount: 500, candidatesTokenCount: 300 },
+  },
+});
 
-class MockAnthropic {
-  messages = { create: mockAnthropicCreate };
-  constructor(_opts: Record<string, unknown>) {
-    // opts intentionally unused in mock
-  }
-}
-
-vi.mock("@anthropic-ai/sdk", () => ({
-  default: MockAnthropic,
+vi.mock("@google/generative-ai", () => ({
+  GoogleGenerativeAI: class {
+    constructor() {}
+    getGenerativeModel() {
+      return { generateContent: mockGeminiGenerate };
+    }
+  },
 }));
 
 // ---------------------------------------------------------------------------
@@ -595,14 +597,16 @@ describe("Email sender functions", () => {
 describe("POST /api/cron/generate-newsletter", () => {
   beforeEach(() => {
     mockFrom.mockReset();
-    mockAnthropicCreate.mockReset();
-    mockAnthropicCreate.mockResolvedValue({
-      content: [{ type: "text", text: "<h2>Newsletter</h2><p>Content</p>" }],
+    mockGeminiGenerate.mockReset();
+    mockGeminiGenerate.mockResolvedValue({
+      response: {
+        text: () => "<h2>Newsletter</h2><p>Content</p>",
+        usageMetadata: { promptTokenCount: 500, candidatesTokenCount: 300 },
+      },
     });
     setEnv({
       RESEND_API_KEY: "re_test_cron",
-      ANTHROPIC_API_KEY: "sk-ant-test-key",
-      ANTHROPIC_MODEL: "claude-sonnet-4-20250514",
+      GOOGLE_API_KEY: "test-google-key",
     });
   });
 
@@ -653,13 +657,11 @@ describe("POST /api/cron/generate-newsletter", () => {
       return chainable({ data: null, error: null });
     });
 
-    mockAnthropicCreate.mockResolvedValueOnce({
-      content: [
-        {
-          type: "text",
-          text: "<h2>Top Filings</h2><p>ACME record revenue quarter</p>",
-        },
-      ],
+    mockGeminiGenerate.mockResolvedValueOnce({
+      response: {
+        text: () => "<h2>Top Filings</h2><p>ACME record revenue quarter</p>",
+        usageMetadata: { promptTokenCount: 500, candidatesTokenCount: 300 },
+      },
     });
 
     const { POST } = await import(
@@ -691,10 +693,10 @@ describe("POST /api/cron/generate-newsletter", () => {
     expect(pipelineRunCalls.length).toBeGreaterThanOrEqual(1);
 
     // Verify Anthropic was called with filing data in the prompt
-    expect(mockAnthropicCreate).toHaveBeenCalledTimes(1);
-    const anthropicCall = mockAnthropicCreate.mock.calls[0][0];
-    expect(anthropicCall.messages[0].content).toContain("ACME");
-    expect(anthropicCall.messages[0].content).toContain("BETA");
+    expect(mockGeminiGenerate).toHaveBeenCalledTimes(1);
+    const geminiCall = mockGeminiGenerate.mock.calls[0][0] as string;
+    expect(geminiCall).toContain("ACME");
+    expect(geminiCall).toContain("BETA");
   });
 
   it("skips newsletter when no filings exist", async () => {
@@ -722,11 +724,11 @@ describe("POST /api/cron/generate-newsletter", () => {
 
     expect(json.success).toBe(true);
     expect(json.message).toContain("No filings");
-    expect(mockAnthropicCreate).not.toHaveBeenCalled();
+    expect(mockGeminiGenerate).not.toHaveBeenCalled();
   });
 
-  it("returns 500 when ANTHROPIC_API_KEY is missing", async () => {
-    delete process.env.ANTHROPIC_API_KEY;
+  it("returns 500 when GOOGLE_API_KEY is missing", async () => {
+    delete process.env.GOOGLE_API_KEY;
     vi.resetModules();
 
     const { POST } = await import(
@@ -742,10 +744,10 @@ describe("POST /api/cron/generate-newsletter", () => {
     expect(response.status).toBe(500);
 
     const json = await response.json();
-    expect(json.error).toContain("ANTHROPIC_API_KEY");
+    expect(json.error).toContain("GOOGLE_API_KEY");
   });
 
-  it("handles Anthropic API failure gracefully", async () => {
+  it("handles Gemini API failure gracefully", async () => {
     vi.resetModules();
 
     const filings = [
@@ -773,7 +775,7 @@ describe("POST /api/cron/generate-newsletter", () => {
       return chainable({ data: null, error: null });
     });
 
-    mockAnthropicCreate.mockRejectedValueOnce(
+    mockGeminiGenerate.mockRejectedValueOnce(
       new Error("Anthropic API unavailable")
     );
 

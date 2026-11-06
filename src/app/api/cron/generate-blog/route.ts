@@ -15,10 +15,10 @@ export async function POST(request: Request): Promise<Response> {
   const supabase = createWebhookClient();
   const startedAt = new Date().toISOString();
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GOOGLE_API_KEY;
   if (!apiKey) {
     return Response.json(
-      { error: "ANTHROPIC_API_KEY not configured" },
+      { error: "GOOGLE_API_KEY not configured" },
       { status: 500 }
     );
   }
@@ -100,24 +100,15 @@ export async function POST(request: Request): Promise<Response> {
 
     const dateRange = `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 
-    // 3. Generate blog post with Claude
-    const { default: Anthropic } = await import("@anthropic-ai/sdk");
-    const anthropic = new Anthropic({ apiKey });
-    const model = process.env.ANTHROPIC_MODEL;
-    if (!model) {
-      return Response.json(
-        { error: "ANTHROPIC_MODEL not configured" },
-        { status: 500 }
-      );
-    }
+    // 3. Generate blog post with Gemini
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: process.env.GEMINI_FILING_MODEL || "gemini-2.5-flash",
+      generationConfig: { maxOutputTokens: 3000, temperature: 0.7 },
+    });
 
-    const response = await anthropic.messages.create({
-      model,
-      max_tokens: 3000,
-      messages: [
-        {
-          role: "user",
-          content: `You are a financial content writer for Brefyr, a small-cap SEC filing intelligence platform. Write an SEO-optimized blog post based on the past week's filing activity (${dateRange}).
+    const result = await model.generateContent(`You are a financial content writer for Brefyr, a small-cap SEC filing intelligence platform. Write an SEO-optimized blog post based on the past week's filing activity (${dateRange}).
 
 Filing activity summary:
 - Total filings: ${filings.length}
@@ -147,15 +138,11 @@ Return your response as JSON with this exact structure:
   "slug_suggestion": "url-friendly-slug-for-the-post"
 }
 
-Return ONLY the JSON, no other text.`,
-        },
-      ],
-    });
+Return ONLY the JSON, no other text.`);
 
-    const rawOutput =
-      response.content[0].type === "text" ? response.content[0].text : "{}";
+    const rawOutput = result.response.text();
 
-    // Parse Claude's JSON response
+    // Parse Gemini's JSON response
     let blogData: {
       title: string;
       meta_description: string;
@@ -164,7 +151,7 @@ Return ONLY the JSON, no other text.`,
     };
 
     try {
-      // Handle case where Claude wraps JSON in markdown code fences
+      // Handle case where Gemini wraps JSON in markdown code fences
       const cleaned = rawOutput
         .replace(/^```json\s*/i, "")
         .replace(/```\s*$/, "")
