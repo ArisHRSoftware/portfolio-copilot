@@ -138,7 +138,7 @@ export default async function PipelineMonitorPage() {
 
         <Card size="sm">
           <CardHeader>
-            <CardDescription>Claude API Cost</CardDescription>
+            <CardDescription>API Cost (Gemini)</CardDescription>
             <CardTitle className="text-2xl">
               ${dailyCost.totalCost.toFixed(2)}
             </CardTitle>
