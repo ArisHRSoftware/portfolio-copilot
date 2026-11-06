@@ -4,8 +4,10 @@ import { term10KFiling } from "./10k-filing";
 import { term10QFiling } from "./10q-filing";
 import { term8KFiling } from "./8k-filing";
 import { termForm4 } from "./form-4";
+import { termGoingConcern } from "./going-concern";
 import { termInsiderTrading } from "./insider-trading";
 import { termMarketCapitalization } from "./market-capitalization";
+import { termProxyStatement } from "./proxy-statement";
 import { termSecEdgar } from "./sec-edgar";
 import { termSmallCap } from "./small-cap";
 
@@ -15,8 +17,10 @@ export const glossaryTerms: GlossaryTerm[] = [
   term10QFiling,
   term8KFiling,
   termForm4,
+  termGoingConcern,
   termInsiderTrading,
   termMarketCapitalization,
+  termProxyStatement,
   termSecEdgar,
   termSmallCap,
 ].sort((a, b) => a.term.localeCompare(b.term));
