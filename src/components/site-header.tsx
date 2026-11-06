@@ -11,7 +11,7 @@ export function SiteHeader() {
             className="flex items-center gap-2 text-sm font-semibold tracking-tight"
           >
             <div className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground text-[10px] font-bold">
-              PC
+              Bf
             </div>
             Brefyr
           </Link>

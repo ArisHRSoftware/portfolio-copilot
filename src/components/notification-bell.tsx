@@ -36,7 +36,7 @@ function getTimeAgo(dateString: string): string {
 function NotificationIcon({ type }: { type: string }) {
   switch (type) {
     case "filing":
-      return <FileText className="size-4 shrink-0 text-blue-500" />;
+      return <FileText className="size-4 shrink-0 text-primary" />;
     case "subscription":
       return <CreditCard className="size-4 shrink-0 text-green-500" />;
     default:
