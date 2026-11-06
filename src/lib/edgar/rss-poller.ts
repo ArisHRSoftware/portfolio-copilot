@@ -42,7 +42,7 @@ function buildSearchUrl(): string {
   const today = new Date().toISOString().slice(0, 10);
   const forms = FILING_TYPES.map((t) => t.replace(/ /g, "+")).join(",");
   const params = new URLSearchParams({
-    q: "*",
+    q: '""',
     forms,
     dateRange: "custom",
     startdt: today,
