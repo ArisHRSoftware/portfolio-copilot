@@ -141,7 +141,7 @@ export default async function BlogPostPage({
 
       {/* Body */}
       <article
-        className="prose prose-lg max-w-none dark:prose-invert prose-p:mb-6 prose-p:leading-relaxed prose-headings:mt-10 prose-headings:mb-4 prose-li:mb-2 prose-ul:my-6 prose-ol:my-6"
+        className="prose prose-lg max-w-none prose-p:mb-6 prose-p:leading-relaxed prose-headings:mt-10 prose-headings:mb-4 prose-li:mb-2 prose-ul:my-6 prose-ol:my-6"
         dangerouslySetInnerHTML={{
           __html: DOMPurify.sanitize(post.body, {
             ALLOWED_TAGS: [
