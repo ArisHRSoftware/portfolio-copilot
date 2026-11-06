@@ -17,9 +17,9 @@ import { TIERS } from "@/lib/constants/tiers";
 export const metadata: Metadata = {
   title: "Pricing — Plans for Every Investor",
   description:
-    "Choose the right Portfolio Copilot plan. From free SEC filing alerts for 3 stocks to unlimited AI analysis, insider trade alerts, and API access for professionals.",
+    "Choose the right Brefyr plan. From free SEC filing alerts for 3 stocks to unlimited AI analysis, insider trade alerts, and API access for professionals.",
   openGraph: {
-    title: "Pricing — Plans for Every Investor | Portfolio Copilot",
+    title: "Pricing — Plans for Every Investor | Brefyr",
     description:
       "SEC filing analysis plans starting free. Upgrade for more stocks, daily alerts, screener access, and API.",
   },

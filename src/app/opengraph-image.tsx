@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Portfolio Copilot — AI SEC Filing Analysis for Small-Cap Investors";
+export const alt = "Brefyr — AI SEC Filing Analysis for Small-Cap Investors";
 export const size = {
   width: 1200,
   height: 630,
@@ -41,7 +41,7 @@ export default async function Image() {
               letterSpacing: "-0.02em",
             }}
           >
-            Portfolio Copilot
+            Brefyr
           </div>
           <div
             style={{

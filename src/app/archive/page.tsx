@@ -16,11 +16,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Newsletter Archive — Past Issues",
   description:
-    "Browse past issues of the Portfolio Copilot newsletter. Weekly and daily digests covering small-cap SEC filings, insider trades, and market insights.",
+    "Browse past issues of the Brefyr newsletter. Weekly and daily digests covering small-cap SEC filings, insider trades, and market insights.",
   openGraph: {
-    title: "Newsletter Archive | Portfolio Copilot",
+    title: "Newsletter Archive | Brefyr",
     description:
-      "Browse past issues of the Portfolio Copilot newsletter.",
+      "Browse past issues of the Brefyr newsletter.",
   },
 };
 
@@ -36,7 +36,7 @@ export default async function ArchivePage() {
           Newsletter Archive
         </h1>
         <p className="text-muted-foreground">
-          Past issues of the Portfolio Copilot newsletter. Get the latest
+          Past issues of the Brefyr newsletter. Get the latest
           small-cap insights delivered to your inbox.
         </p>
       </div>

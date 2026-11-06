@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Reset Password",
-  description: "Reset your Portfolio Copilot password",
+  description: "Reset your Brefyr password",
 };
 
 export default function ForgotPasswordPage() {

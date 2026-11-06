@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description:
     "Track recent insider buying activity across 2,000+ US small-cap stocks. See which company executives and directors are purchasing shares, with AI-powered significance scores.",
   openGraph: {
-    title: "Insider Buying — Recent SEC Form 4 Purchases | Portfolio Copilot",
+    title: "Insider Buying — Recent SEC Form 4 Purchases | Brefyr",
     description:
       "Track recent insider buying activity across 2,000+ US small-cap stocks with AI-powered significance analysis.",
   },

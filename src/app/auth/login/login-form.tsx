@@ -63,7 +63,7 @@ export function LoginForm() {
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">Welcome back</CardTitle>
-        <CardDescription>Log in to your Portfolio Copilot account</CardDescription>
+        <CardDescription>Log in to your Brefyr account</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Button

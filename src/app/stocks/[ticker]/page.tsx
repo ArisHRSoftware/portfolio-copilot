@@ -69,7 +69,7 @@ export async function generateMetadata({
     title: `${companyName} (${upperTicker}) — SEC Filings & AI Analysis`,
     description,
     openGraph: {
-      title: `${companyName} (${upperTicker}) — SEC Filings & AI Analysis | Portfolio Copilot`,
+      title: `${companyName} (${upperTicker}) — SEC Filings & AI Analysis | Brefyr`,
       description,
     },
   };
@@ -116,7 +116,7 @@ function buildFAQs(
     const types = [...new Set(filings.map((f) => f.filing_type))].join(", ");
     faqs.push({
       question: `What SEC filings has ${company.ticker} made recently?`,
-      answer: `Portfolio Copilot has analyzed ${filings.length} SEC filing${filings.length !== 1 ? "s" : ""} for ${company.ticker}, including ${types}. The most recent filing was a ${filings[0].filing_type} filed on ${new Date(filings[0].filed_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.`,
+      answer: `Brefyr has analyzed ${filings.length} SEC filing${filings.length !== 1 ? "s" : ""} for ${company.ticker}, including ${types}. The most recent filing was a ${filings[0].filing_type} filed on ${new Date(filings[0].filed_date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}.`,
     });
   } else {
     faqs.push({
@@ -218,7 +218,7 @@ export default async function StockPage({
   }>;
 
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
   const stockUrl = `${siteUrl}/stocks/${company.ticker.toLowerCase()}`;
   const edgarUrl = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${company.cik_number}&type=&dateb=&owner=include&count=40`;
   const rssUrl = `${siteUrl}/feed/${company.ticker.toLowerCase()}`;
@@ -318,7 +318,7 @@ export default async function StockPage({
         </p>
         {filings.length > 0 && (
           <p className="text-muted-foreground leading-relaxed">
-            Portfolio Copilot has analyzed{" "}
+            Brefyr has analyzed{" "}
             <strong>{filings.length} SEC filing{filings.length !== 1 ? "s" : ""}</strong>{" "}
             for {company.ticker}, with the most recent being a{" "}
             {filings[0].filing_type} filed on{" "}

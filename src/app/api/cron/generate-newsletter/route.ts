@@ -102,7 +102,7 @@ export async function POST(request: Request): Promise<Response> {
       messages: [
         {
           role: "user",
-          content: `Write a weekly newsletter body for "Portfolio Copilot" covering small-cap SEC filings from ${dateRange}.
+          content: `Write a weekly newsletter body for "Brefyr" covering small-cap SEC filings from ${dateRange}.
 
 Top filings this week:
 ${filingSummaries}

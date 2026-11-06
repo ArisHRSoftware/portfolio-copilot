@@ -5,7 +5,7 @@ type Filing = Database["public"]["Tables"]["filings"]["Row"];
 type Company = Database["public"]["Tables"]["companies"]["Row"];
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 export async function GET(
   _request: Request,
@@ -58,7 +58,7 @@ export async function GET(
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>${company.ticker} SEC Filings — Portfolio Copilot</title>
+    <title>${company.ticker} SEC Filings — Brefyr</title>
     <link>${SITE_URL}/stocks/${company.ticker.toLowerCase()}</link>
     <description>AI-powered SEC filing analysis for ${company.name} (${company.ticker}).</description>
     <language>en-us</language>

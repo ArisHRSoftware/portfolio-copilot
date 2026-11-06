@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Log In",
-  description: "Log in to your Portfolio Copilot account",
+  description: "Log in to your Brefyr account",
 };
 
 export default function LoginPage() {

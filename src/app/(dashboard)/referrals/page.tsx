@@ -31,7 +31,7 @@ export default async function ReferralsPage() {
   const referrals = (data ?? []) as Referral[];
 
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
   const referralLink = `${siteUrl}/auth/signup?ref=${user.id}`;
 
   return (

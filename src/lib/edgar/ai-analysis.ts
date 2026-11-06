@@ -278,7 +278,7 @@ export async function analyzeFilingWithClaude(
   const client = new Anthropic({ apiKey });
   const safeText = ensureFitsContext(filingText);
 
-  const systemPrompt = `You are an SEC filing analyst for Portfolio Copilot, a tool that helps retail investors track small-cap stocks. Your job is to analyze SEC filings and extract structured data.
+  const systemPrompt = `You are an SEC filing analyst for Brefyr, a tool that helps retail investors track small-cap stocks. Your job is to analyze SEC filings and extract structured data.
 
 Key principles:
 - Write for retail investors, not Wall Street professionals

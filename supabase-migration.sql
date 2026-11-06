@@ -1,5 +1,5 @@
 -- ============================================================================
--- Portfolio Copilot — Complete Database Migration
+-- Brefyr — Complete Database Migration
 -- Paste this into Supabase SQL Editor: Dashboard > SQL Editor > New Query
 -- Run all 3 blocks in order (migration, seed, trigger)
 -- ============================================================================

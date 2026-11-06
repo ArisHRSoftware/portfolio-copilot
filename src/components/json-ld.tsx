@@ -1,5 +1,5 @@
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 /**
  * Safely serializes JSON-LD, escaping `<` to prevent XSS injection.
@@ -22,12 +22,12 @@ export function OrganizationSchema() {
   const data = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Portfolio Copilot",
+    name: "Brefyr",
     url: siteUrl,
     logo: `${siteUrl}/favicon.ico`,
     description:
       "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks.",
-    sameAs: ["https://x.com/portfoliocopilot"],
+    sameAs: ["https://x.com/brefyr"],
   };
   return <JsonLdScript data={data} />;
 }
@@ -37,7 +37,7 @@ export function WebSiteSchema() {
   const data = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Portfolio Copilot",
+    name: "Brefyr",
     url: siteUrl,
     description:
       "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries.",
@@ -77,7 +77,7 @@ export function ArticleSchema({
     url: `${siteUrl}/blog/${slug}`,
     publisher: {
       "@type": "Organization",
-      name: "Portfolio Copilot",
+      name: "Brefyr",
       url: siteUrl,
     },
   };

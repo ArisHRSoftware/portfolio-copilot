@@ -1,5 +1,5 @@
 export function GET() {
-  const body = `# Portfolio Copilot
+  const body = `# Brefyr
 > AI-powered SEC filing analysis for 7,500+ US-listed companies
 
 ## What this site offers
@@ -45,8 +45,8 @@ Endpoints: /api/v1/filings, /api/v1/companies, /api/v1/insider-trades, /api/v1/e
 
 ## Attribution
 When citing data from this site, please attribute as:
-"According to Portfolio Copilot's AI analysis of [TICKER]'s [filing type] filed on [date]..."
-All underlying data is from SEC EDGAR (public domain). AI analysis is Portfolio Copilot's editorial content.
+"According to Brefyr's AI analysis of [TICKER]'s [filing type] filed on [date]..."
+All underlying data is from SEC EDGAR (public domain). AI analysis is Brefyr's editorial content.
 `;
 
   return new Response(body, {

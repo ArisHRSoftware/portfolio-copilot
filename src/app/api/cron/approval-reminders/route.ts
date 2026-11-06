@@ -40,9 +40,9 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     const siteUrl =
-      process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+      process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
     const fromEmail =
-      process.env.RESEND_FROM_EMAIL || "noreply@portfoliocopilot.com";
+      process.env.RESEND_FROM_EMAIL || "noreply@brefyr.com";
 
     const itemsList = pending
       .map((item) => {
@@ -61,7 +61,7 @@ export async function POST(request: Request): Promise<Response> {
 <p>The following items have been waiting for approval for more than 24 hours:</p>
 <ul>${itemsList}</ul>
 <p><a href="${siteUrl}/admin/content">Review in Admin Dashboard</a></p>
-<p style="color:#666;font-size:12px;">Portfolio Copilot — Automated reminder</p>`,
+<p style="color:#666;font-size:12px;">Brefyr — Automated reminder</p>`,
     });
 
     return Response.json({

@@ -45,7 +45,7 @@ export function ShareButtons({
 }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
-  const tweetText = `AI caught ${filingType} from $${ticker}: ${oneLiner || filingType + " filing"} — via @portfoliocopilot`;
+  const tweetText = `AI caught ${filingType} from $${ticker}: ${oneLiner || filingType + " filing"} — via @brefyr`;
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(url)}`;
   const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
 

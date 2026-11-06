@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Portfolio Copilot",
+    name: "Brefyr",
     short_name: "PC",
     description:
       "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks",

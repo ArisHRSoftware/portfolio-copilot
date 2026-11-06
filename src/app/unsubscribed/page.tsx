@@ -23,7 +23,7 @@ export default function UnsubscribedPage() {
           <MailX className="mx-auto h-10 w-10 text-muted-foreground mb-2" />
           <CardTitle>You've been unsubscribed</CardTitle>
           <CardDescription>
-            You will no longer receive newsletter emails from Portfolio Copilot.
+            You will no longer receive newsletter emails from Brefyr.
           </CardDescription>
         </CardHeader>
         <CardContent>

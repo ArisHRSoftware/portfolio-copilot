@@ -16,11 +16,11 @@ export function getResend(): Resend {
 }
 
 function fromAddress(): string {
-  return process.env.RESEND_FROM_EMAIL || "noreply@portfoliocopilot.com";
+  return process.env.RESEND_FROM_EMAIL || "noreply@brefyr.com";
 }
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 // ---------------------------------------------------------------------------
 // Email types
@@ -91,7 +91,7 @@ function baseLayout(title: string, bodyHtml: string): string {
         ${bodyHtml}
       </div>
       <div class="footer">
-        <p>Portfolio Copilot &mdash; AI-powered SEC filing intelligence for small-cap stocks.</p>
+        <p>Brefyr &mdash; AI-powered SEC filing intelligence for small-cap stocks.</p>
         <p><a href="${SITE_URL}/dashboard/settings" style="color:#71717a;">Manage email preferences</a></p>
       </div>
     </div>
@@ -224,11 +224,11 @@ export async function sendWelcomeEmail(
   name: string
 ): Promise<void> {
   const displayName = escapeHtml(name || "there");
-  const subject = "Welcome to Portfolio Copilot";
+  const subject = "Welcome to Brefyr";
 
   const body = `
     <p>Hi ${displayName},</p>
-    <p>Welcome to <strong>Portfolio Copilot</strong> &mdash; your AI-powered SEC filing intelligence platform
+    <p>Welcome to <strong>Brefyr</strong> &mdash; your AI-powered SEC filing intelligence platform
     for US small-cap stocks.</p>
     <p>Here's how to get started:</p>
     <ol>
@@ -248,6 +248,6 @@ export async function sendWelcomeEmail(
     from: fromAddress(),
     to,
     subject,
-    html: baseLayout("Welcome to Portfolio Copilot", body),
+    html: baseLayout("Welcome to Brefyr", body),
   });
 }

@@ -208,7 +208,7 @@ export function ApiKeysPanel({ apiKeys }: ApiKeysPanelProps) {
           <div className="space-y-2">
             <p className="text-sm font-medium">Base URL</p>
             <code className="block rounded bg-muted px-3 py-2 text-xs font-mono">
-              https://portfoliocopilot.com/api/v1
+              https://brefyr.com/api/v1
             </code>
           </div>
           <div className="space-y-2">

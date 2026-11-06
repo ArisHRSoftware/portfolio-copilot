@@ -31,7 +31,7 @@ export async function POST(request: Request): Promise<Response> {
 
   const supabase = createWebhookClient();
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
   try {
     // Get approved social posts

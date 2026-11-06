@@ -5,7 +5,7 @@ type Filing = Database["public"]["Tables"]["filings"]["Row"];
 type Company = Database["public"]["Tables"]["companies"]["Row"];
 
 const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 export async function GET(): Promise<Response> {
   const supabase = createStaticClient();
@@ -61,7 +61,7 @@ export async function GET(): Promise<Response> {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Portfolio Copilot — SEC Filing Analysis</title>
+    <title>Brefyr — SEC Filing Analysis</title>
     <link>${SITE_URL}</link>
     <description>AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks. Get instant summaries, significance scores, and insider trade alerts.</description>
     <language>en-us</language>
@@ -87,7 +87,7 @@ function emptyFeed() {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Portfolio Copilot — SEC Filing Analysis</title>
+    <title>Brefyr — SEC Filing Analysis</title>
     <link>${SITE_URL}</link>
     <description>AI-powered SEC filing analysis for small-cap stocks.</description>
     <language>en-us</language>

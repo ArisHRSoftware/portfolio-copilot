@@ -55,7 +55,7 @@ export async function generateMetadata({
     title,
     description,
     openGraph: {
-      title: `${title} | Portfolio Copilot`,
+      title: `${title} | Brefyr`,
       description,
     },
   };
@@ -110,7 +110,7 @@ export default async function FilingDetailPage({
   const insider = filing.insider_data as Record<string, unknown> | null;
 
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
   return (
     <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">

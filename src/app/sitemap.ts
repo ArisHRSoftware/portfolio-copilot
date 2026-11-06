@@ -3,7 +3,7 @@ import { createStaticClient } from "@/lib/supabase/static";
 import { getPublishedBlogPosts, getRecentFilings, type Company } from "@/lib/supabase/queries";
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 import { SECTOR_SLUGS } from "@/lib/constants/sectors";
 

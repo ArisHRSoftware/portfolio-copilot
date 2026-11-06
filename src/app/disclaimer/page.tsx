@@ -10,16 +10,16 @@ import {
 import { SiteHeader } from "@/components/site-header";
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 export const metadata: Metadata = {
-  title: "Disclaimer — Portfolio Copilot",
+  title: "Disclaimer — Brefyr",
   description:
-    "Important disclaimers regarding Portfolio Copilot's AI-powered SEC filing analysis. Not financial advice. Consult a qualified financial advisor before making investment decisions.",
+    "Important disclaimers regarding Brefyr's AI-powered SEC filing analysis. Not financial advice. Consult a qualified financial advisor before making investment decisions.",
   openGraph: {
-    title: "Disclaimer | Portfolio Copilot",
+    title: "Disclaimer | Brefyr",
     description:
-      "Important disclaimers regarding Portfolio Copilot's AI-powered SEC filing analysis.",
+      "Important disclaimers regarding Brefyr's AI-powered SEC filing analysis.",
   },
 };
 
@@ -37,7 +37,7 @@ export default function DisclaimerPage() {
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Disclaimer</h1>
           <p className="text-muted-foreground">
-            Please read this disclaimer carefully before using Portfolio Copilot.
+            Please read this disclaimer carefully before using Brefyr.
           </p>
         </div>
 
@@ -48,7 +48,7 @@ export default function DisclaimerPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Portfolio Copilot provides informational analysis only. Nothing
+                Brefyr provides informational analysis only. Nothing
                 on this website constitutes financial advice, investment advice,
                 trading advice, or any other form of professional advice.
               </p>
@@ -67,7 +67,7 @@ export default function DisclaimerPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                Portfolio Copilot uses artificial intelligence to analyze and
+                Brefyr uses artificial intelligence to analyze and
                 summarize SEC filings. AI-generated summaries may contain errors,
                 omissions, or misinterpretations of the source material. While we
                 strive for accuracy, we cannot guarantee that any AI-generated
@@ -109,7 +109,7 @@ export default function DisclaimerPage() {
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                All SEC filing data displayed on Portfolio Copilot is sourced
+                All SEC filing data displayed on Brefyr is sourced
                 from the U.S. Securities and Exchange Commission&apos;s EDGAR
                 (Electronic Data Gathering, Analysis, and Retrieval) system.
                 Filing data may be subject to delays between the time a document
@@ -131,7 +131,7 @@ export default function DisclaimerPage() {
                 You should consult a qualified financial advisor before making
                 any investment decisions. A licensed professional can provide
                 personalized advice based on your individual financial situation,
-                risk tolerance, and investment goals. Portfolio Copilot is not a
+                risk tolerance, and investment goals. Brefyr is not a
                 substitute for professional financial guidance.
               </p>
             </CardContent>
@@ -143,7 +143,7 @@ export default function DisclaimerPage() {
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
               <p>
-                Portfolio Copilot is not affiliated with, endorsed by, or in any
+                Brefyr is not affiliated with, endorsed by, or in any
                 way officially connected to the U.S. Securities and Exchange
                 Commission (SEC) or any other regulatory body. Our use of
                 publicly available EDGAR data does not imply any relationship
@@ -155,16 +155,16 @@ export default function DisclaimerPage() {
 
         <div className="border-t border-border pt-6 text-xs text-muted-foreground space-y-2">
           <p>
-            By using Portfolio Copilot, you acknowledge that you have read and
+            By using Brefyr, you acknowledge that you have read and
             understood this disclaimer.
           </p>
           <p>
             Questions? Contact us at{" "}
             <a
-              href="mailto:support@portfoliocopilot.com"
+              href="mailto:support@brefyr.com"
               className="text-primary underline underline-offset-4 hover:text-primary/80"
             >
-              support@portfoliocopilot.com
+              support@brefyr.com
             </a>
             .
           </p>

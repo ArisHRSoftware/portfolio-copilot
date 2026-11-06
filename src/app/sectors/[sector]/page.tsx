@@ -48,7 +48,7 @@ export async function generateMetadata({
     title: `${sectorName} Stocks — SEC Filings & AI Analysis`,
     description: `Browse ${sectorName} sector small-cap stocks with AI-powered SEC filing analysis. View recent filings, insider trades, and significance scores for ${sectorName} companies.`,
     openGraph: {
-      title: `${sectorName} Stocks | Portfolio Copilot`,
+      title: `${sectorName} Stocks | Brefyr`,
       description: `${sectorName} sector small-cap stocks with AI-powered SEC filing analysis.`,
     },
   };

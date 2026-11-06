@@ -117,7 +117,7 @@ export async function POST(request: Request): Promise<Response> {
       messages: [
         {
           role: "user",
-          content: `You are a financial content writer for Portfolio Copilot, a small-cap SEC filing intelligence platform. Write an SEO-optimized blog post based on the past week's filing activity (${dateRange}).
+          content: `You are a financial content writer for Brefyr, a small-cap SEC filing intelligence platform. Write an SEO-optimized blog post based on the past week's filing activity (${dateRange}).
 
 Filing activity summary:
 - Total filings: ${filings.length}

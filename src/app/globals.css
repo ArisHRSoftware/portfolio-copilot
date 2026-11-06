@@ -47,7 +47,7 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Portfolio Copilot custom color tokens */
+  /* Brefyr custom color tokens */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -93,7 +93,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.546 0.245 262.881);
 
-  /* Portfolio Copilot custom tokens */
+  /* Brefyr custom tokens */
   --success: oklch(0.6 0.2 145);
   --success-foreground: oklch(0.985 0 0);
   --warning: oklch(0.75 0.15 80);

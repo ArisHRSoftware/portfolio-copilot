@@ -248,7 +248,7 @@ describe("Email sender functions", () => {
       });
 
       const call = mockEmailsSend.mock.calls[0][0];
-      expect(call.from).toBe("noreply@portfoliocopilot.com");
+      expect(call.from).toBe("noreply@brefyr.com");
     });
 
     it("propagates Resend API errors", async () => {
@@ -551,7 +551,7 @@ describe("Email sender functions", () => {
       const call = mockEmailsSend.mock.calls[0][0];
       expect(call.from).toBe("test@example.com");
       expect(call.to).toBe("newuser@test.com");
-      expect(call.subject).toBe("Welcome to Portfolio Copilot");
+      expect(call.subject).toBe("Welcome to Brefyr");
       expect(call.html).toContain("Hi Alice");
       expect(call.html).toContain("Go to Dashboard");
       expect(call.html).toContain("https://test.example.com/dashboard");
@@ -1096,7 +1096,7 @@ describe("Email HTML structure", () => {
     expect(call.html).toContain("SC 13D filing");
   });
 
-  it("email header includes Portfolio Copilot branding", async () => {
+  it("email header includes Brefyr branding", async () => {
     const { sendDailyDigest } = await import("@/lib/resend");
 
     await sendDailyDigest("brand@test.com", {
@@ -1117,6 +1117,6 @@ describe("Email HTML structure", () => {
     });
 
     const call = mockEmailsSend.mock.calls[0][0];
-    expect(call.html).toContain("Portfolio Copilot");
+    expect(call.html).toContain("Brefyr");
   });
 });

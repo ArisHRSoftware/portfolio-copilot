@@ -1,4 +1,4 @@
-# Portfolio Copilot
+# Brefyr
 
 AI-powered SEC filing intelligence for 7,600+ US-listed companies. Get instant AI summaries, significance scores, insider trade alerts, and plain-English analysis for every SEC filing.
 

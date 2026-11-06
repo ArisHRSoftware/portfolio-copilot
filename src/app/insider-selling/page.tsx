@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description:
     "Track recent insider selling activity across 2,000+ US small-cap stocks. See which company executives and directors are selling shares, with AI-powered significance scores.",
   openGraph: {
-    title: "Insider Selling — Recent SEC Form 4 Sales | Portfolio Copilot",
+    title: "Insider Selling — Recent SEC Form 4 Sales | Brefyr",
     description:
       "Track recent insider selling activity across 2,000+ US small-cap stocks with AI-powered significance analysis.",
   },

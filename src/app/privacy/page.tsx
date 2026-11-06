@@ -6,11 +6,11 @@ import { Separator } from "@/components/ui/separator";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "Portfolio Copilot privacy policy. Learn how we collect, use, and protect your data.",
+    "Brefyr privacy policy. Learn how we collect, use, and protect your data.",
   openGraph: {
-    title: "Privacy Policy | Portfolio Copilot",
+    title: "Privacy Policy | Brefyr",
     description:
-      "Learn how Portfolio Copilot collects, uses, and protects your data.",
+      "Learn how Brefyr collects, uses, and protects your data.",
   },
 };
 
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
           </h2>
           <p>We use the information we collect to:</p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Provide and improve the Portfolio Copilot service</li>
+            <li>Provide and improve the Brefyr service</li>
             <li>Send filing alerts and email digests based on your preferences</li>
             <li>Process payments and manage your subscription</li>
             <li>Communicate service updates and respond to support requests</li>
@@ -78,7 +78,7 @@ export default function PrivacyPage() {
             4. Third-Party Services
           </h2>
           <p>
-            Portfolio Copilot uses the following third-party services that may
+            Brefyr uses the following third-party services that may
             process your data according to their own privacy policies:
           </p>
           <ul className="list-disc pl-6 space-y-1">
@@ -129,10 +129,10 @@ export default function PrivacyPage() {
             If you have questions about this privacy policy or your data, contact
             us at{" "}
             <a
-              href="mailto:privacy@portfoliocopilot.com"
+              href="mailto:privacy@brefyr.com"
               className="text-primary hover:underline"
             >
-              privacy@portfoliocopilot.com
+              privacy@brefyr.com
             </a>
             .
           </p>

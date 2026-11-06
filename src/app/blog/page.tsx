@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description:
     "Expert analysis and insights on small-cap investing, SEC filings, insider trading patterns, and market trends. AI-generated and founder-reviewed.",
   openGraph: {
-    title: "Blog — Small-Cap Investing Insights | Portfolio Copilot",
+    title: "Blog — Small-Cap Investing Insights | Brefyr",
     description:
       "Expert analysis on small-cap investing, SEC filings, and insider trading patterns.",
   },

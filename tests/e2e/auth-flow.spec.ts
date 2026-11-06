@@ -46,7 +46,7 @@ test.describe("Auth flow", () => {
 
     // Card description
     await expect(
-      page.getByText("Log in to your Portfolio Copilot account")
+      page.getByText("Log in to your Brefyr account")
     ).toBeVisible();
 
     // Email input (id="email", type="email", placeholder="you@example.com")

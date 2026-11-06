@@ -1,5 +1,5 @@
 const EDGAR_USER_AGENT =
-  "Portfolio Copilot admin@portfoliocopilot.com";
+  "Brefyr admin@brefyr.com";
 
 /**
  * Maximum character count for the parsed filing text sent to the Claude API.

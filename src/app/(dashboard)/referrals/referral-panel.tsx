@@ -49,7 +49,7 @@ export function ReferralPanel({ referrals, referralLink }: ReferralPanelProps) {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Referrals</h1>
         <p className="text-muted-foreground">
-          Share Portfolio Copilot and earn free months when friends sign up.
+          Share Brefyr and earn free months when friends sign up.
         </p>
       </div>
 

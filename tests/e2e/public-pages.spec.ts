@@ -26,7 +26,7 @@ test.describe("Landing page", () => {
     await page.goto("/");
 
     // Title contains the product name
-    await expect(page).toHaveTitle(/Portfolio Copilot/i);
+    await expect(page).toHaveTitle(/Brefyr/i);
 
     // Hero section — heading visible
     const hero = page.locator("h1");
@@ -40,7 +40,7 @@ test.describe("Landing page", () => {
 
     // Footer — contains product name and copyright
     const footer = page.locator("footer");
-    await expect(footer).toContainText("Portfolio Copilot");
+    await expect(footer).toContainText("Brefyr");
 
     // No console errors (ignoring hydration-safe noise)
     const meaningful = errors.filter(
@@ -273,7 +273,7 @@ test.describe("RSS feed", () => {
     const body = await response.text();
     expect(body).toContain("<?xml");
     expect(body).toContain("<rss");
-    expect(body).toContain("Portfolio Copilot");
+    expect(body).toContain("Brefyr");
   });
 });
 
@@ -291,7 +291,7 @@ test.describe("llms.txt", () => {
     expect(contentType).toContain("text/plain");
 
     const body = await response.text();
-    expect(body).toContain("Portfolio Copilot");
+    expect(body).toContain("Brefyr");
     expect(body).toContain("SEC filing");
   });
 });

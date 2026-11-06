@@ -93,7 +93,7 @@ export default async function DashboardLayout({
               PC
             </div>
             <span className="text-sm font-semibold tracking-tight">
-              Portfolio Copilot
+              Brefyr
             </span>
           </div>
         </SidebarHeader>

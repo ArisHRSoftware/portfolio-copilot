@@ -90,7 +90,7 @@ function StepWelcome({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
         <div className="mb-2 flex size-12 items-center justify-center rounded-full bg-primary/10">
           <Sparkles className="size-6 text-primary" />
         </div>
-        <CardTitle className="text-xl">Welcome to Portfolio Copilot!</CardTitle>
+        <CardTitle className="text-xl">Welcome to Brefyr!</CardTitle>
         <CardDescription className="max-w-sm">
           Let&apos;s set up your portfolio in under a minute
         </CardDescription>
@@ -413,7 +413,7 @@ function StepPreview({
           </div>
           <div className="rounded-md border border-border bg-background p-2.5 text-xs text-muted-foreground">
             <p className="mb-1 font-medium text-foreground">
-              Your Portfolio Copilot Daily Brief
+              Your Brefyr Daily Brief
             </p>
             <p>
               {selectedStocks.length} stock{selectedStocks.length !== 1 ? "s" : ""} tracked

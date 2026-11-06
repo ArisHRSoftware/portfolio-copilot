@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Sign Up",
   description:
-    "Create your free Portfolio Copilot account and start tracking SEC filings",
+    "Create your free Brefyr account and start tracking SEC filings",
 };
 
 export default async function SignupPage({

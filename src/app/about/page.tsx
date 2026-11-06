@@ -14,9 +14,9 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata: Metadata = {
   title: "About — AI SEC Filing Analysis for Small-Cap Investors",
   description:
-    "Portfolio Copilot uses AI to analyze SEC filings for 2,000+ US small-cap stocks that Wall Street ignores. Get instant summaries, insider trade alerts, and significance scores.",
+    "Brefyr uses AI to analyze SEC filings for 2,000+ US small-cap stocks that Wall Street ignores. Get instant summaries, insider trade alerts, and significance scores.",
   openGraph: {
-    title: "About Portfolio Copilot",
+    title: "About Brefyr",
     description:
       "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks.",
   },
@@ -34,7 +34,7 @@ export default function AboutPage() {
           The SEC filings that Wall Street ignores, analyzed by AI.
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-          Portfolio Copilot monitors SEC EDGAR for 2,000+ US small-cap stocks
+          Brefyr monitors SEC EDGAR for 2,000+ US small-cap stocks
           that institutional research doesn&apos;t cover. Every filing is
           processed by AI within minutes of publication, so you never miss a
           critical disclosure.
@@ -45,7 +45,7 @@ export default function AboutPage() {
 
       {/* What We Do */}
       <section className="space-y-6">
-        <h2 className="text-2xl font-bold">What Portfolio Copilot Does</h2>
+        <h2 className="text-2xl font-bold">What Brefyr Does</h2>
         <div className="grid gap-6 sm:grid-cols-2">
           <Card>
             <CardHeader>
@@ -116,7 +116,7 @@ export default function AboutPage() {
             known, the price has already moved.
           </p>
           <p>
-            Portfolio Copilot closes that information gap. The same AI analysis
+            Brefyr closes that information gap. The same AI analysis
             that large institutions use internally, now available for the
             small-cap stocks they ignore.
           </p>

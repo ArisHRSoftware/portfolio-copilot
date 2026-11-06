@@ -15,14 +15,14 @@ import { Separator } from "@/components/ui/separator";
 import { Key, Gauge, FileText, Building2, Users, Download } from "lucide-react";
 
 const siteUrl =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+  process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 export const metadata: Metadata = {
-  title: "API Documentation | Portfolio Copilot",
+  title: "API Documentation | Brefyr",
   description:
     "Filing Intelligence API documentation. Access SEC filings, insider trades, company data, and CSV exports programmatically. RESTful JSON API with simple API key authentication.",
   openGraph: {
-    title: "API Documentation | Portfolio Copilot",
+    title: "API Documentation | Brefyr",
     description:
       "Filing Intelligence API — programmatic access to AI-analyzed SEC filings, insider trades, and company data for 2,000+ US small-cap stocks.",
   },
@@ -549,7 +549,7 @@ console.log(\`Found \${data.meta.count} filings\`);`}</CodeBlock>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground">
-                Portfolio Copilot
+                Brefyr
               </span>
               <span>&copy; {new Date().getFullYear()}</span>
             </div>

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
   // Redirect to a simple confirmation page
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
   return NextResponse.redirect(
     `${siteUrl}/unsubscribed?email=${encodeURIComponent(email)}`

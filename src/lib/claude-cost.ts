@@ -77,7 +77,7 @@ export async function checkCostAlert(
       const resend = getResend();
       await resend.emails.send({
         from:
-          process.env.RESEND_FROM_EMAIL ?? "alerts@portfoliocopilot.com",
+          process.env.RESEND_FROM_EMAIL ?? "alerts@brefyr.com",
         to: adminEmail,
         subject: `[Alert] Claude API daily cost: $${stats.totalCost.toFixed(2)}`,
         html: `

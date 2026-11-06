@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description:
     "See which small-cap stocks are reporting earnings this week. AI-powered analysis of earnings-related SEC filings with significance scores.",
   openGraph: {
-    title: "Earnings This Week — Small-Cap Earnings Calendar | Portfolio Copilot",
+    title: "Earnings This Week — Small-Cap Earnings Calendar | Brefyr",
     description:
       "Small-cap earnings calendar with AI-powered filing analysis.",
   },

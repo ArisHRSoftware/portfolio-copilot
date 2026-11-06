@@ -172,7 +172,7 @@ export function CheckoutPanel({
           key: keyId,
           amount,
           currency,
-          name: "Portfolio Copilot",
+          name: "Brefyr",
           description: `${tiers[planId].name} Plan - Monthly`,
           order_id: orderId,
           handler: async (response: RazorpayResponse) => {

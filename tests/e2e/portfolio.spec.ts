@@ -213,12 +213,12 @@ test.describe("Portfolio management", () => {
   // -------------------------------------------------------------------------
 
   test.describe("tier and pricing references", () => {
-    test("login page references the product name Portfolio Copilot", async ({
+    test("login page references the product name Brefyr", async ({
       page,
     }) => {
       await page.goto("/auth/login");
 
-      // The LoginForm's CardDescription says "Log in to your Portfolio Copilot account"
+      // The LoginForm's CardDescription says "Log in to your Brefyr account"
       await expect(
         page.getByText(/portfolio copilot/i)
       ).toBeVisible();

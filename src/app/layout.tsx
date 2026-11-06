@@ -19,22 +19,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Portfolio Copilot — AI SEC Filing Analysis for Small-Cap Investors",
-    template: "%s | Portfolio Copilot",
+    default: "Brefyr — AI SEC Filing Analysis for Small-Cap Investors",
+    template: "%s | Brefyr",
   },
   description:
     "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries.",
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com"
   ),
   openGraph: {
     type: "website",
     locale: "en_US",
-    siteName: "Portfolio Copilot",
+    siteName: "Brefyr",
   },
   twitter: {
     card: "summary_large_image",
-    creator: "@portfoliocopilot",
+    creator: "@brefyr",
   },
   alternates: {
     types: {

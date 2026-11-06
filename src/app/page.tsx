@@ -30,11 +30,11 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title:
-    "Portfolio Copilot — AI SEC Filing Analysis for Small-Cap Investors",
+    "Brefyr — AI SEC Filing Analysis for Small-Cap Investors",
   description:
     "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries. Free to start.",
   openGraph: {
-    title: "Portfolio Copilot — AI SEC Filing Analysis for Small-Cap Investors",
+    title: "Brefyr — AI SEC Filing Analysis for Small-Cap Investors",
     description:
       "Stop missing critical SEC filings. AI analyzes every 10-K, 8-K, and insider trade for small-cap stocks the big platforms ignore.",
   },
@@ -377,7 +377,7 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <span className="font-semibold text-foreground">
-              Portfolio Copilot
+              Brefyr
             </span>
             <span>&copy; {new Date().getFullYear()}</span>
           </div>

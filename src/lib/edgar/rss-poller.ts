@@ -6,7 +6,7 @@ import type { Database } from "@/lib/types/database";
 type AnySupabase = SupabaseClient<any>;
 
 const EDGAR_USER_AGENT =
-  "Portfolio Copilot admin@portfoliocopilot.com";
+  "Brefyr admin@brefyr.com";
 
 const EDGAR_SEARCH_BASE =
   "https://efts.sec.gov/LATEST/search-index";

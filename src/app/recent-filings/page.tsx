@@ -27,7 +27,7 @@ export const metadata: Metadata = {
   description:
     "Browse the latest SEC filings across 2,000+ US small-cap stocks. Filter by filing type (10-K, 10-Q, 8-K, Form 4, and more) with AI-powered summaries and significance scores.",
   openGraph: {
-    title: "Recent SEC Filings | Portfolio Copilot",
+    title: "Recent SEC Filings | Brefyr",
     description:
       "Browse the latest SEC filings across 2,000+ US small-cap stocks with AI analysis.",
   },

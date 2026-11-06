@@ -6,11 +6,11 @@ import { Separator } from "@/components/ui/separator";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "Portfolio Copilot terms of service. Read our terms governing the use of our AI-powered SEC filing analysis platform.",
+    "Brefyr terms of service. Read our terms governing the use of our AI-powered SEC filing analysis platform.",
   openGraph: {
-    title: "Terms of Service | Portfolio Copilot",
+    title: "Terms of Service | Brefyr",
     description:
-      "Terms governing the use of Portfolio Copilot's AI-powered SEC filing analysis platform.",
+      "Terms governing the use of Brefyr's AI-powered SEC filing analysis platform.",
   },
 };
 
@@ -32,7 +32,7 @@ export default function TermsPage() {
             1. Acceptance of Terms
           </h2>
           <p>
-            By accessing or using Portfolio Copilot (&quot;the Service&quot;),
+            By accessing or using Brefyr (&quot;the Service&quot;),
             you agree to be bound by these Terms of Service. If you do not agree,
             you may not use the Service.
           </p>
@@ -43,7 +43,7 @@ export default function TermsPage() {
             2. Description of Service
           </h2>
           <p>
-            Portfolio Copilot provides AI-powered analysis of SEC filings for US
+            Brefyr provides AI-powered analysis of SEC filings for US
             publicly traded companies. The Service includes filing summaries,
             significance scoring, insider trade tracking, and email alerts. The
             Service is provided for informational purposes only.
@@ -55,7 +55,7 @@ export default function TermsPage() {
             3. Not Financial Advice
           </h2>
           <p>
-            Portfolio Copilot does not provide investment advice, financial
+            Brefyr does not provide investment advice, financial
             advice, tax advice, or legal advice. The AI-generated summaries,
             significance scores, and other analysis are for informational
             purposes only and should not be relied upon as a basis for investment
@@ -117,7 +117,7 @@ export default function TermsPage() {
             8. Limitation of Liability
           </h2>
           <p>
-            To the maximum extent permitted by law, Portfolio Copilot and its
+            To the maximum extent permitted by law, Brefyr and its
             operators shall not be liable for any indirect, incidental, special,
             consequential, or punitive damages, including loss of profits or
             investment losses, arising from your use of the Service.
@@ -165,10 +165,10 @@ export default function TermsPage() {
           <p>
             Questions about these terms? Contact us at{" "}
             <a
-              href="mailto:legal@portfoliocopilot.com"
+              href="mailto:legal@brefyr.com"
               className="text-primary hover:underline"
             >
-              legal@portfoliocopilot.com
+              legal@brefyr.com
             </a>
             .
           </p>

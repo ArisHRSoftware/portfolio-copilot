@@ -52,7 +52,7 @@ export async function generateMetadata({
       post.meta_description ??
       `${post.title} — insights on small-cap investing and SEC filing analysis.`,
     openGraph: {
-      title: `${post.title} | Portfolio Copilot Blog`,
+      title: `${post.title} | Brefyr Blog`,
       description:
         post.meta_description ??
         `${post.title} — insights on small-cap investing and SEC filing analysis.`,
@@ -83,7 +83,7 @@ export default async function BlogPostPage({
   }
 
   const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL || "https://portfoliocopilot.com";
+    process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
   return (
     <main className="flex-1 px-4 py-8 max-w-3xl mx-auto w-full space-y-6">
