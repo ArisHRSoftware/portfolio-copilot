@@ -4,6 +4,7 @@ import { term10KFiling } from "./10k-filing";
 import { term10QFiling } from "./10q-filing";
 import { term8KFiling } from "./8k-filing";
 import { termAccessionNumber } from "./accession-number";
+import { termBeneficialOwner } from "./beneficial-owner";
 import { termEbitda } from "./ebitda";
 import { termForm4 } from "./form-4";
 import { termFreeCashFlow } from "./free-cash-flow";
@@ -13,6 +14,7 @@ import { termMarketCapitalization } from "./market-capitalization";
 import { termMaterialWeakness } from "./material-weakness";
 import { termFilerCategory } from "./filer-category";
 import { termProxyStatement } from "./proxy-statement";
+import { termRevenueRecognition } from "./revenue-recognition";
 import { termSecEdgar } from "./sec-edgar";
 import { termSicCode } from "./sic-code";
 import { termSmallCap } from "./small-cap";
@@ -23,6 +25,7 @@ export const glossaryTerms: GlossaryTerm[] = [
   term10QFiling,
   term8KFiling,
   termAccessionNumber,
+  termBeneficialOwner,
   termEbitda,
   termFilerCategory,
   termForm4,
@@ -32,6 +35,7 @@ export const glossaryTerms: GlossaryTerm[] = [
   termMarketCapitalization,
   termMaterialWeakness,
   termProxyStatement,
+  termRevenueRecognition,
   termSecEdgar,
   termSicCode,
   termSmallCap,

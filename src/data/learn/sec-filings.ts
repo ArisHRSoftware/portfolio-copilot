@@ -1,11 +1,13 @@
 import type { LearnArticle } from "../types";
 
 import { articleHowToReadSecFilings } from "./how-to-read-sec-filings";
+import { articleHowToUseEdgar } from "./how-to-use-edgar";
 import { articleSecFilingTypes } from "./sec-filing-types-explained";
 
 /** All SEC filing education articles, sorted by difficulty then title */
 export const secFilingArticles: LearnArticle[] = [
   articleHowToReadSecFilings,
+  articleHowToUseEdgar,
   articleSecFilingTypes,
 ].sort((a, b) => {
   const diffOrder = { beginner: 0, intermediate: 1, advanced: 2 };
