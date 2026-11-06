@@ -63,7 +63,7 @@ export async function GET(): Promise<Response> {
   <channel>
     <title>Brefyr — SEC Filing Analysis</title>
     <link>${SITE_URL}</link>
-    <description>AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks. Get instant summaries, significance scores, and insider trade alerts.</description>
+    <description>AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks. Get instant summaries, significance scores, and insider trade alerts.</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml"/>

@@ -14,11 +14,11 @@ import { SiteHeader } from "@/components/site-header";
 export const metadata: Metadata = {
   title: "About — AI SEC Filing Analysis for Small-Cap Investors",
   description:
-    "Brefyr uses AI to analyze SEC filings for 2,000+ US small-cap stocks that Wall Street ignores. Get instant summaries, insider trade alerts, and significance scores.",
+    "Brefyr uses AI to analyze SEC filings for 7,600+ US small-cap stocks that Wall Street ignores. Get instant summaries, insider trade alerts, and significance scores.",
   openGraph: {
     title: "About Brefyr",
     description:
-      "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks.",
+      "AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks.",
   },
 };
 
@@ -34,7 +34,7 @@ export default function AboutPage() {
           The SEC filings that Wall Street ignores, analyzed by AI.
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-          Brefyr monitors SEC EDGAR for 2,000+ US small-cap stocks
+          Brefyr monitors SEC EDGAR for 7,600+ US small-cap stocks
           that institutional research doesn&apos;t cover. Every filing is
           processed by AI within minutes of publication, so you never miss a
           critical disclosure.
@@ -134,7 +134,7 @@ export default function AboutPage() {
               step: "1",
               title: "SEC EDGAR Monitoring",
               description:
-                "Our pipeline monitors SEC EDGAR continuously for new filings across 2,000+ small-cap tickers.",
+                "Our pipeline monitors SEC EDGAR continuously for new filings across 7,600+ small-cap tickers.",
             },
             {
               step: "2",

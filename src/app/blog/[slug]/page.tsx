@@ -5,6 +5,7 @@ import {
   getPublishedBlogPosts,
   type BlogPost,
 } from "@/lib/supabase/queries";
+import { SiteHeader } from "@/components/site-header";
 import { ArticleSchema, BreadcrumbSchema } from "@/components/json-ld";
 import DOMPurify from "isomorphic-dompurify";
 import { Badge } from "@/components/ui/badge";
@@ -86,7 +87,9 @@ export default async function BlogPostPage({
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-3xl mx-auto w-full space-y-6">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-3xl mx-auto w-full space-y-6">
       <ArticleSchema
         title={post.title}
         description={
@@ -165,5 +168,6 @@ export default async function BlogPostPage({
         </Button>
       </div>
     </main>
+    </>
   );
 }

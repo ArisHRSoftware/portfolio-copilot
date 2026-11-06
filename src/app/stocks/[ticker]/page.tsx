@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import {
@@ -13,6 +14,7 @@ import {
   CorporationSchema,
   FAQSchema,
 } from "@/components/json-ld";
+import { SiteHeader } from "@/components/site-header";
 import { FreshnessBadge } from "@/components/freshness-badge";
 import { LastUpdatedFooter } from "@/components/last-updated-footer";
 import { Button } from "@/components/ui/button";
@@ -169,6 +171,10 @@ export default async function StockPage({
   const { ticker } = await params;
   const upperTicker = ticker.toUpperCase();
 
+  if (!/^[A-Z]{1,5}$/.test(upperTicker)) {
+    notFound();
+  }
+
   const supabase = createStaticClient();
   const company = await getCompanyByTicker(supabase, upperTicker);
 
@@ -227,7 +233,9 @@ export default async function StockPage({
   const faqs = buildFAQs(company, filings, insiderFilings);
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
       {/* Structured Data */}
       <BreadcrumbSchema
         items={[
@@ -566,5 +574,6 @@ export default async function StockPage({
         .
       </p>
     </main>
+    </>
   );
 }

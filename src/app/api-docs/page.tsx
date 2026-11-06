@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "API Documentation | Brefyr",
     description:
-      "Filing Intelligence API — programmatic access to AI-analyzed SEC filings, insider trades, and company data for 2,000+ US small-cap stocks.",
+      "Filing Intelligence API — programmatic access to AI-analyzed SEC filings, insider trades, and company data for 7,600+ US small-cap stocks.",
   },
 };
 
@@ -90,7 +90,7 @@ export default function ApiDocsPage() {
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
             Programmatic access to AI-analyzed SEC filings, insider trades, and
-            company data for 2,000+ US small-cap stocks. RESTful JSON endpoints
+            company data for 7,600+ US small-cap stocks. RESTful JSON endpoints
             with simple API key authentication.
           </p>
           <div className="flex gap-3 pt-2">

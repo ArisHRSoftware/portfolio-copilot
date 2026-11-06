@@ -261,7 +261,7 @@ export default function PricingPage() {
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 We analyze 10-K, 10-Q, 8-K, Form 4 (insider trades), S-1, DEF
-                14A, SC 13D/G, and more across 2,000+ US small-cap stocks.
+                14A, SC 13D/G, and more across 7,600+ US small-cap stocks.
                 Every filing gets an AI-generated summary and significance
                 score.
               </p>

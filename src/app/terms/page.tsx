@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="flex-1 px-4 py-8 max-w-3xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-3xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Terms of Service</h1>
         <p className="text-sm text-muted-foreground">
@@ -186,5 +189,6 @@ export default function TermsPage() {
         </Button>
       </div>
     </main>
+    </>
   );
 }

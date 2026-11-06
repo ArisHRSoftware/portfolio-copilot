@@ -61,6 +61,7 @@ export function SiteHeader() {
           {/* Mobile menu */}
           <Sheet>
             <SheetTrigger
+              aria-label="Open navigation menu"
               className="sm:hidden inline-flex shrink-0 items-center justify-center rounded-md p-1.5 text-muted-foreground hover:text-foreground transition-colors"
             >
               <Menu className="size-5" />

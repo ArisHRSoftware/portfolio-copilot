@@ -5,6 +5,7 @@ import {
   getRecentFilings,
   getFilingsWithCompanies,
 } from "@/lib/supabase/queries";
+import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,11 +26,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Recent SEC Filings — All Filing Types",
   description:
-    "Browse the latest SEC filings across 2,000+ US small-cap stocks. Filter by filing type (10-K, 10-Q, 8-K, Form 4, and more) with AI-powered summaries and significance scores.",
+    "Browse the latest SEC filings across 7,600+ US small-cap stocks. Filter by filing type (10-K, 10-Q, 8-K, Form 4, and more) with AI-powered summaries and significance scores.",
   openGraph: {
     title: "Recent SEC Filings | Brefyr",
     description:
-      "Browse the latest SEC filings across 2,000+ US small-cap stocks with AI analysis.",
+      "Browse the latest SEC filings across 7,600+ US small-cap stocks with AI analysis.",
   },
 };
 
@@ -69,7 +70,9 @@ export default async function RecentFilingsPage({
   const filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Recent Filings</h1>
         <p className="text-muted-foreground">
@@ -174,5 +177,6 @@ export default async function RecentFilingsPage({
         </Table>
       )}
     </main>
+    </>
   );
 }

@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "Brefyr",
     short_name: "PC",
     description:
-      "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks",
+      "AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks",
     start_url: "/dashboard",
     display: "standalone",
     background_color: "#0f172a",

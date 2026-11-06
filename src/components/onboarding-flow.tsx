@@ -99,7 +99,7 @@ function StepWelcome({ onNext, onSkip }: { onNext: () => void; onSkip: () => voi
         <div className="grid gap-3 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <FileText className="size-4 shrink-0 text-primary" />
-            <span>AI-powered SEC filing alerts for 2,000+ small-cap stocks</span>
+            <span>AI-powered SEC filing alerts for 7,600+ small-cap stocks</span>
           </div>
           <div className="flex items-center gap-2">
             <Bell className="size-4 shrink-0 text-primary" />

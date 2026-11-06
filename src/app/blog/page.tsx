@@ -12,6 +12,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { SiteHeader } from "@/components/site-header";
 import { NewsletterForm } from "@/components/newsletter-form";
 
 export const revalidate = 3600;
@@ -33,7 +34,9 @@ export default async function BlogIndexPage() {
   const posts = await getPublishedBlogPosts(supabase);
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
         <p className="text-muted-foreground">
@@ -115,11 +118,12 @@ export default async function BlogIndexPage() {
           </h2>
           <p className="text-sm text-muted-foreground">
             Weekly highlights of the most significant filings, insider trades,
-            and market-moving events across 2,000+ small-cap stocks.
+            and market-moving events across 7,600+ small-cap stocks.
           </p>
           <NewsletterForm source="blog" />
         </CardContent>
       </Card>
     </main>
+    </>
   );
 }

@@ -1,12 +1,12 @@
 export function GET() {
   const body = `# Brefyr
-> AI-powered SEC filing analysis for 7,500+ US-listed companies
+> AI-powered SEC filing analysis for 7,600+ US-listed companies
 
 ## What this site offers
 - AI summaries of SEC filings (10-K, 10-Q, 8-K, Form 4, DEF 14A, SC 13D, SC 13G, 13F-HR)
 - Insider trading alerts and analysis from Form 4 filings
 - Significance scores (1-10) for every filing
-- Coverage of 7,500+ NYSE and Nasdaq listed companies
+- Coverage of 7,600+ NYSE and Nasdaq listed companies
 - Data sourced from SEC EDGAR public filings (public domain)
 
 ## Stock pages (/stocks/{ticker})
@@ -19,7 +19,7 @@ Each stock page contains:
 - Direct link to SEC EDGAR filings page
 - Per-ticker RSS feed
 
-7,500+ companies covered across all 11 sectors (Technology, Healthcare, Financial Services, Consumer Cyclical, Consumer Defensive, Industrials, Energy, Basic Materials, Real Estate, Utilities, Communication Services).
+7,600+ companies covered across all 11 sectors (Technology, Healthcare, Financial Services, Consumer Cyclical, Consumer Defensive, Industrials, Energy, Basic Materials, Real Estate, Utilities, Communication Services).
 
 ## Filing pages (/filings/{slug})
 Each filing detail page contains:

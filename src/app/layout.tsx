@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     template: "%s | Brefyr",
   },
   description:
-    "AI-powered SEC filing analysis for 2,000+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries.",
+    "AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com"
   ),

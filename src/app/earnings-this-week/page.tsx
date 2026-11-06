@@ -6,6 +6,7 @@ import {
   getFilingsWithCompanies,
   type FilingWithCompany,
 } from "@/lib/supabase/queries";
+import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -102,7 +103,9 @@ export default async function EarningsThisWeekPage() {
   })}`;
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">
           Earnings This Week
@@ -195,5 +198,6 @@ export default async function EarningsThisWeekPage() {
         </Button>
       </div>
     </main>
+    </>
   );
 }

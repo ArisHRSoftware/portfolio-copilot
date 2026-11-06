@@ -98,7 +98,7 @@ export default async function HomePage() {
         </section>
 
         {/* ===================== STATS BAR — Full width accent ===================== */}
-        <section className="border-y border-border bg-card">
+        <section className="border-y border-border bg-[#0d1f12]">
           <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 divide-x divide-border">
             <div className="px-6 py-8 text-center">
               <p className="text-3xl sm:text-4xl font-bold text-primary">
@@ -297,7 +297,7 @@ export default async function HomePage() {
         </section>
 
         {/* ===================== FEATURES — Full width grid ===================== */}
-        <section className="py-24 px-6 border-t border-border bg-card/30">
+        <section className="py-24 px-6 border-t border-border bg-[#111]">
           <div className="max-w-7xl mx-auto space-y-12">
             <div className="text-center space-y-4">
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -366,7 +366,7 @@ export default async function HomePage() {
                   </CardTitle>
                   <CardDescription className="text-base">
                     Our pipeline processes new SEC filings within minutes of
-                    publication. Get your alert before the market reacts.
+                    publication. Get your alert within minutes of publication.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -388,8 +388,8 @@ export default async function HomePage() {
         </section>
 
         {/* ===================== PRICING CTA — Gradient accent ===================== */}
-        <section className="py-24 px-6 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5" />
+        <section className="py-24 px-6 relative overflow-hidden bg-[#0d1f12]">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10" />
           <div className="relative z-10 max-w-3xl mx-auto text-center space-y-8">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
               Start Free, Upgrade When Ready
@@ -430,7 +430,7 @@ export default async function HomePage() {
         </section>
 
         {/* ===================== NEWSLETTER — Bordered section ===================== */}
-        <section className="py-16 px-6 border-t border-border">
+        <section className="py-16 px-6 border-t border-border bg-[#161616]">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <h2 className="text-2xl font-bold tracking-tight">
               Weekly Small-Cap Briefing

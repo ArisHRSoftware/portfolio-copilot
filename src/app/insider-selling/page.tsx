@@ -5,6 +5,7 @@ import {
   getRecentFilings,
   getFilingsWithCompanies,
 } from "@/lib/supabase/queries";
+import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,11 +26,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Insider Selling — Recent SEC Form 4 Sales",
   description:
-    "Track recent insider selling activity across 2,000+ US small-cap stocks. See which company executives and directors are selling shares, with AI-powered significance scores.",
+    "Track recent insider selling activity across 7,600+ US small-cap stocks. See which company executives and directors are selling shares, with AI-powered significance scores.",
   openGraph: {
     title: "Insider Selling — Recent SEC Form 4 Sales | Brefyr",
     description:
-      "Track recent insider selling activity across 2,000+ US small-cap stocks with AI-powered significance analysis.",
+      "Track recent insider selling activity across 7,600+ US small-cap stocks with AI-powered significance analysis.",
   },
 };
 
@@ -63,7 +64,9 @@ export default async function InsiderSellingPage() {
   });
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Insider Selling</h1>
         <p className="text-muted-foreground">
@@ -160,5 +163,6 @@ export default async function InsiderSellingPage() {
         </Button>
       </div>
     </main>
+    </>
   );
 }

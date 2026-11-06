@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // --- Stock pages (2000+, single query already done) ---
+  // --- Stock pages (7600+, single query already done) ---
   const stockPages: MetadataRoute.Sitemap = companies.map((c) => ({
     url: `${siteUrl}/stocks/${c.ticker.toLowerCase()}`,
     lastModified: c.updated_at ? new Date(c.updated_at) : now,

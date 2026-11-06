@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import { getFilingBySlug } from "@/lib/supabase/queries";
+import { SiteHeader } from "@/components/site-header";
 import { FAQSchema, BreadcrumbSchema } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +114,9 @@ export default async function FilingDetailPage({
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
       {faq.length > 0 && <FAQSchema questions={faq} />}
       <BreadcrumbSchema
         items={[
@@ -287,5 +290,6 @@ export default async function FilingDetailPage({
         </Button>
       </div>
     </main>
+    </>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import {
@@ -7,6 +8,8 @@ import {
   getFilingsWithCompanies,
   type Company,
 } from "@/lib/supabase/queries";
+import { SiteHeader } from "@/components/site-header";
+import { BreadcrumbSchema } from "@/components/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,6 +78,11 @@ export default async function SectorPage({
   params: Promise<{ sector: string }>;
 }) {
   const { sector: sectorSlug } = await params;
+
+  if (!SECTOR_DEFINITIONS.some((s) => s.slug === sectorSlug)) {
+    notFound();
+  }
+
   const sectorName = sectorSlugToName(sectorSlug);
 
   const supabase = createStaticClient();
@@ -103,8 +111,19 @@ export default async function SectorPage({
 
   const recentFilingsWithCompanies = await getFilingsWithCompanies(supabase, sectorFilings);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+
   return (
-    <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: siteUrl },
+          { name: "Sectors", url: `${siteUrl}/sectors` },
+          { name: sectorName, url: `${siteUrl}/sectors/${sectorSlug}` },
+        ]}
+      />
+      <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
       {/* Header */}
       <div className="space-y-2">
         <div className="flex items-center gap-3">
@@ -273,5 +292,6 @@ export default async function SectorPage({
         )}
       </section>
     </main>
+    </>
   );
 }

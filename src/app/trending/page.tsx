@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import { getTrendingStocks } from "@/lib/supabase/queries";
+import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,7 +79,9 @@ export default async function TrendingPage() {
   }
 
   return (
-    <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
+    <>
+      <SiteHeader />
+      <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Trending Stocks</h1>
         <p className="text-muted-foreground">
@@ -174,5 +177,6 @@ export default async function TrendingPage() {
         </Button>
       </div>
     </main>
+    </>
   );
 }

@@ -63,7 +63,7 @@ export default async function Image() {
               color: "rgba(255, 255, 255, 0.7)",
             }}
           >
-            <span>2,000+ Stocks</span>
+            <span>7,600+ Stocks</span>
             <span>8 Filing Types</span>
             <span>AI Summaries</span>
           </div>
