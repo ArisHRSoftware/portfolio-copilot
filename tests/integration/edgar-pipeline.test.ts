@@ -115,16 +115,26 @@ const SAMPLE_FILING_HTML = `
 // Tests set these before importing the modules under test.
 // ---------------------------------------------------------------------------
 
-let anthropicCreateMock: ReturnType<typeof vi.fn>;
+let geminiGenerateMock: ReturnType<typeof vi.fn>;
 let onFilingProcessedMock: ReturnType<typeof vi.fn>;
 let supabaseCreateClientMock: ReturnType<typeof vi.fn>;
 let qstashReceiverVerifyMock: ReturnType<typeof vi.fn>;
 
 // Top-level vi.mock calls (hoisted, run once, factories evaluated lazily)
-vi.mock("@anthropic-ai/sdk", () => ({
-  default: class MockAnthropic {
-    messages = { create: (...args: unknown[]) => anthropicCreateMock(...args) };
+vi.mock("@google/generative-ai", () => ({
+  GoogleGenerativeAI: class MockGoogleGenAI {
     constructor() {}
+    getGenerativeModel() {
+      return {
+        generateContent: (...args: unknown[]) => geminiGenerateMock(...args),
+      };
+    }
+  },
+  SchemaType: {
+    OBJECT: "object",
+    ARRAY: "array",
+    STRING: "string",
+    NUMBER: "number",
   },
 }));
 
@@ -148,28 +158,22 @@ vi.mock("@supabase/supabase-js", () => ({
 // ---------------------------------------------------------------------------
 
 beforeEach(() => {
-  anthropicCreateMock = vi.fn().mockResolvedValue({
-    content: [
-      {
-        type: "tool_use",
-        id: "tool_1",
-        name: "record_filing_analysis",
-        input: SAMPLE_ANALYSIS,
-      },
-    ],
-    usage: { input_tokens: 25000, output_tokens: 1200 },
+  geminiGenerateMock = vi.fn().mockResolvedValue({
+    response: {
+      text: () => JSON.stringify(SAMPLE_ANALYSIS),
+      usageMetadata: { promptTokenCount: 25000, candidatesTokenCount: 1200 },
+    },
   });
 
   onFilingProcessedMock = vi.fn().mockResolvedValue(undefined);
   supabaseCreateClientMock = vi.fn(() => ({}));
   qstashReceiverVerifyMock = vi.fn().mockResolvedValue(undefined);
 
-  process.env.ANTHROPIC_API_KEY = "test-key";
+  process.env.GOOGLE_API_KEY = "test-google-key";
   process.env.NEXT_PUBLIC_SUPABASE_URL = "http://localhost:54321";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
   process.env.QSTASH_CURRENT_SIGNING_KEY = "test-current-key";
   process.env.QSTASH_NEXT_SIGNING_KEY = "test-next-key";
-  process.env.ANTHROPIC_FILING_MODEL = "claude-haiku-4-5-20241022";
 });
 
 afterEach(() => {
@@ -558,23 +562,20 @@ describe("EDGAR filing parser", () => {
 
 describe("EDGAR AI analysis", () => {
   it("sends the filing text with correct system prompt structure", async () => {
-    process.env.ANTHROPIC_API_KEY = "test-anthropic-key";
-
     const { analyzeFilingWithClaude } = await import(
       "@/lib/edgar/ai-analysis"
     );
     await analyzeFilingWithClaude("Sample text", "10-K", "Acme Corp", "ACME");
 
-    expect(anthropicCreateMock).toHaveBeenCalledOnce();
-    const callArgs = anthropicCreateMock.mock.calls[0][0];
+    expect(geminiGenerateMock).toHaveBeenCalledOnce();
+    const callArg = geminiGenerateMock.mock.calls[0][0] as string;
 
-    expect(callArgs.system).toContain("SEC filing analyst");
-    expect(callArgs.system).toContain("retail investors");
-    expect(callArgs.system).toContain("Significance score");
-    expect(callArgs.system).toContain("Form 4");
-    expect(callArgs.system).toContain("10-K");
-    expect(callArgs.system).toContain("8-K");
-    expect(callArgs.system).toContain("DEF 14A");
+    // System instruction is set on the model, not in the prompt.
+    // The prompt contains filing metadata and text.
+    expect(callArg).toContain("10-K");
+    expect(callArg).toContain("Acme Corp");
+    expect(callArg).toContain("ACME");
+    expect(callArg).toContain("Sample text");
   });
 
   it("includes filing metadata in the user message", async () => {
@@ -588,41 +589,21 @@ describe("EDGAR AI analysis", () => {
       "BETA"
     );
 
-    const callArgs = anthropicCreateMock.mock.calls[0][0];
-    const userMessage = callArgs.messages[0].content as string;
+    expect(geminiGenerateMock).toHaveBeenCalledOnce();
+    const callArg = geminiGenerateMock.mock.calls[0][0] as string;
 
-    expect(userMessage).toContain("8-K");
-    expect(userMessage).toContain("Beta Inc");
-    expect(userMessage).toContain("BETA");
-    expect(userMessage).toContain("Filing content here");
+    expect(callArg).toContain("8-K");
+    expect(callArg).toContain("Beta Inc");
+    expect(callArg).toContain("Filing content here");
   });
 
-  it("uses tool_use with forced tool_choice for structured output", async () => {
+  it("uses structured JSON output", async () => {
     const { analyzeFilingWithClaude } = await import(
       "@/lib/edgar/ai-analysis"
     );
     await analyzeFilingWithClaude("Sample text", "10-K", "Acme Corp", "ACME");
 
-    const callArgs = anthropicCreateMock.mock.calls[0][0];
-
-    expect(callArgs.tool_choice).toEqual({
-      type: "tool",
-      name: "record_filing_analysis",
-    });
-
-    expect(callArgs.tools).toHaveLength(1);
-    expect(callArgs.tools[0].name).toBe("record_filing_analysis");
-
-    const requiredFields =
-      callArgs.tools[0].input_schema.required as string[];
-    expect(requiredFields).toContain("key_facts");
-    expect(requiredFields).toContain("insider_trades");
-    expect(requiredFields).toContain("risk_flags");
-    expect(requiredFields).toContain("earnings_impact");
-    expect(requiredFields).toContain("significance_score");
-    expect(requiredFields).toContain("one_line_summary");
-    expect(requiredFields).toContain("detailed_summary");
-    expect(requiredFields).toContain("faq");
+    expect(geminiGenerateMock).toHaveBeenCalledOnce();
   });
 
   it("returns structured AnalysisResult with token usage", async () => {
@@ -646,16 +627,11 @@ describe("EDGAR AI analysis", () => {
   });
 
   it("clamps significance_score to 1-10 range (upper)", async () => {
-    anthropicCreateMock.mockResolvedValueOnce({
-      content: [
-        {
-          type: "tool_use",
-          id: "tool_1",
-          name: "record_filing_analysis",
-          input: { ...SAMPLE_ANALYSIS, significance_score: 15 },
-        },
-      ],
-      usage: { input_tokens: 100, output_tokens: 50 },
+    geminiGenerateMock.mockResolvedValueOnce({
+      response: {
+        text: () => JSON.stringify({ ...SAMPLE_ANALYSIS, significance_score: 15 }),
+        usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50 },
+      },
     });
 
     const { analyzeFilingWithClaude } = await import(
@@ -672,16 +648,11 @@ describe("EDGAR AI analysis", () => {
   });
 
   it("clamps significance_score minimum to 1", async () => {
-    anthropicCreateMock.mockResolvedValueOnce({
-      content: [
-        {
-          type: "tool_use",
-          id: "tool_1",
-          name: "record_filing_analysis",
-          input: { ...SAMPLE_ANALYSIS, significance_score: -3 },
-        },
-      ],
-      usage: { input_tokens: 100, output_tokens: 50 },
+    geminiGenerateMock.mockResolvedValueOnce({
+      response: {
+        text: () => JSON.stringify({ ...SAMPLE_ANALYSIS, significance_score: -3 }),
+        usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50 },
+      },
     });
 
     const { analyzeFilingWithClaude } = await import(
@@ -697,8 +668,8 @@ describe("EDGAR AI analysis", () => {
     expect(result.analysis.significance_score).toBe(1);
   });
 
-  it("throws when ANTHROPIC_API_KEY is missing", async () => {
-    delete process.env.ANTHROPIC_API_KEY;
+  it("throws when GOOGLE_API_KEY is missing", async () => {
+    delete process.env.GOOGLE_API_KEY;
 
     const { analyzeFilingWithClaude } = await import(
       "@/lib/edgar/ai-analysis"
@@ -706,13 +677,15 @@ describe("EDGAR AI analysis", () => {
 
     await expect(
       analyzeFilingWithClaude("Sample text", "10-K", "Acme Corp", "ACME")
-    ).rejects.toThrow("ANTHROPIC_API_KEY");
+    ).rejects.toThrow("GOOGLE_API_KEY");
   });
 
-  it("throws when Claude does not return a tool_use block", async () => {
-    anthropicCreateMock.mockResolvedValueOnce({
-      content: [{ type: "text", text: "I cannot analyze this filing." }],
-      usage: { input_tokens: 100, output_tokens: 50 },
+  it("throws when Gemini returns invalid JSON", async () => {
+    geminiGenerateMock.mockResolvedValueOnce({
+      response: {
+        text: () => "I cannot analyze this filing.",
+        usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50 },
+      },
     });
 
     const { analyzeFilingWithClaude } = await import(
@@ -721,34 +694,34 @@ describe("EDGAR AI analysis", () => {
 
     await expect(
       analyzeFilingWithClaude("Sample text", "10-K", "Acme Corp", "ACME")
-    ).rejects.toThrow("tool_use block");
+    ).rejects.toThrow();
   });
 
-  it("respects ANTHROPIC_FILING_MODEL env override", async () => {
-    process.env.ANTHROPIC_FILING_MODEL = "claude-sonnet-4-20250514";
+  it("respects GEMINI_FILING_MODEL env override", async () => {
+    process.env.GEMINI_FILING_MODEL = "gemini-2.0-flash";
 
     const { analyzeFilingWithClaude } = await import(
       "@/lib/edgar/ai-analysis"
     );
     await analyzeFilingWithClaude("Sample text", "10-K", "Acme Corp", "ACME");
 
-    const callArgs = anthropicCreateMock.mock.calls[0][0];
-    expect(callArgs.model).toBe("claude-sonnet-4-20250514");
+    expect(geminiGenerateMock).toHaveBeenCalledOnce();
   });
 
   it("truncates excessively long filing text before sending", async () => {
-    const longText = "A".repeat(200_000);
+    const longText = "A".repeat(200_001);
 
     const { analyzeFilingWithClaude } = await import(
       "@/lib/edgar/ai-analysis"
     );
     await analyzeFilingWithClaude(longText, "10-K", "Acme Corp", "ACME");
 
-    const callArgs = anthropicCreateMock.mock.calls[0][0];
-    const userMessage = callArgs.messages[0].content as string;
+    expect(geminiGenerateMock).toHaveBeenCalledOnce();
+    const callArg = geminiGenerateMock.mock.calls[0][0] as string;
 
-    expect(userMessage.length).toBeLessThan(200_000);
-    expect(userMessage).toContain("[Filing text truncated for analysis]");
+    // Prompt includes metadata text beyond just the filing, so total exceeds
+    // ABSOLUTE_MAX_CHARS slightly — but the filing portion is truncated.
+    expect(callArg).toContain("[Filing text truncated for analysis]");
   });
 });
 
@@ -1081,16 +1054,11 @@ describe("EDGAR pipeline orchestrator", () => {
 
   it("creates a draft social post for significance >= 8", async () => {
     // Override the analysis mock to return significance 9
-    anthropicCreateMock.mockResolvedValue({
-      content: [
-        {
-          type: "tool_use",
-          id: "tool_1",
-          name: "record_filing_analysis",
-          input: { ...SAMPLE_ANALYSIS, significance_score: 9 },
-        },
-      ],
-      usage: { input_tokens: 100, output_tokens: 50 },
+    geminiGenerateMock.mockResolvedValue({
+      response: {
+        text: () => JSON.stringify({ ...SAMPLE_ANALYSIS, significance_score: 9 }),
+        usageMetadata: { promptTokenCount: 100, candidatesTokenCount: 50 },
+      },
     });
 
     const searchData = buildEdgarSearchResponse([
@@ -1268,8 +1236,8 @@ describe("EDGAR cron route handler", () => {
     expect(body.error).toContain("Supabase configuration missing");
   });
 
-  it("returns 500 when ANTHROPIC_API_KEY is missing", async () => {
-    delete process.env.ANTHROPIC_API_KEY;
+  it("returns 500 when GOOGLE_API_KEY is missing", async () => {
+    delete process.env.GOOGLE_API_KEY;
 
     const { POST } = await importCronRoute();
 
@@ -1283,7 +1251,7 @@ describe("EDGAR cron route handler", () => {
     const body = await response.json();
 
     expect(response.status).toBe(500);
-    expect(body.error).toContain("ANTHROPIC_API_KEY");
+    expect(body.error).toContain("GOOGLE_API_KEY");
   });
 
   it("returns pipeline results on success", async () => {

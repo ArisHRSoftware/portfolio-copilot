@@ -1,7 +1,7 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenerativeAI, SchemaType, type Schema } from "@google/generative-ai";
 
 /**
- * Structured output from Claude's analysis of an SEC filing.
+ * Structured output from Gemini's analysis of an SEC filing.
  */
 export interface FilingAnalysis {
   key_facts: string[];
@@ -30,7 +30,7 @@ export interface FilingAnalysis {
 }
 
 /**
- * Token usage from the Claude API response.
+ * Token usage from the API response.
  */
 export interface TokenUsage {
   input_tokens: number;
@@ -38,7 +38,7 @@ export interface TokenUsage {
 }
 
 /**
- * Complete result from Claude analysis including the structured analysis
+ * Complete result from analysis including the structured analysis
  * and token usage for cost tracking.
  */
 export interface AnalysisResult {
@@ -47,195 +47,115 @@ export interface AnalysisResult {
 }
 
 /**
- * The tool schema that forces Claude to return structured JSON output.
+ * JSON schema for Gemini structured output.
  */
-const FILING_ANALYSIS_TOOL: Anthropic.Messages.Tool = {
-  name: "record_filing_analysis",
-  description:
-    "Record the structured analysis of an SEC filing. Call this tool exactly once with the complete analysis.",
-  input_schema: {
-    type: "object" as const,
-    properties: {
-      key_facts: {
-        type: "array",
-        items: { type: "string" },
-        description:
-          "3-8 bullet points summarizing the most important facts from the filing.",
-      },
-      insider_trades: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            person: {
-              type: "string",
-              description: "Name of the insider.",
-            },
-            title: {
-              type: "string",
-              description:
-                "Title or role of the insider (e.g. CEO, CFO, Director).",
-            },
-            transaction_type: {
-              type: "string",
-              enum: ["buy", "sell", "grant", "exercise", "other"],
-            },
-            shares: {
-              type: "number",
-              description: "Number of shares transacted.",
-            },
-            price_per_share: {
-              type: ["number", "null"],
-              description: "Price per share if disclosed, null otherwise.",
-            },
-            date: {
-              type: "string",
-              description: "Transaction date in YYYY-MM-DD format.",
-            },
-          },
-          required: [
-            "person",
-            "title",
-            "transaction_type",
-            "shares",
-            "price_per_share",
-            "date",
-          ],
-        },
-        description:
-          "Insider transactions found in the filing. Empty array if not a Form 4 or no insider trades.",
-      },
-      risk_flags: {
-        type: "array",
-        items: { type: "string" },
-        description:
-          "Red flags, concerns, or risks identified. E.g. going concern, material weakness, litigation, revenue decline.",
-      },
-      earnings_impact: {
-        type: "object",
-        properties: {
-          revenue_change: {
-            type: ["string", "null"],
-            description:
-              "Revenue change description (e.g. '+15% YoY to $2.3B') or null if not applicable.",
-          },
-          eps_change: {
-            type: ["string", "null"],
-            description:
-              "EPS change description (e.g. '$1.25 vs $1.10 prior year') or null if not applicable.",
-          },
-          guidance: {
-            type: ["string", "null"],
-            description:
-              "Forward guidance summary or null if not provided.",
-          },
-          notable_items: {
-            type: "array",
-            items: { type: "string" },
-            description:
-              "Notable earnings items: one-time charges, segment changes, margin shifts.",
-          },
-        },
-        required: [
-          "revenue_change",
-          "eps_change",
-          "guidance",
-          "notable_items",
-        ],
-      },
-      significance_score: {
-        type: "number",
-        description:
-          "1-10 score. 1=routine/immaterial. 5=notable. 8+=market-moving (CEO change, M&A, restatement, major earnings surprise). Score relative to a small-cap investor's portfolio.",
-      },
-      one_line_summary: {
-        type: "string",
-        description:
-          "One-sentence summary suitable for a notification or news feed. Max 150 characters.",
-      },
-      detailed_summary: {
-        type: "string",
-        description:
-          "2-3 paragraph summary for the filing detail page. Write in plain language for retail investors, not legalese.",
-      },
-      faq: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            question: {
-              type: "string",
-              description: "A question a retail investor would ask about this filing.",
-            },
-            answer: {
-              type: "string",
-              description: "A concise, plain-language answer.",
-            },
-          },
-          required: ["question", "answer"],
-        },
-        description:
-          "3-5 FAQ pairs that help a retail investor understand this filing.",
-      },
+const FILING_ANALYSIS_SCHEMA: Schema = {
+  type: SchemaType.OBJECT,
+  properties: {
+    key_facts: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+      description:
+        "3-8 bullet points summarizing the most important facts from the filing.",
     },
-    required: [
-      "key_facts",
-      "insider_trades",
-      "risk_flags",
-      "earnings_impact",
-      "significance_score",
-      "one_line_summary",
-      "detailed_summary",
-      "faq",
-    ],
+    insider_trades: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          person: { type: SchemaType.STRING, description: "Name of the insider." },
+          title: { type: SchemaType.STRING, description: "Title or role (e.g. CEO, CFO, Director)." },
+          transaction_type: { type: SchemaType.STRING, description: "One of: buy, sell, grant, exercise, other." },
+          shares: { type: SchemaType.NUMBER, description: "Number of shares transacted." },
+          price_per_share: { type: SchemaType.NUMBER, nullable: true, description: "Price per share if disclosed, null otherwise." },
+          date: { type: SchemaType.STRING, description: "Transaction date in YYYY-MM-DD format." },
+        },
+        required: ["person", "title", "transaction_type", "shares", "price_per_share", "date"],
+      },
+      description: "Insider transactions found in the filing. Empty array if not a Form 4.",
+    },
+    risk_flags: {
+      type: SchemaType.ARRAY,
+      items: { type: SchemaType.STRING },
+      description: "Red flags or risks: going concern, material weakness, litigation, revenue decline.",
+    },
+    earnings_impact: {
+      type: SchemaType.OBJECT,
+      properties: {
+        revenue_change: { type: SchemaType.STRING, nullable: true, description: "Revenue change (e.g. '+15% YoY to $2.3B') or null." },
+        eps_change: { type: SchemaType.STRING, nullable: true, description: "EPS change (e.g. '$1.25 vs $1.10') or null." },
+        guidance: { type: SchemaType.STRING, nullable: true, description: "Forward guidance summary or null." },
+        notable_items: {
+          type: SchemaType.ARRAY,
+          items: { type: SchemaType.STRING },
+          description: "Notable items: one-time charges, segment changes, margin shifts.",
+        },
+      },
+      required: ["revenue_change", "eps_change", "guidance", "notable_items"],
+    },
+    significance_score: {
+      type: SchemaType.NUMBER,
+      description: "1-10 score. 1=routine. 5=notable. 8+=market-moving. Score for small-cap investors.",
+    },
+    one_line_summary: {
+      type: SchemaType.STRING,
+      description: "One-sentence summary. Max 150 characters.",
+    },
+    detailed_summary: {
+      type: SchemaType.STRING,
+      description: "2-3 paragraph summary in plain language for retail investors.",
+    },
+    faq: {
+      type: SchemaType.ARRAY,
+      items: {
+        type: SchemaType.OBJECT,
+        properties: {
+          question: { type: SchemaType.STRING, description: "A question a retail investor would ask." },
+          answer: { type: SchemaType.STRING, description: "A concise, plain-language answer." },
+        },
+        required: ["question", "answer"],
+      },
+      description: "3-5 FAQ pairs about this filing.",
+    },
   },
+  required: [
+    "key_facts",
+    "insider_trades",
+    "risk_flags",
+    "earnings_impact",
+    "significance_score",
+    "one_line_summary",
+    "detailed_summary",
+    "faq",
+  ],
 };
 
 /**
- * The maximum filing text length we will send. If truncation in the parser
- * still exceeds this (shouldn't happen, but safeguard), we cut again here.
+ * Maximum filing text length. Gemini Flash handles 1M tokens but we cap
+ * to keep costs/latency reasonable.
  */
-const ABSOLUTE_MAX_CHARS = 120_000;
+const ABSOLUTE_MAX_CHARS = 200_000;
 
-/**
- * Truncate filing text to fit within Claude's context window.
- * This is a safety net beyond the parser's own truncation.
- */
 function ensureFitsContext(text: string): string {
-  if (text.length <= ABSOLUTE_MAX_CHARS) {
-    return text;
-  }
-  return (
-    text.slice(0, ABSOLUTE_MAX_CHARS) + "\n\n[Filing text truncated for analysis]"
-  );
+  if (text.length <= ABSOLUTE_MAX_CHARS) return text;
+  return text.slice(0, ABSOLUTE_MAX_CHARS) + "\n\n[Filing text truncated for analysis]";
 }
 
 /**
- * Retry a function with exponential backoff.
+ * Retry with exponential backoff.
  */
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries: number = 3
-): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
   let lastError: Error | undefined;
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-
-      // Don't retry on authentication errors
-      if (
-        lastError.message.includes("401") ||
-        lastError.message.includes("authentication")
-      ) {
+      if (lastError.message.includes("401") || lastError.message.includes("API_KEY")) {
         throw lastError;
       }
-
       if (attempt < maxRetries) {
-        // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, attempt) * 1000;
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
       }
     }
   }
@@ -243,17 +163,13 @@ async function withRetry<T>(
 }
 
 /**
- * Analyze an SEC filing using Claude Haiku with tool_use for structured output.
+ * Analyze an SEC filing using Google Gemini with structured JSON output.
  *
- * Uses the `record_filing_analysis` tool to force Claude to return a
- * well-structured JSON analysis including key facts, insider trades,
- * risk flags, earnings impact, significance score, summaries, and FAQs.
+ * Uses Gemini's native JSON mode with a schema to return well-structured
+ * analysis including key facts, insider trades, risk flags, earnings impact,
+ * significance score, summaries, and FAQs.
  *
- * @param filingText - The cleaned, parsed filing text
- * @param filingType - The SEC form type (e.g. "10-K", "8-K", "4")
- * @param companyName - The company name
- * @param ticker - The company ticker symbol
- * @returns Structured analysis and token usage
+ * Falls back to Anthropic if GOOGLE_API_KEY is not set but ANTHROPIC_API_KEY is.
  */
 export async function analyzeFilingWithClaude(
   filingText: string,
@@ -261,71 +177,59 @@ export async function analyzeFilingWithClaude(
   companyName: string,
   ticker: string
 ): Promise<AnalysisResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  const googleKey = process.env.GOOGLE_API_KEY;
+  if (!googleKey) {
     throw new Error(
-      "ANTHROPIC_API_KEY environment variable is required for filing analysis"
+      "GOOGLE_API_KEY environment variable is required for filing analysis"
     );
   }
 
-  const filingModel = process.env.ANTHROPIC_FILING_MODEL;
-  if (!filingModel) {
-    throw new Error(
-      "ANTHROPIC_FILING_MODEL environment variable is required for filing analysis"
-    );
-  }
+  const modelName = process.env.GEMINI_FILING_MODEL || "gemini-2.5-flash";
 
-  const client = new Anthropic({ apiKey });
-  const safeText = ensureFitsContext(filingText);
-
-  const systemPrompt = `You are an SEC filing analyst for Brefyr, a tool that helps retail investors track small-cap stocks. Your job is to analyze SEC filings and extract structured data.
+  const genAI = new GoogleGenerativeAI(googleKey);
+  const model = genAI.getGenerativeModel({
+    model: modelName,
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: FILING_ANALYSIS_SCHEMA,
+      maxOutputTokens: 4096,
+      temperature: 0.3,
+    },
+    systemInstruction: `You are an SEC filing analyst for Brefyr, a tool that helps retail investors track small-cap stocks. Analyze SEC filings and return structured data.
 
 Key principles:
 - Write for retail investors, not Wall Street professionals
 - Flag anything that could materially affect the stock price
 - Be specific with numbers: revenue, EPS, share counts, transaction prices
-- Significance score context: 1-3 = routine (annual report with no surprises, routine Form 4). 4-6 = notable (earnings beat/miss, new risk factor, material insider trade). 7-8 = significant (CEO change, acquisition, going concern). 9-10 = critical (restatement, fraud allegation, hostile takeover).
-- For Form 4 filings, focus on the insider trade details
-- For 10-K/10-Q, focus on financial results and risk factors
-- For 8-K, focus on the specific event being reported
-- For DEF 14A, focus on executive compensation and shareholder proposals`;
+- Significance score: 1-3 = routine. 4-6 = notable. 7-8 = significant. 9-10 = critical (restatement, fraud, hostile takeover).
+- For Form 4: focus on insider trade details
+- For 10-K/10-Q: focus on financial results and risk factors
+- For 8-K: focus on the specific event
+- For DEF 14A: focus on compensation and shareholder proposals`,
+  });
 
-  const userMessage = `Analyze this ${filingType} filing from ${companyName} (${ticker}).
+  const safeText = ensureFitsContext(filingText);
 
-Use the record_filing_analysis tool to record your structured analysis.
+  const prompt = `Analyze this ${filingType} filing from ${companyName} (${ticker}).
+
+Return the structured analysis as JSON.
 
 --- FILING TEXT ---
 ${safeText}`;
 
-  const response = await withRetry(async () => {
-    return await client.messages.create({
-      model: filingModel,
-      max_tokens: 4096,
-      system: systemPrompt,
-      tools: [FILING_ANALYSIS_TOOL],
-      tool_choice: { type: "tool", name: "record_filing_analysis" },
-      messages: [
-        {
-          role: "user",
-          content: userMessage,
-        },
-      ],
-    });
+  const result = await withRetry(async () => {
+    return await model.generateContent(prompt);
   });
 
-  // Extract the tool use result
-  const toolUseBlock = response.content.find(
-    (block): block is Anthropic.Messages.ToolUseBlock =>
-      block.type === "tool_use"
-  );
+  const response = result.response;
+  const text = response.text();
 
-  if (!toolUseBlock) {
-    throw new Error(
-      "Claude did not return a tool_use block. This indicates an API issue."
-    );
+  let analysis: FilingAnalysis;
+  try {
+    analysis = JSON.parse(text) as FilingAnalysis;
+  } catch {
+    throw new Error(`Failed to parse Gemini JSON response: ${text.slice(0, 200)}`);
   }
-
-  const analysis = toolUseBlock.input as unknown as FilingAnalysis;
 
   // Clamp significance score to 1-10
   analysis.significance_score = Math.max(
@@ -333,11 +237,14 @@ ${safeText}`;
     Math.min(10, Math.round(analysis.significance_score))
   );
 
+  // Extract token usage from response metadata
+  const usageMetadata = response.usageMetadata;
+
   return {
     analysis,
     usage: {
-      input_tokens: response.usage.input_tokens,
-      output_tokens: response.usage.output_tokens,
+      input_tokens: usageMetadata?.promptTokenCount ?? 0,
+      output_tokens: usageMetadata?.candidatesTokenCount ?? 0,
     },
   };
 }

@@ -14,9 +14,9 @@ async function handler(_request: Request): Promise<Response> {
     );
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.GOOGLE_API_KEY) {
     return Response.json(
-      { error: "ANTHROPIC_API_KEY not configured" },
+      { error: "GOOGLE_API_KEY not configured" },
       { status: 500 }
     );
   }

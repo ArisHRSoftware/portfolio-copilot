@@ -1,9 +1,9 @@
 import { createWebhookClient } from "@/lib/supabase/server";
 import { getResend } from "@/lib/resend";
 
-// Claude 3.5 Sonnet pricing (per 1K tokens)
-const INPUT_COST_PER_1K = 0.003;
-const OUTPUT_COST_PER_1K = 0.015;
+// Gemini Flash pricing (per 1K tokens) — free tier, tracked for monitoring
+const INPUT_COST_PER_1K = 0.0;
+const OUTPUT_COST_PER_1K = 0.0;
 
 /**
  * Calculate cost in USD from token counts.
