@@ -42,7 +42,7 @@ export async function generateMetadata({
   params: Promise<{ sector: string }>;
 }): Promise<Metadata> {
   const { sector: sectorSlug } = await params;
-  const sectorName = slugToSectorName(sectorSlug);
+  const sectorName = sectorSlugToName(sectorSlug);
 
   return {
     title: `${sectorName} Stocks — SEC Filings & AI Analysis`,
@@ -75,7 +75,7 @@ export default async function SectorPage({
   params: Promise<{ sector: string }>;
 }) {
   const { sector: sectorSlug } = await params;
-  const sectorName = slugToSectorName(sectorSlug);
+  const sectorName = sectorSlugToName(sectorSlug);
 
   const supabase = createStaticClient();
 

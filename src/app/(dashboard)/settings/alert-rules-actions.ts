@@ -191,13 +191,14 @@ export async function updateAlertRule(
       }
       case "keyword": {
         if (Array.isArray(rj.keywords)) {
-          rj.keywords = (rj.keywords as string[])
+          const cleaned = (rj.keywords as string[])
             .map((k) => String(k).trim().slice(0, 100))
             .filter(Boolean)
             .slice(0, 50);
-          if (rj.keywords.length === 0) {
+          if (cleaned.length === 0) {
             return { error: "At least one valid keyword is required." };
           }
+          rj.keywords = cleaned;
         }
         break;
       }
