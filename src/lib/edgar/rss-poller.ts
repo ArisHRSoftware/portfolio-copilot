@@ -131,20 +131,35 @@ function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
 async function fetchSearchPage(
   url: string
 ): Promise<Record<string, unknown>> {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": EDGAR_USER_AGENT,
-      Accept: "application/json",
-    },
-  });
+  const maxRetries = 3;
+  let lastError: Error | undefined;
 
-  if (!response.ok) {
-    throw new Error(
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": EDGAR_USER_AGENT,
+        Accept: "application/json",
+      },
+    });
+
+    if (response.ok) {
+      return (await response.json()) as Record<string, unknown>;
+    }
+
+    lastError = new Error(
       `EDGAR search failed: ${response.status} ${response.statusText}`
     );
+
+    // Retry on 5xx (EDGAR server errors), not on 4xx (our problem)
+    if (response.status < 500 || attempt === maxRetries) {
+      throw lastError;
+    }
+
+    // Wait 2s, 4s, 8s between retries
+    await new Promise((r) => setTimeout(r, Math.pow(2, attempt + 1) * 1000));
   }
 
-  return (await response.json()) as Record<string, unknown>;
+  throw lastError;
 }
 
 /**

@@ -334,8 +334,8 @@ describe("EDGAR RSS/EFTS search parser", () => {
   it("throws when EDGAR API returns non-OK status", async () => {
     (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,
-      status: 503,
-      statusText: "Service Unavailable",
+      status: 403,
+      statusText: "Forbidden",
     });
 
     const mockSupabase = createMockSupabase({
@@ -344,7 +344,7 @@ describe("EDGAR RSS/EFTS search parser", () => {
 
     const { pollEdgarRss } = await import("@/lib/edgar/rss-poller");
     await expect(pollEdgarRss(mockSupabase as never)).rejects.toThrow(
-      "EDGAR search failed: 503 Service Unavailable"
+      "EDGAR search failed: 403 Forbidden"
     );
   });
 
