@@ -5,7 +5,7 @@ import type { GlossaryTerm } from "@/data/types";
 import { glossaryTerms } from "@/data/glossary/index";
 import { SiteHeader } from "@/components/site-header";
 import { ArticleLayout } from "@/components/content/article-layout";
-import { BreadcrumbSchema, FAQSchema } from "@/components/json-ld";
+import { ArticleSchema, BreadcrumbSchema, FAQSchema } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
 
 export const revalidate = 86400;
@@ -36,6 +36,9 @@ export async function generateMetadata({
   return {
     title: `${entry.term} — Definition & Meaning`,
     description: entry.metaDescription,
+    alternates: {
+      canonical: `/glossary/${entry.slug}`,
+    },
     openGraph: {
       title: `${entry.term} — Financial Glossary | Brefyr`,
       description: entry.metaDescription,
@@ -88,6 +91,13 @@ export default async function GlossaryTermPage({
           ]}
         />
         <FAQSchema questions={entry.faq} />
+        <ArticleSchema
+          title={entry.title}
+          description={entry.metaDescription}
+          slug={`glossary/${entry.slug}`}
+          publishedAt={entry.lastUpdated}
+          modifiedAt={entry.lastUpdated}
+        />
 
         <ArticleLayout
           title={entry.term}
@@ -97,25 +107,6 @@ export default async function GlossaryTermPage({
           relatedLinks={relatedLinks}
           faq={entry.faq}
         />
-
-        {/* Additional related terms section */}
-        {relatedEntries.length > 0 && (
-          <section className="space-y-3">
-            <h2 className="text-lg font-semibold">Related Terms</h2>
-            <div className="flex flex-wrap gap-2">
-              {relatedEntries.map((related) => (
-                <Button
-                  key={related.slug}
-                  variant="outline"
-                  size="sm"
-                  render={<Link href={`/glossary/${related.slug}`} />}
-                >
-                  {related.term}
-                </Button>
-              ))}
-            </div>
-          </section>
-        )}
 
         <div className="flex items-center gap-3 pt-4">
           <Button variant="outline" render={<Link href="/glossary" />}>

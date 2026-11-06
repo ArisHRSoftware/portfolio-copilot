@@ -11,8 +11,8 @@ export const term10KFiling: GlossaryTerm = {
   wordCount: 2800,
   category: "SEC Filings",
   tags: ["sec-filing", "annual-report", "financial-statements", "edgar"],
-  relatedSlugs: ["10-q-filing", "8-k-filing", "sec-edgar", "annual-report"],
-  relatedTerms: ["10-q-filing", "8-k-filing", "sec-edgar", "annual-report", "md-and-a"],
+  relatedSlugs: ["10-q-filing", "8-k-filing", "sec-edgar", "form-4"],
+  relatedTerms: ["10-q-filing", "8-k-filing", "sec-edgar", "form-4", "going-concern"],
   faq: [
     {
       question: "How is a 10-K different from an annual report?",

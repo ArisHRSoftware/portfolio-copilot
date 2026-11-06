@@ -11,8 +11,8 @@ export const termInsiderTrading: GlossaryTerm = {
   wordCount: 2600,
   category: "Investing Concepts",
   tags: ["insider-trading", "form-4", "insider-buying", "insider-selling", "sec"],
-  relatedSlugs: ["form-4", "beneficial-owner", "10b5-1-plan", "sec-edgar"],
-  relatedTerms: ["form-4", "beneficial-owner", "10b5-1-plan", "sec-edgar", "material-information"],
+  relatedSlugs: ["form-4", "beneficial-owner", "sec-edgar", "13f-filing"],
+  relatedTerms: ["form-4", "beneficial-owner", "sec-edgar", "13f-filing"],
   faq: [
     {
       question: "Is all insider trading illegal?",

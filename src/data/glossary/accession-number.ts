@@ -11,8 +11,8 @@ export const termAccessionNumber: GlossaryTerm = {
   wordCount: 2000,
   category: "SEC & Regulatory",
   tags: ["accession-number", "sec", "edgar", "filing-reference", "research-tools"],
-  relatedSlugs: ["sec-edgar", "cik-number", "10-k-filing"],
-  relatedTerms: ["sec-edgar", "cik-number", "10-k-filing"],
+  relatedSlugs: ["sec-edgar", "10-k-filing", "filer-category"],
+  relatedTerms: ["sec-edgar", "10-k-filing", "filer-category"],
   faq: [
     {
       question: "What does an accession number look like?",

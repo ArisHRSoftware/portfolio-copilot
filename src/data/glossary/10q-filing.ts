@@ -11,8 +11,8 @@ export const term10QFiling: GlossaryTerm = {
   wordCount: 2400,
   category: "SEC Filings",
   tags: ["sec-filing", "quarterly-report", "financial-statements", "edgar"],
-  relatedSlugs: ["10-k-filing", "8-k-filing", "sec-edgar", "md-and-a"],
-  relatedTerms: ["10-k-filing", "8-k-filing", "sec-edgar", "md-and-a", "earnings-release"],
+  relatedSlugs: ["10-k-filing", "8-k-filing", "sec-edgar", "free-cash-flow"],
+  relatedTerms: ["10-k-filing", "8-k-filing", "sec-edgar", "free-cash-flow", "revenue-recognition"],
   faq: [
     {
       question: "How is a 10-Q different from a 10-K?",

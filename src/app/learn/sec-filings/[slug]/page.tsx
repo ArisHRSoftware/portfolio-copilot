@@ -5,7 +5,7 @@ import type { LearnArticle } from "@/data/types";
 import { secFilingArticles } from "@/data/learn/sec-filings";
 import { SiteHeader } from "@/components/site-header";
 import { ArticleLayout } from "@/components/content/article-layout";
-import { BreadcrumbSchema, FAQSchema } from "@/components/json-ld";
+import { ArticleSchema, BreadcrumbSchema, FAQSchema } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
 
 export const revalidate = 86400;
@@ -36,9 +36,13 @@ export async function generateMetadata({
   return {
     title: `${article.title} — SEC Filing Education`,
     description: article.metaDescription,
+    alternates: {
+      canonical: `/learn/sec-filings/${article.slug}`,
+    },
     openGraph: {
       title: `${article.title} — Learn SEC Filings | Brefyr`,
       description: article.metaDescription,
+      type: "article",
     },
   };
 }
@@ -90,6 +94,13 @@ export default async function SecFilingArticlePage({
           ]}
         />
         <FAQSchema questions={article.faq} />
+        <ArticleSchema
+          title={article.title}
+          description={article.metaDescription}
+          slug={`learn/sec-filings/${article.slug}`}
+          publishedAt={article.lastUpdated}
+          modifiedAt={article.lastUpdated}
+        />
 
         <ArticleLayout
           title={article.title}

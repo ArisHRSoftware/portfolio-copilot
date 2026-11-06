@@ -11,8 +11,8 @@ export const termSecEdgar: GlossaryTerm = {
   wordCount: 2500,
   category: "SEC & Regulatory",
   tags: ["sec", "edgar", "database", "filings", "research-tools"],
-  relatedSlugs: ["10-k-filing", "8-k-filing", "form-4", "cik-number"],
-  relatedTerms: ["10-k-filing", "8-k-filing", "form-4", "cik-number", "accession-number"],
+  relatedSlugs: ["10-k-filing", "8-k-filing", "form-4", "accession-number"],
+  relatedTerms: ["10-k-filing", "8-k-filing", "form-4", "accession-number"],
   faq: [
     {
       question: "Is EDGAR really free to use?",

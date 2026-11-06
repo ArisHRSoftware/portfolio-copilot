@@ -12,7 +12,7 @@ export const termForm4: GlossaryTerm = {
   category: "SEC Filings",
   tags: ["sec-filing", "insider-trading", "form-4", "insider-buying", "insider-selling"],
   relatedSlugs: ["insider-trading", "10-k-filing", "sec-edgar", "beneficial-owner"],
-  relatedTerms: ["insider-trading", "10-k-filing", "sec-edgar", "beneficial-owner", "10b5-1-plan"],
+  relatedTerms: ["insider-trading", "10-k-filing", "sec-edgar", "beneficial-owner"],
   faq: [
     {
       question: "Who counts as an insider for Form 4 purposes?",

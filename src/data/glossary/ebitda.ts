@@ -11,8 +11,8 @@ export const termEbitda: GlossaryTerm = {
   wordCount: 2500,
   category: "Financial Metrics",
   tags: ["ebitda", "financial-metrics", "profitability", "valuation"],
-  relatedSlugs: ["free-cash-flow", "operating-income", "market-capitalization", "enterprise-value"],
-  relatedTerms: ["free-cash-flow", "operating-income", "market-capitalization", "enterprise-value"],
+  relatedSlugs: ["free-cash-flow", "enterprise-value", "market-capitalization", "pe-ratio"],
+  relatedTerms: ["free-cash-flow", "enterprise-value", "market-capitalization", "pe-ratio"],
   faq: [
     {
       question: "How do you calculate EBITDA?",

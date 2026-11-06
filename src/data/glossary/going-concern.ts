@@ -11,8 +11,8 @@ export const termGoingConcern: GlossaryTerm = {
   wordCount: 2300,
   category: "Accounting & Financial",
   tags: ["going-concern", "audit", "bankruptcy", "risk-flag", "10-k-filing"],
-  relatedSlugs: ["10-k-filing", "material-weakness", "auditors-report"],
-  relatedTerms: ["10-k-filing", "material-weakness", "auditors-report"],
+  relatedSlugs: ["10-k-filing", "material-weakness", "8-k-filing"],
+  relatedTerms: ["10-k-filing", "material-weakness", "8-k-filing"],
   faq: [
     {
       question: "Does a going concern warning mean the company will go bankrupt?",

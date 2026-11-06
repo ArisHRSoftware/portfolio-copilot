@@ -44,7 +44,7 @@ export function ArticleLayout({
   return (
     <div className="space-y-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-sm text-muted-foreground flex-wrap">
         {breadcrumbs.map((crumb, i) => (
           <span key={crumb.href} className="flex items-center gap-2">
             {i > 0 && <span aria-hidden="true">/</span>}
