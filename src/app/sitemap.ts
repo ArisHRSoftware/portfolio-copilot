@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { createStaticClient } from "@/lib/supabase/static";
 import { getPublishedBlogPosts, getRecentFilings, type Company } from "@/lib/supabase/queries";
+import { glossaryTerms } from "@/data/glossary/index";
+import { secFilingArticles } from "@/data/learn/sec-filings";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
@@ -51,6 +53,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       "/insider-selling",
       "/earnings-this-week",
       "/recent-filings",
+      "/glossary",
+      "/learn",
+      "/learn/sec-filings",
     ].map((path) => ({
       url: `${siteUrl}${path}`,
       lastModified: now,
@@ -91,11 +96,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
+  // --- Glossary pages ---
+  const glossaryPages: MetadataRoute.Sitemap = glossaryTerms.map((term) => ({
+    url: `${siteUrl}/glossary/${term.slug}`,
+    lastModified: new Date(term.lastUpdated),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  // --- Learn article pages ---
+  const learnPages: MetadataRoute.Sitemap = secFilingArticles.map((article) => ({
+    url: `${siteUrl}/learn/sec-filings/${article.slug}`,
+    lastModified: new Date(article.lastUpdated),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   return [
     ...staticPages,
     ...sectorPages,
     ...stockPages,
     ...blogPages,
     ...filingPages,
+    ...glossaryPages,
+    ...learnPages,
   ];
 }

@@ -12,7 +12,8 @@ const NAV_LINKS = [
   { href: "/trending", label: "Stocks" },
   { href: "/recent-filings", label: "Filings" },
   { href: "/insider-buying", label: "Insider Trades" },
-  { href: "/blog", label: "Blog" },
+  { href: "/learn", label: "Learn" },
+  { href: "/glossary", label: "Glossary" },
   { href: "/pricing", label: "Pricing" },
 ];
 

@@ -6,7 +6,9 @@ import { term10QFiling } from "./10q-filing";
 import { term8KFiling } from "./8k-filing";
 import { termAccessionNumber } from "./accession-number";
 import { termBeneficialOwner } from "./beneficial-owner";
+import { termBookValue } from "./book-value";
 import { termDilution } from "./dilution";
+import { termDividendYield } from "./dividend-yield";
 import { termEbitda } from "./ebitda";
 import { termEnterpriseValue } from "./enterprise-value";
 import { termForm4 } from "./form-4";
@@ -21,6 +23,7 @@ import { termProxyStatement } from "./proxy-statement";
 import { termRevenueRecognition } from "./revenue-recognition";
 import { termRsu } from "./rsu";
 import { termSecEdgar } from "./sec-edgar";
+import { termShortSelling } from "./short-selling";
 import { termSicCode } from "./sic-code";
 import { termSmallCap } from "./small-cap";
 
@@ -32,7 +35,9 @@ export const glossaryTerms: GlossaryTerm[] = [
   term8KFiling,
   termAccessionNumber,
   termBeneficialOwner,
+  termBookValue,
   termDilution,
+  termDividendYield,
   termEbitda,
   termEnterpriseValue,
   termFilerCategory,
@@ -47,6 +52,7 @@ export const glossaryTerms: GlossaryTerm[] = [
   termRevenueRecognition,
   termRsu,
   termSecEdgar,
+  termShortSelling,
   termSicCode,
   termSmallCap,
 ].sort((a, b) => a.term.localeCompare(b.term));
