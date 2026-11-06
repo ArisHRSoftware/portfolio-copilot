@@ -48,11 +48,11 @@ export async function generateMetadata({
   const sectorName = sectorSlugToName(sectorSlug);
 
   return {
-    title: `${sectorName} Stocks — SEC Filings & AI Analysis`,
-    description: `Browse ${sectorName} sector small-cap stocks with AI-powered SEC filing analysis. View recent filings, insider trades, and significance scores for ${sectorName} companies.`,
+    title: `${sectorName} Stocks — SEC Filings & Filing Analysis`,
+    description: `Browse ${sectorName} sector small-cap stocks with SEC filing analysis. View recent filings, insider trades, and significance scores for ${sectorName} companies.`,
     openGraph: {
       title: `${sectorName} Stocks | Brefyr`,
-      description: `${sectorName} sector small-cap stocks with AI-powered SEC filing analysis.`,
+      description: `${sectorName} sector small-cap stocks with SEC filing analysis.`,
     },
   };
 }
@@ -133,7 +133,7 @@ export default async function SectorPage({
           </Badge>
         </div>
         <p className="text-muted-foreground">
-          Small-cap stocks in the {sectorName} sector with AI-powered SEC filing
+          Small-cap stocks in the {sectorName} sector with SEC filing
           analysis.
         </p>
       </div>

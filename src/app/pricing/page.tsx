@@ -17,7 +17,7 @@ import { TIERS } from "@/lib/constants/tiers";
 export const metadata: Metadata = {
   title: "Pricing — Plans for Every Investor",
   description:
-    "Choose the right Brefyr plan. From free SEC filing alerts for 3 stocks to unlimited AI analysis, insider trade alerts, and API access for professionals.",
+    "Choose the right Brefyr plan. From free SEC filing alerts for 3 stocks to unlimited analysis, insider trade alerts, and API access for professionals.",
   openGraph: {
     title: "Pricing — Plans for Every Investor | Brefyr",
     description:
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 const TIER_ORDER = ["free", "starter", "plus", "pro"] as const;
 
 const TIER_HIGHLIGHTS: Record<string, string> = {
-  free: "Get started with AI-powered SEC filing analysis",
+  free: "Get started with SEC filing analysis",
   starter: "Track more stocks with daily email digests",
   plus: "Advanced screening, webhooks, and up to 50 stocks",
   pro: "Unlimited everything, API access, and data exports",
@@ -104,7 +104,7 @@ export default function PricingPage() {
         </h1>
         <p className="text-muted-foreground max-w-xl mx-auto">
           Start free. Upgrade when you need more stocks, smarter alerts, or API
-          access. All plans include AI-powered SEC filing analysis.
+          access. All plans include SEC filing analysis.
         </p>
       </div>
 
@@ -178,7 +178,7 @@ export default function PricingPage() {
                     included={true}
                   />
                   <FeatureRow
-                    label="AI filing screener"
+                    label="Filing screener"
                     included={tier.screener}
                   />
                   <FeatureRow
@@ -262,7 +262,7 @@ export default function PricingPage() {
               <p className="text-sm text-muted-foreground">
                 We analyze 10-K, 10-Q, 8-K, Form 4 (insider trades), S-1, DEF
                 14A, SC 13D/G, and more across 7,600+ US small-cap stocks.
-                Every filing gets an AI-generated summary and significance
+                Every filing gets an automated summary and significance
                 score.
               </p>
             </CardContent>

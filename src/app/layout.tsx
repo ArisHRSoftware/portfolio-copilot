@@ -19,11 +19,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Brefyr — AI SEC Filing Analysis for Small-Cap Investors",
+    default: "Brefyr — SEC Filing Intelligence for Small-Cap Investors",
     template: "%s | Brefyr",
   },
   description:
-    "AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries.",
+    "SEC filing analysis for 7,600+ uncovered US small-cap stocks. Instant insider trading alerts, significance scores, and plain-English summaries.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com"
   ),

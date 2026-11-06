@@ -26,11 +26,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Recent SEC Filings — All Filing Types",
   description:
-    "Browse the latest SEC filings across 7,600+ US small-cap stocks. Filter by filing type (10-K, 10-Q, 8-K, Form 4, and more) with AI-powered summaries and significance scores.",
+    "Browse the latest SEC filings across 7,600+ US small-cap stocks. Filter by filing type (10-K, 10-Q, 8-K, Form 4, and more) with summaries and significance scores.",
   openGraph: {
     title: "Recent SEC Filings | Brefyr",
     description:
-      "Browse the latest SEC filings across 7,600+ US small-cap stocks with AI analysis.",
+      "Browse the latest SEC filings across 7,600+ US small-cap stocks with filing analysis.",
   },
 };
 
@@ -76,8 +76,8 @@ export default async function RecentFilingsPage({
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Recent Filings</h1>
         <p className="text-muted-foreground">
-          The latest SEC filings across small-cap stocks, processed with AI
-          analysis. Updated every hour.
+          The latest SEC filings across small-cap stocks, processed automatically.
+          Updated every hour.
         </p>
       </div>
 

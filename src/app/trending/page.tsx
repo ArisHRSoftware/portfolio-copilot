@@ -23,7 +23,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Trending Stocks — Most Viewed Small-Cap Stocks",
   description:
-    "See which small-cap stocks investors are watching this week. Ranked by page views with AI-powered SEC filing analysis and significance scores.",
+    "See which small-cap stocks investors are watching this week. Ranked by page views with SEC filing analysis and significance scores.",
   openGraph: {
     title: "Trending Stocks — Most Viewed This Week | Brefyr",
     description:

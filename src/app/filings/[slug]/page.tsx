@@ -50,7 +50,7 @@ export async function generateMetadata({
   const title = `${ticker} ${filing.filing_type} — ${filedDate}`;
   const description =
     filing.one_line_summary ??
-    `AI analysis of ${companyName} (${ticker}) ${filing.filing_type} filing from ${filedDate}. Significance score: ${filing.significance_score}/10.`;
+    `Analysis of ${companyName} (${ticker}) ${filing.filing_type} filing from ${filedDate}. Significance score: ${filing.significance_score}/10.`;
 
   return {
     title,
@@ -178,9 +178,9 @@ export default async function FilingDetailPage({
 
       <Separator />
 
-      {/* AI Prose Summary */}
+      {/* Prose Summary */}
       <section className="space-y-3">
-        <h2 className="text-xl font-semibold">AI Summary</h2>
+        <h2 className="text-xl font-semibold">Summary</h2>
         {filing.ai_summary_prose ? (
           <Card>
             <CardContent className="py-4 prose prose-sm max-w-none">
@@ -192,7 +192,7 @@ export default async function FilingDetailPage({
         ) : (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">
-              AI summary is being generated. This typically takes a few minutes
+              Summary is being generated. This typically takes a few minutes
               after the filing is published by the SEC.
             </CardContent>
           </Card>

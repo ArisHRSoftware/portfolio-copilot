@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "Brefyr — AI SEC Filing Analysis for Small-Cap Investors";
+export const alt = "Brefyr — SEC Filing Intelligence for Small-Cap Investors";
 export const size = {
   width: 1200,
   height: 630,
@@ -52,7 +52,7 @@ export default async function Image() {
               lineHeight: 1.4,
             }}
           >
-            AI SEC Filing Analysis for Small-Cap Investors
+            SEC Filing Intelligence for Small-Cap Investors
           </div>
           <div
             style={{
@@ -65,7 +65,7 @@ export default async function Image() {
           >
             <span>7,600+ Stocks</span>
             <span>8 Filing Types</span>
-            <span>AI Summaries</span>
+            <span>Summaries</span>
           </div>
         </div>
       </div>

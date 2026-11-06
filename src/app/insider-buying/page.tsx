@@ -26,11 +26,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Insider Buying — Recent SEC Form 4 Purchases",
   description:
-    "Track recent insider buying activity across 7,600+ US small-cap stocks. See which company executives and directors are purchasing shares, with AI-powered significance scores.",
+    "Track recent insider buying activity across 7,600+ US small-cap stocks. See which company executives and directors are purchasing shares, with significance scores.",
   openGraph: {
     title: "Insider Buying — Recent SEC Form 4 Purchases | Brefyr",
     description:
-      "Track recent insider buying activity across 7,600+ US small-cap stocks with AI-powered significance analysis.",
+      "Track recent insider buying activity across 7,600+ US small-cap stocks with significance analysis.",
   },
 };
 

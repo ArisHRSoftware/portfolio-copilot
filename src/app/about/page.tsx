@@ -12,13 +12,13 @@ import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
-  title: "About — AI SEC Filing Analysis for Small-Cap Investors",
+  title: "About — SEC Filing Analysis for Small-Cap Investors",
   description:
-    "Brefyr uses AI to analyze SEC filings for 7,600+ US small-cap stocks that Wall Street ignores. Get instant summaries, insider trade alerts, and significance scores.",
+    "Brefyr analyzes SEC filings for 7,600+ US small-cap stocks that Wall Street ignores. Get instant summaries, insider trade alerts, and significance scores.",
   openGraph: {
     title: "About Brefyr",
     description:
-      "AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks.",
+      "SEC filing analysis for 7,600+ uncovered US small-cap stocks.",
   },
 };
 
@@ -31,12 +31,12 @@ export default function AboutPage() {
       <div className="space-y-4 text-center">
         <Badge variant="secondary">About</Badge>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          The SEC filings that Wall Street ignores, analyzed by AI.
+          The SEC filings that Wall Street ignores, analyzed automatically.
         </h1>
         <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
           Brefyr monitors SEC EDGAR for 7,600+ US small-cap stocks
           that institutional research doesn&apos;t cover. Every filing is
-          processed by AI within minutes of publication, so you never miss a
+          processed within minutes of publication, so you never miss a
           critical disclosure.
         </p>
       </div>
@@ -49,7 +49,7 @@ export default function AboutPage() {
         <div className="grid gap-6 sm:grid-cols-2">
           <Card>
             <CardHeader>
-              <CardTitle>AI Filing Summaries</CardTitle>
+              <CardTitle>Filing Summaries</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
@@ -116,7 +116,7 @@ export default function AboutPage() {
             known, the price has already moved.
           </p>
           <p>
-            Brefyr closes that information gap. The same AI analysis
+            Brefyr closes that information gap. The same filing analysis
             that large institutions use internally, now available for the
             small-cap stocks they ignore.
           </p>
@@ -138,9 +138,9 @@ export default function AboutPage() {
             },
             {
               step: "2",
-              title: "AI Analysis",
+              title: "Automated Analysis",
               description:
-                "Each filing is processed by AI to generate a plain-English summary, extract key facts, identify risk flags, and assign a significance score.",
+                "Each filing is processed automatically to generate a plain-English summary, extract key facts, identify risk flags, and assign a significance score.",
             },
             {
               step: "3",

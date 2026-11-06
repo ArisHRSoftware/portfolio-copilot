@@ -29,13 +29,13 @@ import { NewsletterForm } from "@/components/newsletter-form";
 export const revalidate = 3600;
 
 export const metadata: Metadata = {
-  title: "Brefyr — AI SEC Filing Analysis for Small-Cap Investors",
+  title: "Brefyr — SEC Filing Intelligence for Small-Cap Investors",
   description:
-    "AI-powered SEC filing analysis for 7,600+ US-listed stocks. Get instant insider trading alerts, significance scores, and plain-English summaries. Free to start.",
+    "SEC filing analysis for 7,600+ US-listed stocks. Instant insider trading alerts, significance scores, and plain-English summaries. Free to start.",
   openGraph: {
-    title: "Brefyr — AI SEC Filing Analysis for Small-Cap Investors",
+    title: "Brefyr — SEC Filing Intelligence for Small-Cap Investors",
     description:
-      "Stop missing critical SEC filings. AI analyzes every 10-K, 8-K, and insider trade for stocks the big platforms ignore.",
+      "Stop missing critical SEC filings. Every 10-K, 8-K, and insider trade analyzed for stocks the big platforms ignore.",
   },
 };
 
@@ -65,7 +65,7 @@ export default async function HomePage() {
               7,600+ US-listed companies covered
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl leading-[1.1]">
-              AI reads every SEC filing{" "}
+              Every SEC filing, read and scored{" "}
               <span className="text-primary">so you don&apos;t have to</span>
             </h1>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
@@ -129,7 +129,7 @@ export default async function HomePage() {
                 1-10
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                AI significance score
+                Significance score
               </p>
             </div>
           </div>
@@ -223,12 +223,12 @@ export default async function HomePage() {
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary text-primary-foreground font-bold text-xl">
                   2
                 </div>
-                <h3 className="text-2xl font-bold">AI Analyzes Every Filing</h3>
+                <h3 className="text-2xl font-bold">Every Filing, Analyzed Automatically</h3>
                 <p className="text-muted-foreground text-lg leading-relaxed">
                   Our pipeline monitors SEC EDGAR continuously. Every new
-                  filing — 10-K, 10-Q, 8-K, Form 4, DEF 14A — gets an AI
-                  summary, significance score, and risk assessment within
-                  minutes.
+                  filing — 10-K, 10-Q, 8-K, Form 4, DEF 14A — gets a
+                  plain-English summary, significance score, and risk
+                  assessment within minutes.
                 </p>
                 <Button
                   variant="outline"
@@ -277,7 +277,7 @@ export default async function HomePage() {
                     <span className="font-semibold">10-K Annual Report</span>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Record Q4 revenue, up 8% YoY. AI-powered earnings impact
+                    Record Q4 revenue, up 8% YoY. Earnings impact
                     assessment included. Significance: 9/10
                   </p>
                 </div>
@@ -315,9 +315,8 @@ export default async function HomePage() {
                     Never Miss a Material Event
                   </CardTitle>
                   <CardDescription className="text-base">
-                    10-K, 10-Q, 8-K, DEF 14A, Form 4 — AI reads the full text
-                    and gives you a plain-English summary with key facts
-                    highlighted.
+                    10-K, 10-Q, 8-K, DEF 14A, Form 4 — every filing gets a
+                    plain-English summary with key facts highlighted.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -329,7 +328,7 @@ export default async function HomePage() {
                   </CardTitle>
                   <CardDescription className="text-base">
                     Skip the routine noise. Focus on the filings that actually
-                    move the needle. Every filing scored by AI for impact.
+                    move the needle. Every filing scored for impact.
                   </CardDescription>
                 </CardHeader>
               </Card>
@@ -436,8 +435,8 @@ export default async function HomePage() {
               Weekly Small-Cap Briefing
             </h2>
             <p className="text-muted-foreground text-lg">
-              The most significant filings and insider trades, summarized by AI
-              and reviewed by our team. Free, weekly, no spam.
+              The most significant filings and insider trades, summarized and
+              reviewed by our team. Free, weekly, no spam.
             </p>
             <div className="flex justify-center">
               <NewsletterForm source="homepage" />

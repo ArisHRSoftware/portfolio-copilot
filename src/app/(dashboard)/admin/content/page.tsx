@@ -31,7 +31,7 @@ export default async function ContentApprovalPage() {
       <div className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight">Content Approval</h1>
         <p className="text-sm text-muted-foreground">
-          Review, approve, and publish AI-generated content before it goes live.
+          Review, approve, and publish automated content before it goes live.
         </p>
       </div>
       <ContentApprovalPanel items={items} />

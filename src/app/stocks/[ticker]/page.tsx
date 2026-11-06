@@ -63,15 +63,15 @@ export async function generateMetadata({
   const companyName = company?.name ?? upperTicker;
   const sector = company?.sector ?? "";
   const exchange = company?.exchange ?? "";
-  const filingCount = filings.length > 0 ? "AI-analyzed" : "tracked";
+  const filingCount = filings.length > 0 ? "analyzed" : "tracked";
 
-  const description = `${companyName} (${upperTicker}) SEC filing analysis${sector ? ` — ${sector} company` : ""}${exchange ? ` on ${exchange}` : ""}. ${filingCount} filings with AI-powered summaries, insider trade tracking, and significance scoring.`;
+  const description = `${companyName} (${upperTicker}) SEC filing analysis${sector ? ` — ${sector} company` : ""}${exchange ? ` on ${exchange}` : ""}. ${filingCount} filings with plain-English summaries, insider trade tracking, and significance scoring.`;
 
   return {
-    title: `${companyName} (${upperTicker}) — SEC Filings & AI Analysis`,
+    title: `${companyName} (${upperTicker}) — SEC Filings & Analysis`,
     description,
     openGraph: {
-      title: `${companyName} (${upperTicker}) — SEC Filings & AI Analysis | Brefyr`,
+      title: `${companyName} (${upperTicker}) — SEC Filings & Analysis | Brefyr`,
       description,
     },
   };
@@ -335,9 +335,8 @@ export default async function StockPage({
               month: "long",
               day: "numeric",
             })}
-            . Each filing is scored for significance on a 1-10 scale using
-            AI analysis to help investors quickly identify the most
-            important disclosures.
+            . Each filing is scored for significance on a 1-10 scale to help
+            investors quickly identify the most important disclosures.
           </p>
         )}
         {/* Key Stats Grid */}
@@ -377,8 +376,8 @@ export default async function StockPage({
               Get alerts when new filings are published for {company.ticker}
             </p>
             <p className="text-sm text-muted-foreground">
-              AI-powered summaries delivered to your inbox within minutes of
-              SEC publication.
+              Summaries delivered to your inbox within minutes of SEC
+              publication.
             </p>
           </div>
           <Button render={<Link href="/pricing" />} size="lg">

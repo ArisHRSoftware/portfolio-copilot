@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "API Documentation | Brefyr",
     description:
-      "Filing Intelligence API — programmatic access to AI-analyzed SEC filings, insider trades, and company data for 7,600+ US small-cap stocks.",
+      "Filing Intelligence API — programmatic access to analyzed SEC filings, insider trades, and company data for 7,600+ US small-cap stocks.",
   },
 };
 
@@ -89,7 +89,7 @@ export default function ApiDocsPage() {
             Filing Intelligence API
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Programmatic access to AI-analyzed SEC filings, insider trades, and
+            Programmatic access to analyzed SEC filings, insider trades, and
             company data for 7,600+ US small-cap stocks. RESTful JSON endpoints
             with simple API key authentication.
           </p>
@@ -179,7 +179,7 @@ X-RateLimit-Reset: 1700000000`}</CodeBlock>
                 </CardTitle>
               </div>
               <CardDescription>
-                Search and filter AI-analyzed SEC filings. Returns paginated
+                Search and filter analyzed SEC filings. Returns paginated
                 results with summaries and significance scores.
               </CardDescription>
             </CardHeader>
@@ -476,7 +476,7 @@ console.log(\`Found \${data.meta.count} filings\`);`}</CodeBlock>
           <h2 className="text-2xl font-bold">Response Format</h2>
           <p className="text-muted-foreground">
             All endpoints return JSON with consistent structure. Filing objects
-            include AI-generated fields like{" "}
+            include computed fields like{" "}
             <code className="font-mono text-sm bg-muted px-1.5 py-0.5 rounded">
               significance_score
             </code>{" "}

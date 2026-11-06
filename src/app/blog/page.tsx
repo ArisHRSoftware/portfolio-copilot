@@ -20,7 +20,7 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Blog — Small-Cap Investing Insights",
   description:
-    "Expert analysis and insights on small-cap investing, SEC filings, insider trading patterns, and market trends. AI-generated and founder-reviewed.",
+    "Expert analysis and insights on small-cap investing, SEC filings, insider trading patterns, and market trends. Expert analysis and founder-reviewed.",
   openGraph: {
     title: "Blog — Small-Cap Investing Insights | Brefyr",
     description:

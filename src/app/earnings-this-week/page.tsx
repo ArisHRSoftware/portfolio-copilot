@@ -21,11 +21,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Earnings This Week — Small-Cap Earnings Calendar",
   description:
-    "See which small-cap stocks are reporting earnings this week. AI-powered analysis of earnings-related SEC filings with significance scores.",
+    "See which small-cap stocks are reporting earnings this week. Automated analysis of earnings-related SEC filings with significance scores.",
   openGraph: {
     title: "Earnings This Week — Small-Cap Earnings Calendar | Brefyr",
     description:
-      "Small-cap earnings calendar with AI-powered filing analysis.",
+      "Small-cap earnings calendar with automated filing analysis.",
   },
 };
 
@@ -165,7 +165,7 @@ export default async function EarningsThisWeekPage() {
                         <CardContent>
                           <p className="text-sm text-muted-foreground line-clamp-2">
                             {filing.one_line_summary ??
-                              "Earnings filing detected. AI summary pending."}
+                              "Earnings filing detected. Summary pending."}
                           </p>
                           <div className="mt-3">
                             <Button

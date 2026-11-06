@@ -26,7 +26,7 @@ export function OrganizationSchema() {
     url: siteUrl,
     logo: `${siteUrl}/favicon.ico`,
     description:
-      "AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks.",
+      "SEC filing analysis for 7,600+ uncovered US small-cap stocks.",
     sameAs: ["https://x.com/brefyr"],
   };
   return <JsonLdScript data={data} />;
@@ -40,7 +40,7 @@ export function WebSiteSchema() {
     name: "Brefyr",
     url: siteUrl,
     description:
-      "AI-powered SEC filing analysis for 7,600+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries.",
+      "SEC filing analysis for 7,600+ uncovered US small-cap stocks. Get instant insider trading alerts, significance scores, and plain-English summaries.",
     potentialAction: {
       "@type": "SearchAction",
       target: {

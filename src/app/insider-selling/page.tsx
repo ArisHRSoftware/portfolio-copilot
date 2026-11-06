@@ -26,11 +26,11 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Insider Selling — Recent SEC Form 4 Sales",
   description:
-    "Track recent insider selling activity across 7,600+ US small-cap stocks. See which company executives and directors are selling shares, with AI-powered significance scores.",
+    "Track recent insider selling activity across 7,600+ US small-cap stocks. See which company executives and directors are selling shares, with significance scores.",
   openGraph: {
     title: "Insider Selling — Recent SEC Form 4 Sales | Brefyr",
     description:
-      "Track recent insider selling activity across 7,600+ US small-cap stocks with AI-powered significance analysis.",
+      "Track recent insider selling activity across 7,600+ US small-cap stocks with significance analysis.",
   },
 };
 
