@@ -151,7 +151,7 @@ export default async function InsiderBuyingPage() {
         </Table>
       )}
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <Button variant="outline" render={<Link href="/insider-selling" />}>
           Insider Selling
         </Button>

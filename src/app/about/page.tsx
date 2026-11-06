@@ -172,7 +172,7 @@ export default function AboutPage() {
         <p className="text-muted-foreground">
           Free plan includes 3 stocks. No credit card required.
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button size="lg" render={<Link href="/pricing" />}>
             View Pricing
           </Button>

@@ -221,7 +221,7 @@ export default async function FilingDetailPage({
           <h2 className="text-xl font-semibold">Insider Trades</h2>
           <Card>
             <CardContent className="py-4">
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
                 {Object.entries(insider).map(([key, value]) => (
                   <div key={key} className="contents">
                     <dt className="font-medium capitalize">

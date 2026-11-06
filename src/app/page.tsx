@@ -57,7 +57,7 @@ export default async function HomePage() {
         <Badge variant="secondary" className="text-sm">
           Covering 2,000+ small-cap stocks
         </Badge>
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
+        <h1 className="text-3xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
           AI reads every SEC filing{" "}
           <span className="text-primary">so you don&apos;t have to</span>
         </h1>
@@ -381,7 +381,7 @@ export default async function HomePage() {
             </span>
             <span>&copy; {new Date().getFullYear()}</span>
           </div>
-          <nav className="flex items-center gap-4">
+          <nav className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <Link
               href="/blog"
               className="hover:text-foreground transition-colors"

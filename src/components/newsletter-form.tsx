@@ -64,7 +64,7 @@ export function NewsletterForm({ source = "website" }: NewsletterFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2">
+    <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
       <Input
         type="email"
         placeholder="your@email.com"
@@ -72,7 +72,7 @@ export function NewsletterForm({ source = "website" }: NewsletterFormProps) {
         onChange={(e) => setEmail(e.target.value)}
         required
         disabled={status === "loading"}
-        className="max-w-[260px]"
+        className="w-full sm:max-w-[260px]"
       />
       <Button type="submit" disabled={status === "loading"} size="sm">
         {status === "loading" ? (

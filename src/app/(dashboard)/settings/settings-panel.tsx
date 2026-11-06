@@ -91,7 +91,7 @@ export function SettingsPanel({
       </div>
 
       <Tabs defaultValue="profile">
-        <TabsList>
+        <TabsList className="w-full overflow-x-auto">
           <TabsTrigger value="profile">
             <User className="size-3.5" />
             Profile

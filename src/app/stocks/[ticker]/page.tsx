@@ -529,7 +529,7 @@ export default async function StockPage({
       )}
 
       {/* Navigation */}
-      <div className="flex items-center gap-4 pt-4">
+      <div className="flex flex-wrap items-center gap-3 pt-4">
         <Button variant="outline" render={<Link href="/trending" />}>
           Trending Stocks
         </Button>
