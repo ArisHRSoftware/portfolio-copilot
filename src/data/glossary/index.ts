@@ -3,6 +3,7 @@ import type { GlossaryTerm } from "../types";
 import { term10KFiling } from "./10k-filing";
 import { term10QFiling } from "./10q-filing";
 import { term8KFiling } from "./8k-filing";
+import { termAccessionNumber } from "./accession-number";
 import { termEbitda } from "./ebitda";
 import { termForm4 } from "./form-4";
 import { termFreeCashFlow } from "./free-cash-flow";
@@ -10,6 +11,7 @@ import { termGoingConcern } from "./going-concern";
 import { termInsiderTrading } from "./insider-trading";
 import { termMarketCapitalization } from "./market-capitalization";
 import { termMaterialWeakness } from "./material-weakness";
+import { termFilerCategory } from "./filer-category";
 import { termProxyStatement } from "./proxy-statement";
 import { termSecEdgar } from "./sec-edgar";
 import { termSicCode } from "./sic-code";
@@ -20,7 +22,9 @@ export const glossaryTerms: GlossaryTerm[] = [
   term10KFiling,
   term10QFiling,
   term8KFiling,
+  termAccessionNumber,
   termEbitda,
+  termFilerCategory,
   termForm4,
   termFreeCashFlow,
   termGoingConcern,
