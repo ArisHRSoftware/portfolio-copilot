@@ -184,7 +184,7 @@ export async function analyzeFilingWithClaude(
     );
   }
 
-  const modelName = process.env.GEMINI_FILING_MODEL || "gemini-2.5-flash";
+  const modelName = process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash";
 
   const genAI = new GoogleGenerativeAI(googleKey);
   const model = genAI.getGenerativeModel({
