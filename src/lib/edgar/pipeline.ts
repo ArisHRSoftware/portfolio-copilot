@@ -25,15 +25,15 @@ type CompaniesRow = Database["public"]["Tables"]["companies"]["Row"];
 type AnySupabase = SupabaseClient<any>;
 
 /**
- * Max filings to analyze with Gemini per run.
- * gemini-3.8-flash free tier: 5 RPM, 20 RPD.
- * At 2/run with 15s delay between calls, stays well under 5 RPM.
- * 96 runs/day × 2 = 192 attempts, but daily cap stops at 20.
+ * Max filings to analyze per run.
+ * Groq free tier: 30 RPM, 14,400 RPD → 10/run is comfortable.
+ * Gemini free tier: 5 RPM, 20 RPD → auto-reduced to 2 when no GROQ_API_KEY.
  */
-const BATCH_SIZE = parseInt(process.env.EDGAR_BATCH_SIZE || "2", 10);
+const DEFAULT_BATCH = process.env.GROQ_API_KEY ? "10" : "2";
+const BATCH_SIZE = parseInt(process.env.EDGAR_BATCH_SIZE || DEFAULT_BATCH, 10);
 
-/** Delay between Gemini API calls in ms (15s to respect 5 RPM) */
-const INTER_CALL_DELAY_MS = 15_000;
+/** Delay between AI calls: 3s for Groq (30 RPM), 15s for Gemini (5 RPM) */
+const INTER_CALL_DELAY_MS = process.env.GROQ_API_KEY ? 3_000 : 15_000;
 
 /**
  * Filing type priority for analysis ordering.
