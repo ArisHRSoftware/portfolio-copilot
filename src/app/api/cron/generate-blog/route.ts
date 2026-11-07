@@ -15,10 +15,11 @@ export async function POST(request: Request): Promise<Response> {
   const supabase = createWebhookClient();
   const startedAt = new Date().toISOString();
 
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
+  const groqKey = process.env.GROQ_API_KEY;
+  const googleKey = process.env.GOOGLE_API_KEY;
+  if (!groqKey && !googleKey) {
     return Response.json(
-      { error: "GOOGLE_API_KEY not configured" },
+      { error: "No AI API key configured (GROQ_API_KEY or GOOGLE_API_KEY)" },
       { status: 500 }
     );
   }
@@ -100,15 +101,8 @@ export async function POST(request: Request): Promise<Response> {
 
     const dateRange = `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 
-    // 3. Generate blog post with Gemini
-    const { GoogleGenerativeAI } = await import("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-      model: process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash",
-      generationConfig: { maxOutputTokens: 3000, temperature: 0.7 },
-    });
-
-    const result = await model.generateContent(`You are a financial content writer for Brefyr, a small-cap SEC filing intelligence platform. Write an SEO-optimized blog post based on the past week's filing activity (${dateRange}).
+    // 3. Generate blog post with Groq (primary) or Gemini (fallback)
+    const blogPrompt = `You are a financial content writer for Brefyr, a small-cap SEC filing intelligence platform. Write an SEO-optimized blog post based on the past week's filing activity (${dateRange}).
 
 Filing activity summary:
 - Total filings: ${filings.length}
@@ -138,9 +132,34 @@ Return your response as JSON with this exact structure:
   "slug_suggestion": "url-friendly-slug-for-the-post"
 }
 
-Return ONLY the JSON, no other text.`);
+Return ONLY the JSON, no other text.`;
 
-    const rawOutput = result.response.text();
+    let rawOutput: string;
+    if (groqKey) {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${groqKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: blogPrompt }],
+          response_format: { type: "json_object" },
+          max_tokens: 3000,
+          temperature: 0.7,
+        }),
+      });
+      if (!res.ok) throw new Error(`Groq API error ${res.status}: ${await res.text()}`);
+      const data = await res.json() as { choices: Array<{ message: { content: string } }> };
+      rawOutput = data.choices[0]?.message?.content ?? "{}";
+    } else {
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(googleKey!);
+      const model = genAI.getGenerativeModel({
+        model: process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash",
+        generationConfig: { maxOutputTokens: 3000, temperature: 0.7 },
+      });
+      const result = await model.generateContent(blogPrompt);
+      rawOutput = result.response.text();
+    }
 
     // Parse Gemini's JSON response
     let blogData: {

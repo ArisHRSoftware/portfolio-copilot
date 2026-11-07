@@ -15,10 +15,11 @@ export async function POST(request: Request): Promise<Response> {
   const supabase = createWebhookClient();
   const startedAt = new Date().toISOString();
 
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
+  const groqKey = process.env.GROQ_API_KEY;
+  const googleKey = process.env.GOOGLE_API_KEY;
+  if (!groqKey && !googleKey) {
     return Response.json(
-      { error: "GOOGLE_API_KEY not configured" },
+      { error: "No AI API key configured (GROQ_API_KEY or GOOGLE_API_KEY)" },
       { status: 500 }
     );
   }
@@ -83,17 +84,10 @@ export async function POST(request: Request): Promise<Response> {
       })
       .join("\n");
 
-    // 3. Generate newsletter with Gemini
-    const { GoogleGenerativeAI } = await import("@google/generative-ai");
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const genModel = genAI.getGenerativeModel({
-      model: process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash",
-      generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
-    });
-
+    // 3. Generate newsletter with Groq (primary) or Gemini (fallback)
     const dateRange = `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`;
 
-    const result = await genModel.generateContent(`Write a weekly newsletter body for "Brefyr" covering small-cap SEC filings from ${dateRange}.
+    const newsletterPrompt = `Write a weekly newsletter body for "Brefyr" covering small-cap SEC filings from ${dateRange}.
 
 Top filings this week:
 ${filingSummaries}
@@ -107,9 +101,33 @@ Write clean HTML (just the content section, no <html>/<head>/<body> wrapper tags
 3. "Insider Activity" section if there were insider trades
 4. A brief closing line
 
-Use <h2> for section headers. Keep it concise and actionable. No fluff.`);
+Use <h2> for section headers. Keep it concise and actionable. No fluff. Return ONLY the HTML, no other text.`;
 
-    const newsletterBody = result.response.text();
+    let newsletterBody: string;
+    if (groqKey) {
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${groqKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: newsletterPrompt }],
+          max_tokens: 2000,
+          temperature: 0.7,
+        }),
+      });
+      if (!res.ok) throw new Error(`Groq API error ${res.status}: ${await res.text()}`);
+      const data = await res.json() as { choices: Array<{ message: { content: string } }> };
+      newsletterBody = data.choices[0]?.message?.content ?? "";
+    } else {
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
+      const genAI = new GoogleGenerativeAI(googleKey!);
+      const genModel = genAI.getGenerativeModel({
+        model: process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash",
+        generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
+      });
+      const result = await genModel.generateContent(newsletterPrompt);
+      newsletterBody = result.response.text();
+    }
     const subject = `This Week in Small-Cap Filings — ${dateRange}`;
 
     // 4. Insert into content_queue with type='newsletter', status='pending_review'
