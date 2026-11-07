@@ -887,7 +887,7 @@ describe("EDGAR pipeline orchestrator", () => {
     expect(pipelineErrors.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("skips filings from untracked companies without counting as errors", async () => {
+  it("auto-creates companies from EDGAR metadata for unknown CIKs", async () => {
     const searchData = buildEdgarSearchResponse([
       {
         accession: "0009999999-26-000001",
@@ -898,10 +898,39 @@ describe("EDGAR pipeline orchestrator", () => {
       },
     ]);
 
-    (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+    const fetchMock = globalThis.fetch as ReturnType<typeof vi.fn>;
+    // 1. EDGAR search
+    fetchMock.mockResolvedValueOnce({
       ok: true,
       json: async () => searchData,
     });
+    // 2. Filing index JSON (download step)
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        directory: {
+          item: [{ name: "doc.htm", type: "file", size: "1000" }],
+        },
+      }),
+    });
+    // 3. Filing document HTML
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () =>
+        "<html><body>" + "Test filing content. ".repeat(50) + "</body></html>",
+    });
+
+    let companyCreated = false;
+    const mockCompany = {
+      id: "auto-company-001",
+      ticker: "CIK9999999",
+      name: "Unknown Corp",
+      cik_number: "0009999999",
+      sector: "",
+      exchange: "",
+      market_cap: 0,
+      status: "active",
+    };
 
     const mockSupabase = buildPipelineSupabaseMock({
       pipeline_runs: () => ({
@@ -919,15 +948,46 @@ describe("EDGAR pipeline orchestrator", () => {
         select: () => ({
           in: () => Promise.resolve({ data: [], error: null }),
         }),
+        insert: () => ({
+          select: () => ({
+            single: () =>
+              Promise.resolve({
+                data: {
+                  id: "filing-auto-001",
+                  slug: "cik9999999-10-k-2026-11-03-000001",
+                  company_id: "auto-company-001",
+                },
+                error: null,
+              }),
+          }),
+        }),
+        update: () => ({
+          eq: () => Promise.resolve({ data: null, error: null }),
+        }),
       }),
       companies: () => ({
         select: () => ({
           or: () => ({
             limit: () => ({
               single: () =>
-                Promise.resolve({ data: null, error: null }),
+                Promise.resolve({
+                  data: companyCreated ? mockCompany : null,
+                  error: null,
+                }),
             }),
           }),
+        }),
+        insert: () => {
+          companyCreated = true;
+          return {
+            select: () => ({
+              single: () =>
+                Promise.resolve({ data: mockCompany, error: null }),
+            }),
+          };
+        },
+        update: () => ({
+          eq: () => Promise.resolve({ data: null, error: null }),
         }),
       }),
     });
@@ -935,7 +995,8 @@ describe("EDGAR pipeline orchestrator", () => {
     const { processNewFilings } = await import("@/lib/edgar/pipeline");
     const result = await processNewFilings(mockSupabase as never);
 
-    expect(result.errors_count).toBe(0);
+    expect(companyCreated).toBe(true);
+    expect(result.filings_processed).toBe(1);
     expect(result.status).toBe("completed");
   });
 

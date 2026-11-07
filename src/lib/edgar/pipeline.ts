@@ -24,6 +24,27 @@ type CompaniesRow = Database["public"]["Tables"]["companies"]["Row"];
 type AnySupabase = SupabaseClient<any>;
 
 /**
+ * Max filings to analyze with Gemini per run.
+ * Gemini free tier: ~1,500 RPD. At 96 runs/day, 15/run = 1,440/day.
+ */
+const BATCH_SIZE = parseInt(process.env.EDGAR_BATCH_SIZE || "15", 10);
+
+/**
+ * Filing type priority for analysis ordering.
+ * Lower number = higher priority = analyzed first.
+ */
+const FILING_TYPE_PRIORITY: Record<string, number> = {
+  "10-K": 1,
+  "10-Q": 2,
+  "8-K": 3,
+  "DEF 14A": 4,
+  "13F-HR": 5,
+  "SC 13D": 6,
+  "SC 13G": 7,
+  "4": 8,
+};
+
+/**
  * Result of a single pipeline run.
  */
 export interface PipelineRunResult {
@@ -53,7 +74,7 @@ function generateFilingSlug(
 
 /**
  * Look up the company in the database by CIK number.
- * Returns the company row or null if not tracked.
+ * Returns the company row or null if not found.
  */
 async function findCompanyByCik(
   supabase: AnySupabase,
@@ -70,6 +91,47 @@ async function findCompanyByCik(
     .single();
 
   return (data as CompaniesRow | null) ?? null;
+}
+
+/**
+ * Find a company by CIK, or auto-create it from EDGAR filing metadata.
+ * Returns the company row (existing or newly created).
+ */
+async function findOrCreateCompany(
+  supabase: AnySupabase,
+  filing: EdgarFiling
+): Promise<CompaniesRow> {
+  const existing = await findCompanyByCik(supabase, filing.company_cik);
+  if (existing) return existing;
+
+  const paddedCik = filing.company_cik.padStart(10, "0");
+  const ticker = filing.company_ticker || `CIK${filing.company_cik}`;
+  const name = filing.company_name || `Company ${filing.company_cik}`;
+
+  const { data: created, error } = await supabase
+    .from("companies")
+    .insert({
+      ticker,
+      name,
+      cik_number: paddedCik,
+      sector: "",
+      exchange: "",
+      market_cap: 0,
+      status: "active",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    // Race condition: another run may have created it between our check and insert
+    if (error.code === "23505") {
+      const retry = await findCompanyByCik(supabase, filing.company_cik);
+      if (retry) return retry;
+    }
+    throw new Error(`Failed to create company ${ticker}: ${error.message}`);
+  }
+
+  return created as CompaniesRow;
 }
 
 /**
@@ -208,12 +270,8 @@ async function processSingleFiling(
   pipelineRunId: string
 ): Promise<boolean> {
   try {
-    // Look up the company by CIK
-    const company = await findCompanyByCik(supabase, filing.company_cik);
-    if (!company) {
-      // This company isn't in our tracked universe — skip silently
-      return false;
-    }
+    // Find existing company or auto-create from EDGAR metadata
+    const company = await findOrCreateCompany(supabase, filing);
 
     // Download and parse the filing text
     const filingText = await downloadAndParseFiling(filing.filing_url);
@@ -415,11 +473,10 @@ export async function processNewFilings(
   let errorsCount = 0;
 
   try {
-    // Poll for new filings
+    // Phase 1: Poll EDGAR for all new filings (paginated, deduped against DB)
     const newFilings = await pollEdgarRss(supabase);
 
     if (newFilings.length === 0) {
-      // No new filings — mark as completed
       await db
         .from("pipeline_runs")
         .update({
@@ -438,20 +495,25 @@ export async function processNewFilings(
       };
     }
 
-    // Process each filing sequentially to respect EDGAR rate limits
-    // and Claude API costs. Parallelism can be added later with
-    // concurrency controls.
-    for (const filing of newFilings) {
+    // Phase 2: Sort by priority (10-K first, Form 4 last) and take a batch
+    const sorted = [...newFilings].sort((a, b) => {
+      const pa = FILING_TYPE_PRIORITY[a.filing_type.toUpperCase()] ?? 5;
+      const pb = FILING_TYPE_PRIORITY[b.filing_type.toUpperCase()] ?? 5;
+      return pa - pb;
+    });
+    const batch = sorted.slice(0, BATCH_SIZE);
+
+    console.log(
+      `EDGAR pipeline: ${newFilings.length} new filings found, processing batch of ${batch.length} (priority: ${batch.map((f) => f.filing_type).join(", ")})`
+    );
+
+    // Phase 3: Process batch sequentially (respects EDGAR + Gemini rate limits)
+    for (const filing of batch) {
       const success = await processSingleFiling(db, filing, runId);
       if (success) {
         filingsProcessed++;
       } else {
-        // Only count as error if the company was tracked but processing failed
-        // (untracked companies return false but aren't errors)
-        const company = await findCompanyByCik(db, filing.company_cik);
-        if (company) {
-          errorsCount++;
-        }
+        errorsCount++;
       }
     }
 

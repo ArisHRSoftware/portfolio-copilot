@@ -30,22 +30,36 @@ export interface EdgarFiling {
   filing_type: string;
   company_cik: string;
   company_name: string;
+  company_ticker: string | null;
   filed_date: string;
   filing_url: string;
 }
 
 /**
- * Build the EDGAR full-text search URL for today's filings across all
- * target form types.
+ * Get the most recent business day (Mon-Fri).
+ * On weekends, returns Friday. On weekdays, returns today.
+ */
+function getLastBusinessDay(): string {
+  const now = new Date();
+  const day = now.getUTCDay(); // 0=Sun, 6=Sat
+  if (day === 0) now.setUTCDate(now.getUTCDate() - 2); // Sun → Fri
+  else if (day === 6) now.setUTCDate(now.getUTCDate() - 1); // Sat → Fri
+  return now.toISOString().slice(0, 10);
+}
+
+/**
+ * Build the EDGAR full-text search URL for the most recent business day's
+ * filings across all target form types.
  */
 function buildSearchUrl(): string {
+  const businessDay = getLastBusinessDay();
   const today = new Date().toISOString().slice(0, 10);
   const forms = FILING_TYPES.map((t) => t.replace(/ /g, "+")).join(",");
   const params = new URLSearchParams({
     q: '""',
     forms,
     dateRange: "custom",
-    startdt: today,
+    startdt: businessDay,
     enddt: today,
   });
   return `${EDGAR_SEARCH_BASE}?${params.toString()}`;
@@ -71,11 +85,34 @@ function buildFilingUrl(accession: string): string {
 }
 
 /**
+ * Extract ticker symbol from EDGAR display_names field.
+ * Format: "COMPANY NAME  (TICKER)  (CIK 0001234567)"
+ */
+function extractTicker(displayNames: string[]): string | null {
+  if (!displayNames || displayNames.length === 0) return null;
+  const matches = displayNames[0].match(/\(([^)]+)\)/g);
+  if (!matches) return null;
+  for (const match of matches) {
+    const inner = match.slice(1, -1).trim();
+    if (!inner.startsWith("CIK")) return inner;
+  }
+  return null;
+}
+
+/**
+ * Extract clean company name from EDGAR display_names field.
+ */
+function extractCompanyName(displayNames: string[], fallback: string): string {
+  if (!displayNames || displayNames.length === 0) return fallback;
+  return displayNames[0].split("(")[0].trim() || fallback;
+}
+
+/**
  * Parse the EDGAR EFTS JSON response into structured filing entries.
  *
  * The EFTS search-index endpoint returns JSON with a `hits.hits` array.
- * Each hit contains `_source` with: file_date, form_type, entity_name,
- * file_num, biz_locations, period_of_report, file_description, etc.
+ * Each hit contains `_source` with: file_date, form_type, display_names,
+ * ciks, file_num, biz_locations, period_of_report, etc.
  * The `_id` field is the accession number.
  */
 function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
@@ -89,17 +126,18 @@ function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
     const source = hit._source as Record<string, unknown> | undefined;
     if (!source) continue;
 
-    const rawAccession = (hit._id as string) ?? "";
+    const rawAccession = (hit._id as string) ?? (source.adsh as string) ?? "";
     const accession = normalizeAccession(rawAccession);
-    const filingType = (source.form_type as string) ?? "";
+    const filingType = (source.form_type as string) ?? (source.form as string) ?? "";
     const filedDate = (source.file_date as string) ?? "";
-    const companyName = (source.entity_name as string) ?? "";
 
-    // entity_id or file_num can carry the CIK; the _id path also encodes it
-    const cikFromId = rawAccession.replace(/-/g, "").slice(0, 10).replace(/^0+/, "");
-    const companyCik =
-      (source.entity_id as string) ??
-      cikFromId;
+    // Use display_names and ciks arrays (preferred over legacy fields)
+    const displayNames = (source.display_names as string[]) ?? [];
+    const ciks = (source.ciks as string[]) ?? [];
+    const companyCik = ciks[0]?.replace(/^0+/, "") ??
+      rawAccession.replace(/-/g, "").slice(0, 10).replace(/^0+/, "");
+    const companyName = extractCompanyName(displayNames, (source.entity_name as string) ?? "");
+    const companyTicker = extractTicker(displayNames);
 
     // Only include target filing types
     const normalizedType = filingType.toUpperCase().trim();
@@ -116,6 +154,7 @@ function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
       filing_type: filingType,
       company_cik: companyCik,
       company_name: companyName,
+      company_ticker: companyTicker,
       filed_date: filedDate,
       filing_url: buildFilingUrl(accession),
     });
@@ -163,6 +202,45 @@ async function fetchSearchPage(
 }
 
 /**
+ * Fetch ALL of today's filings from EDGAR with pagination.
+ * Returns deduplicated filings (by accession_number within the response).
+ * Does NOT check the database — caller handles DB dedup.
+ */
+export async function fetchAllTodaysFilings(): Promise<EdgarFiling[]> {
+  const PAGE_SIZE = 100;
+  const MAX_PAGES = 50; // Safety cap: 5,000 filings max
+  const allFilings: EdgarFiling[] = [];
+  const seenAccessions = new Set<string>();
+
+  for (let page = 0; page < MAX_PAGES; page++) {
+    const baseUrl = buildSearchUrl();
+    const url = `${baseUrl}&from=${page * PAGE_SIZE}&size=${PAGE_SIZE}`;
+    const data = await fetchSearchPage(url);
+
+    const total = (data as { hits?: { total?: { value?: number } } })
+      .hits?.total?.value ?? 0;
+    const pageFilings = parseSearchResults(data);
+
+    for (const filing of pageFilings) {
+      if (!seenAccessions.has(filing.accession_number)) {
+        seenAccessions.add(filing.accession_number);
+        allFilings.push(filing);
+      }
+    }
+
+    // Stop if we've fetched all available filings
+    if ((page + 1) * PAGE_SIZE >= total || pageFilings.length === 0) {
+      break;
+    }
+
+    // Small delay between pages to respect EDGAR rate limits
+    await new Promise((r) => setTimeout(r, 120));
+  }
+
+  return allFilings;
+}
+
+/**
  * Poll the SEC EDGAR full-text search for today's filings across all
  * target form types (10-K, 10-Q, 8-K, DEF 14A, 13F-HR, SC 13D/G, Form 4).
  *
@@ -173,27 +251,29 @@ async function fetchSearchPage(
 export async function pollEdgarRss(
   supabase: SupabaseClient<Database>
 ): Promise<EdgarFiling[]> {
-  const url = buildSearchUrl();
-  const data = await fetchSearchPage(url);
-  const allFilings = parseSearchResults(data);
+  const allFilings = await fetchAllTodaysFilings();
 
   if (allFilings.length === 0) {
     return [];
   }
 
-  // Check which accession numbers already exist
+  // Check which accession numbers already exist in batches of 200
+  // (Supabase .in() has a limit)
   const db = supabase as AnySupabase;
+  const existingSet = new Set<string>();
   const accessionNumbers = allFilings.map((f) => f.accession_number);
-  const { data: existing } = await db
-    .from("filings")
-    .select("accession_number")
-    .in("accession_number", accessionNumbers);
 
-  const existingSet = new Set(
-    ((existing as Array<{ accession_number: string }>) ?? []).map(
-      (row) => row.accession_number
-    )
-  );
+  for (let i = 0; i < accessionNumbers.length; i += 200) {
+    const batch = accessionNumbers.slice(i, i + 200);
+    const { data: existing } = await db
+      .from("filings")
+      .select("accession_number")
+      .in("accession_number", batch);
+
+    for (const row of (existing as Array<{ accession_number: string }>) ?? []) {
+      existingSet.add(row.accession_number);
+    }
+  }
 
   return allFilings.filter((f) => !existingSet.has(f.accession_number));
 }
