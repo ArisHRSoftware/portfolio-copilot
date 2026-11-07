@@ -113,6 +113,11 @@ export default async function FilingDetailPage({
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
+  // Construct SEC URL from accession number (more reliable than stored raw_url)
+  const accessionClean = filing.accession_number.replace(/-/g, "");
+  const cikPadded = (company?.cik_number ?? accessionClean.slice(0, 10)).padStart(10, "0");
+  const secFilingUrl = `https://www.sec.gov/Archives/edgar/data/${cikPadded}/${accessionClean}/${filing.accession_number}-index.htm`;
+
   return (
     <>
       <SiteHeader />
@@ -276,7 +281,7 @@ export default async function FilingDetailPage({
       <Separator />
 
       <div className="flex items-center gap-4 flex-wrap">
-        <Button variant="outline" render={<Link href={filing.raw_url} target="_blank" rel="noopener noreferrer" />}>
+        <Button variant="outline" render={<Link href={secFilingUrl} target="_blank" rel="noopener noreferrer" />}>
           View Original SEC Filing
         </Button>
         <Button
