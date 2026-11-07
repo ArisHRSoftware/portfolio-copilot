@@ -111,12 +111,13 @@ function extractCompanyName(displayNames: string[], fallback: string): string {
  * Parse the EDGAR EFTS JSON response into structured filing entries.
  *
  * The EFTS search-index endpoint returns JSON with a `hits.hits` array.
- * Each hit contains `_source` with: file_date, form_type, display_names,
- * ciks, file_num, biz_locations, period_of_report, etc.
- * The `_id` field is the accession number.
+ * Each hit's `_id` is `accession:document_name` (e.g., "0001234-26-000001:doc.htm").
+ * The clean accession number is in `_source.adsh`. One filing can produce
+ * multiple hits (main document + exhibits), so we deduplicate by accession.
  */
 function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
   const filings: EdgarFiling[] = [];
+  const seenAccessions = new Set<string>();
 
   const hits =
     (data as { hits?: { hits?: Array<Record<string, unknown>> } }).hits
@@ -126,9 +127,20 @@ function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
     const source = hit._source as Record<string, unknown> | undefined;
     if (!source) continue;
 
-    const rawAccession = (hit._id as string) ?? (source.adsh as string) ?? "";
+    // Prefer adsh (clean accession) over _id (which includes :document suffix)
+    const rawAdsh = (source.adsh as string) ?? "";
+    const rawId = (hit._id as string) ?? "";
+    const rawAccession = rawAdsh || rawId.split(":")[0];
     const accession = normalizeAccession(rawAccession);
-    const filingType = (source.form_type as string) ?? (source.form as string) ?? "";
+
+    // Deduplicate: one filing can have many document hits (exhibits, etc.)
+    if (seenAccessions.has(accession)) continue;
+
+    // Use root form type, not exhibit-level file_type
+    const filingType = ((source.root_forms as string[]) ?? [])[0]
+      ?? (source.form_type as string)
+      ?? (source.form as string)
+      ?? "";
     const filedDate = (source.file_date as string) ?? "";
 
     // Use display_names and ciks arrays (preferred over legacy fields)
@@ -149,6 +161,7 @@ function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
     );
     if (!isTarget) continue;
 
+    seenAccessions.add(accession);
     filings.push({
       accession_number: accession,
       filing_type: filingType,
