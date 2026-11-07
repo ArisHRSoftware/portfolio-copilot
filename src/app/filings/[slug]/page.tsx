@@ -113,10 +113,11 @@ export default async function FilingDetailPage({
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
-  // Construct SEC URL from accession number (more reliable than stored raw_url)
-  const accessionClean = filing.accession_number.replace(/-/g, "");
-  const cikPadded = (company?.cik_number ?? accessionClean.slice(0, 10)).padStart(10, "0");
-  const secFilingUrl = `https://www.sec.gov/Archives/edgar/data/${cikPadded}/${accessionClean}/${filing.accession_number}-index.htm`;
+  // Link to EDGAR company filings page filtered by type + date.
+  // This never 404s — even for invalid/ghost accession numbers.
+  // The direct Archives URL can 404 if the filing doesn't exist on EDGAR.
+  const cik = (company?.cik_number ?? "").replace(/^0+/, "") || filing.accession_number.replace(/-/g, "").slice(0, 10).replace(/^0+/, "");
+  const secFilingUrl = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=${encodeURIComponent(filing.filing_type)}&dateb=${filing.filed_date.replace(/-/g, "")}&owner=include&count=10&action=getcompany`;
 
   return (
     <>
