@@ -142,7 +142,22 @@ function ensureFitsContext(text: string): string {
 }
 
 /**
- * Retry with exponential backoff.
+ * Custom error for rate limit exhaustion — signals the pipeline to stop
+ * the current batch rather than retrying.
+ */
+export class RateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RateLimitError";
+  }
+}
+
+/**
+ * Retry with exponential backoff. Handles Gemini-specific errors:
+ * - 429 daily quota → throw RateLimitError (stop batch, don't retry)
+ * - 429 per-minute → wait and retry
+ * - 503 overload → wait and retry with longer backoff
+ * - 401/API_KEY → throw immediately (misconfiguration)
  */
 async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
   let lastError: Error | undefined;
@@ -151,9 +166,37 @@ async function withRetry<T>(fn: () => Promise<T>, maxRetries = 3): Promise<T> {
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      if (lastError.message.includes("401") || lastError.message.includes("API_KEY")) {
+      const msg = lastError.message;
+
+      // Auth errors — don't retry
+      if (msg.includes("401") || msg.includes("API_KEY")) {
         throw lastError;
       }
+
+      // Daily quota exhausted — stop the entire batch
+      if (msg.includes("429") && msg.includes("per day")) {
+        throw new RateLimitError("Gemini daily quota exhausted. Remaining filings will be processed in the next runs.");
+      }
+
+      // Per-minute rate limit — wait the suggested time + buffer
+      if (msg.includes("429") && msg.includes("per minute")) {
+        const retryMatch = msg.match(/retryDelay":"(\d+)s"/);
+        const waitSec = retryMatch ? parseInt(retryMatch[1], 10) + 5 : 65;
+        if (attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, waitSec * 1000));
+          continue;
+        }
+      }
+
+      // 503 overload — retry with exponential backoff
+      if (msg.includes("503")) {
+        if (attempt < maxRetries) {
+          await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt + 2) * 1000));
+          continue;
+        }
+      }
+
+      // Other errors — standard exponential backoff
       if (attempt < maxRetries) {
         await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 1000));
       }

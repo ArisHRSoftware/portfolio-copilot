@@ -4,6 +4,7 @@ import { pollEdgarRss, type EdgarFiling } from "./rss-poller";
 import { downloadAndParseFiling } from "./filing-parser";
 import {
   analyzeFilingWithClaude,
+  RateLimitError,
   type AnalysisResult,
 } from "./ai-analysis";
 import { onFilingProcessed } from "@/lib/seo/revalidate-cascade";
@@ -25,9 +26,14 @@ type AnySupabase = SupabaseClient<any>;
 
 /**
  * Max filings to analyze with Gemini per run.
- * Gemini free tier: ~1,500 RPD. At 96 runs/day, 15/run = 1,440/day.
+ * gemini-3.8-flash free tier: 5 RPM, 20 RPD.
+ * At 2/run with 15s delay between calls, stays well under 5 RPM.
+ * 96 runs/day × 2 = 192 attempts, but daily cap stops at 20.
  */
-const BATCH_SIZE = parseInt(process.env.EDGAR_BATCH_SIZE || "15", 10);
+const BATCH_SIZE = parseInt(process.env.EDGAR_BATCH_SIZE || "2", 10);
+
+/** Delay between Gemini API calls in ms (15s to respect 5 RPM) */
+const INTER_CALL_DELAY_MS = 15_000;
 
 /**
  * Filing type priority for analysis ordering.
@@ -421,6 +427,9 @@ async function processSingleFiling(
 
     return true;
   } catch (error) {
+    // Let RateLimitError propagate to stop the batch
+    if (error instanceof RateLimitError) throw error;
+
     const err = error instanceof Error ? error : new Error(String(error));
     await recordPipelineError(
       supabase,
@@ -507,13 +516,30 @@ export async function processNewFilings(
       `EDGAR pipeline: ${newFilings.length} new filings found, processing batch of ${batch.length} (priority: ${batch.map((f) => f.filing_type).join(", ")})`
     );
 
-    // Phase 3: Process batch sequentially (respects EDGAR + Gemini rate limits)
-    for (const filing of batch) {
-      const success = await processSingleFiling(db, filing, runId);
-      if (success) {
-        filingsProcessed++;
-      } else {
-        errorsCount++;
+    // Phase 3: Process batch sequentially with delays between Gemini calls
+    let rateLimitHit = false;
+    for (let i = 0; i < batch.length; i++) {
+      if (rateLimitHit) break;
+
+      // Delay between filings to respect Gemini 5 RPM limit
+      if (i > 0) {
+        await new Promise((r) => setTimeout(r, INTER_CALL_DELAY_MS));
+      }
+
+      try {
+        const success = await processSingleFiling(db, batch[i], runId);
+        if (success) {
+          filingsProcessed++;
+        } else {
+          errorsCount++;
+        }
+      } catch (err) {
+        if (err instanceof RateLimitError) {
+          console.log(`EDGAR pipeline: ${err.message} (${filingsProcessed} processed this run)`);
+          rateLimitHit = true;
+        } else {
+          errorsCount++;
+        }
       }
     }
 
