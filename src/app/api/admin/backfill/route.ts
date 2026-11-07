@@ -41,15 +41,17 @@ export async function POST(request: Request): Promise<Response> {
 
   const supabase = createClient<Database>(supabaseUrl, supabaseKey) as AnySupabase;
 
-  let body: { days?: number; clean_ghosts?: boolean } = {};
+  let body: { days?: number; clean_ghosts?: boolean; limit?: number; offset?: number } = {};
   try {
     body = await request.json();
   } catch {
     // defaults
   }
 
-  const days = Math.min(body.days ?? 7, 30); // cap at 30 days
-  const cleanGhosts = body.clean_ghosts ?? true;
+  const days = Math.min(body.days ?? 7, 30);
+  const cleanGhosts = body.clean_ghosts ?? false;
+  const maxFilings = Math.min(body.limit ?? 200, 500);
+  const pageOffset = body.offset ?? 0;
 
   const results = {
     ghosts_deleted: 0,
@@ -120,14 +122,16 @@ export async function POST(request: Request): Promise<Response> {
     const endStr = endDate.toISOString().slice(0, 10);
 
     const PAGE_SIZE = 100;
-    const MAX_PAGES = 50;
+    const maxPages = Math.ceil(maxFilings / PAGE_SIZE) + 1; // fetch slightly more to account for dedup
     const allFilings: EdgarFiling[] = [];
     const seenAccessions = new Set<string>();
 
     const forms = FILING_TYPES.map((t) => t.replace(/ /g, "+")).join(",");
 
-    for (let page = 0; page < MAX_PAGES; page++) {
-      const url = `${EDGAR_SEARCH_BASE}?q=%22%22&forms=${forms}&dateRange=custom&startdt=${startStr}&enddt=${endStr}&from=${page * PAGE_SIZE}&size=${PAGE_SIZE}`;
+    for (let page = 0; page < maxPages; page++) {
+      if (allFilings.length >= maxFilings * 2) break; // enough raw data
+      const edgarOffset = pageOffset + page * PAGE_SIZE;
+      const url = `${EDGAR_SEARCH_BASE}?q=%22%22&forms=${forms}&dateRange=custom&startdt=${startStr}&enddt=${endStr}&from=${edgarOffset}&size=${PAGE_SIZE}`;
 
       const res = await fetch(url, {
         headers: { "User-Agent": EDGAR_USER_AGENT, Accept: "application/json" },
@@ -213,7 +217,9 @@ export async function POST(request: Request): Promise<Response> {
       }
     }
 
-    const newFilings = allFilings.filter((f) => !existingSet.has(f.accession_number));
+    const newFilings = allFilings
+      .filter((f) => !existingSet.has(f.accession_number))
+      .slice(0, maxFilings);
 
     // ── Step 4: Ingest metadata (no AI analysis) ─────────────────────
     for (const filing of newFilings) {
