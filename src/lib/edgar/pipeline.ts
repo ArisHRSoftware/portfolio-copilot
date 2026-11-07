@@ -482,10 +482,23 @@ export async function processNewFilings(
   let errorsCount = 0;
 
   try {
-    // Phase 1: Poll EDGAR for all new filings (paginated, deduped against DB)
+    // Phase 1: Poll EDGAR for new filings + check DB for unanalyzed backfill
     const newFilings = await pollEdgarRss(supabase);
 
-    if (newFilings.length === 0) {
+    // Also pick up backfilled filings waiting for AI analysis
+    const { data: unanalyzed } = await db
+      .from("filings")
+      .select("id, accession_number, filing_type, filed_date, raw_url, company_id")
+      .is("processed_at", null)
+      .order("filed_date", { ascending: false })
+      .limit(BATCH_SIZE);
+
+    const pendingAnalysis = ((unanalyzed ?? []) as Array<{
+      id: string; accession_number: string; filing_type: string;
+      filed_date: string; raw_url: string; company_id: string;
+    }>);
+
+    if (newFilings.length === 0 && pendingAnalysis.length === 0) {
       await db
         .from("pipeline_runs")
         .update({
@@ -504,30 +517,33 @@ export async function processNewFilings(
       };
     }
 
-    // Phase 2: Sort by priority (10-K first, Form 4 last) and take a batch
+    // Phase 2: Sort new filings by priority (10-K first, Form 4 last)
     const sorted = [...newFilings].sort((a, b) => {
       const pa = FILING_TYPE_PRIORITY[a.filing_type.toUpperCase()] ?? 5;
       const pb = FILING_TYPE_PRIORITY[b.filing_type.toUpperCase()] ?? 5;
       return pa - pb;
     });
-    const batch = sorted.slice(0, BATCH_SIZE);
+    const newBatch = sorted.slice(0, BATCH_SIZE);
+
+    // Backfill gets remaining batch capacity
+    const backfillCapacity = Math.max(0, BATCH_SIZE - newBatch.length);
+    const backfillBatch = pendingAnalysis.slice(0, backfillCapacity);
 
     console.log(
-      `EDGAR pipeline: ${newFilings.length} new filings found, processing batch of ${batch.length} (priority: ${batch.map((f) => f.filing_type).join(", ")})`
+      `EDGAR pipeline: ${newFilings.length} new + ${pendingAnalysis.length} unanalyzed, processing ${newBatch.length} new + ${backfillBatch.length} backfill`
     );
 
-    // Phase 3: Process batch sequentially with delays between Gemini calls
+    // Phase 3: Process new filings first
     let rateLimitHit = false;
-    for (let i = 0; i < batch.length; i++) {
+    for (let i = 0; i < newBatch.length; i++) {
       if (rateLimitHit) break;
 
-      // Delay between filings to respect Gemini 5 RPM limit
       if (i > 0) {
         await new Promise((r) => setTimeout(r, INTER_CALL_DELAY_MS));
       }
 
       try {
-        const success = await processSingleFiling(db, batch[i], runId);
+        const success = await processSingleFiling(db, newBatch[i], runId);
         if (success) {
           filingsProcessed++;
         } else {
@@ -538,6 +554,63 @@ export async function processNewFilings(
           console.log(`EDGAR pipeline: ${err.message} (${filingsProcessed} processed this run)`);
           rateLimitHit = true;
         } else {
+          errorsCount++;
+        }
+      }
+    }
+
+    // Phase 4: Analyze backfilled filings (already in DB, need AI analysis)
+    for (let i = 0; i < backfillBatch.length; i++) {
+      if (rateLimitHit) break;
+
+      await new Promise((r) => setTimeout(r, INTER_CALL_DELAY_MS));
+
+      const bf = backfillBatch[i];
+      try {
+        // Get company for this filing
+        const { data: company } = await db
+          .from("companies")
+          .select("*")
+          .eq("id", bf.company_id)
+          .single();
+
+        if (!company) continue;
+        const comp = company as CompaniesRow;
+
+        // Download and parse filing text
+        const filingText = await downloadAndParseFiling(bf.raw_url);
+        if (filingText.length < 100) continue;
+
+        // AI analysis
+        const analysisResult = await analyzeFilingWithClaude(
+          filingText, bf.filing_type, comp.name, comp.ticker
+        );
+
+        // Update existing filing with analysis
+        await db.from("filings").update({
+          ai_summary_json: analysisResult.analysis as unknown as Record<string, unknown>,
+          ai_summary_prose: analysisResult.analysis.detailed_summary,
+          one_line_summary: analysisResult.analysis.one_line_summary,
+          significance_score: analysisResult.analysis.significance_score,
+          insider_data: analysisResult.analysis.insider_trades.length > 0
+            ? (analysisResult.analysis.insider_trades as unknown as Record<string, unknown>)
+            : null,
+          has_earnings_data:
+            analysisResult.analysis.earnings_impact.revenue_change !== null ||
+            analysisResult.analysis.earnings_impact.eps_change !== null,
+          input_tokens: analysisResult.usage.input_tokens,
+          output_tokens: analysisResult.usage.output_tokens,
+          processed_at: new Date().toISOString(),
+        }).eq("id", bf.id);
+
+        await db.from("companies").update({ last_filing_date: bf.filed_date }).eq("id", comp.id);
+        filingsProcessed++;
+      } catch (err) {
+        if (err instanceof RateLimitError) {
+          rateLimitHit = true;
+        } else {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          await recordPipelineError(db, runId, bf.accession_number, new Error(errMsg));
           errorsCount++;
         }
       }

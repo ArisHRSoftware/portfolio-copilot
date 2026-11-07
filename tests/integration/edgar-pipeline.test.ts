@@ -736,17 +736,46 @@ describe("EDGAR AI analysis", () => {
  * Build a Supabase-like mock where `from(table)` returns a chainable builder.
  * Each table can have custom behavior via the handlers map.
  */
+/** Returns a select chain that handles both dedup (.in()) and backfill (.is().order().limit()) queries */
+function filingsSelect(dedupData: unknown[] = []) {
+  return () => ({
+    in: () => Promise.resolve({ data: dedupData, error: null }),
+    is: () => ({ order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) }) }),
+  });
+}
+
 function buildPipelineSupabaseMock(
   handlers: Record<string, () => Record<string, unknown>>
 ) {
+  const emptyChain = () => Promise.resolve({ data: [], error: null });
+  const chainable: Record<string, unknown> = {};
+  const proxy = () => new Proxy(chainable, {
+    get: (_t, prop) => {
+      if (prop === "then") return undefined; // not a promise
+      return (..._args: unknown[]) => proxy();
+    },
+  });
+  // Make the terminal call resolve to empty
+  const terminalProxy = (): unknown => {
+    const p = Promise.resolve({ data: [], error: null });
+    return new Proxy(p, {
+      get: (target, prop) => {
+        if (prop === "then" || prop === "catch" || prop === "finally") {
+          return (target as Record<string, unknown>)[prop as string];
+        }
+        return () => terminalProxy();
+      },
+    });
+  };
+
   return {
     from: (table: string) => {
       const handler = handlers[table];
       if (handler) return handler();
-      // Default: chainable that resolves to empty success
+      // Default: deeply chainable that resolves to empty success
       return {
         insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
-        select: () => ({ in: () => Promise.resolve({ data: [], error: null }) }),
+        select: () => terminalProxy(),
         update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
       };
     },
@@ -799,9 +828,7 @@ describe("EDGAR pipeline orchestrator", () => {
         }),
       }),
       filings: () => ({
-        select: () => ({
-          in: () => Promise.resolve({ data: [], error: null }),
-        }),
+        select: filingsSelect(),
       }),
     });
 
@@ -858,9 +885,7 @@ describe("EDGAR pipeline orchestrator", () => {
         }),
       }),
       filings: () => ({
-        select: () => ({
-          in: () => Promise.resolve({ data: [], error: null }),
-        }),
+        select: filingsSelect(),
       }),
       companies: () => ({
         select: () => ({
@@ -945,9 +970,7 @@ describe("EDGAR pipeline orchestrator", () => {
         }),
       }),
       filings: () => ({
-        select: () => ({
-          in: () => Promise.resolve({ data: [], error: null }),
-        }),
+        select: filingsSelect(),
         insert: () => ({
           select: () => ({
             single: () =>
@@ -1051,9 +1074,7 @@ describe("EDGAR pipeline orchestrator", () => {
         }),
       }),
       filings: () => ({
-        select: () => ({
-          in: () => Promise.resolve({ data: [], error: null }),
-        }),
+        select: filingsSelect(),
         insert: (data: Record<string, unknown>) => {
           insertedSlug = data.slug as string;
           return {
@@ -1171,9 +1192,7 @@ describe("EDGAR pipeline orchestrator", () => {
         }),
       }),
       filings: () => ({
-        select: () => ({
-          in: () => Promise.resolve({ data: [], error: null }),
-        }),
+        select: filingsSelect(),
         insert: (data: Record<string, unknown>) => ({
           select: () => ({
             single: () =>

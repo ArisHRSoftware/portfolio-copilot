@@ -14,9 +14,9 @@ async function handler(_request: Request): Promise<Response> {
     );
   }
 
-  if (!process.env.GOOGLE_API_KEY) {
+  if (!process.env.GROQ_API_KEY && !process.env.GOOGLE_API_KEY) {
     return Response.json(
-      { error: "GOOGLE_API_KEY not configured" },
+      { error: "No AI API key configured (GROQ_API_KEY or GOOGLE_API_KEY)" },
       { status: 500 }
     );
   }
