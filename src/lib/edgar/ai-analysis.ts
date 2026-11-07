@@ -142,7 +142,7 @@ async function analyzeWithGroq(
   ticker: string
 ): Promise<AnalysisResult> {
   const groqKey = process.env.GROQ_API_KEY!;
-  const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+  const model = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
   const safeText = ensureFitsContext(filingText);
 
   const userPrompt = `Analyze this ${filingType} filing from ${companyName} (${ticker}).

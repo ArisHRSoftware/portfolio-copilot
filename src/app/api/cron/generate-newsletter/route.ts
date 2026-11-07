@@ -109,7 +109,7 @@ Use <h2> for section headers. Keep it concise and actionable. No fluff. Return O
         method: "POST",
         headers: { Authorization: `Bearer ${groqKey}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+          model: process.env.GROQ_MODEL || "openai/gpt-oss-120b",
           messages: [{ role: "user", content: newsletterPrompt }],
           max_tokens: 2000,
           temperature: 0.7,

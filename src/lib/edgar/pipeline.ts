@@ -29,7 +29,7 @@ type AnySupabase = SupabaseClient<any>;
  * Groq free tier: 30 RPM, 14,400 RPD → 10/run is comfortable.
  * Gemini free tier: 5 RPM, 20 RPD → auto-reduced to 2 when no GROQ_API_KEY.
  */
-const DEFAULT_BATCH = process.env.GROQ_API_KEY ? "10" : "2";
+const DEFAULT_BATCH = process.env.GROQ_API_KEY ? "8" : "2";
 const BATCH_SIZE = parseInt(process.env.EDGAR_BATCH_SIZE || DEFAULT_BATCH, 10);
 
 /** Delay between AI calls: 3s for Groq (30 RPM), 15s for Gemini (5 RPM) */
