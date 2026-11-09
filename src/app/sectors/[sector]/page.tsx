@@ -99,15 +99,10 @@ export default async function SectorPage({
 
   const companyIds = sortedCompanies.map((c) => c.id);
 
-  // Get recent filings for these companies
-  // We fetch recent filings and then filter to just these companies
-  const allRecentFilings = companyIds.length > 0
-    ? await getRecentFilings(supabase, { limit: 200 })
+  // Get recent filings directly filtered by these company IDs
+  const sectorFilings = companyIds.length > 0
+    ? await getRecentFilings(supabase, { companyIds, limit: 20 })
     : [];
-
-  const sectorFilings = allRecentFilings
-    .filter((f) => companyIds.includes(f.company_id))
-    .slice(0, 20);
 
   const recentFilingsWithCompanies = await getFilingsWithCompanies(supabase, sectorFilings);
 

@@ -65,6 +65,7 @@ export async function getRecentFilings(
     hasEarnings?: boolean;
     hasInsiderData?: boolean;
     companyId?: string;
+    companyIds?: string[];
   } = {}
 ) {
   let query = supabase
@@ -85,6 +86,9 @@ export async function getRecentFilings(
   }
   if (options.companyId) {
     query = query.eq("company_id", options.companyId);
+  }
+  if (options.companyIds && options.companyIds.length > 0) {
+    query = query.in("company_id", options.companyIds);
   }
 
   const { data } = await query;
