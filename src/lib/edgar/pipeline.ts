@@ -88,13 +88,17 @@ async function findCompanyByCik(
   supabase: AnySupabase,
   cik: string
 ): Promise<CompaniesRow | null> {
+  // Validate CIK is numeric to prevent PostgREST filter injection
+  const cleanCik = cik.replace(/\D/g, "");
+  if (!cleanCik) return null;
+
   // Pad CIK to 10 digits with leading zeros (EDGAR standard)
-  const paddedCik = cik.padStart(10, "0");
+  const paddedCik = cleanCik.padStart(10, "0");
 
   const { data } = await supabase
     .from("companies")
     .select("*")
-    .or(`cik_number.eq.${paddedCik},cik_number.eq.${cik}`)
+    .or(`cik_number.eq.${paddedCik},cik_number.eq.${cleanCik}`)
     .limit(1)
     .single();
 

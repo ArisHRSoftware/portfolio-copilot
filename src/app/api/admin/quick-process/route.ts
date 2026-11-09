@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { timingSafeEqual } from "crypto";
 import type { Database } from "@/lib/types/database";
 import { downloadAndParseFiling } from "@/lib/edgar/filing-parser";
 import { extractTemplateData } from "@/lib/edgar/template-extractor";
@@ -24,8 +25,10 @@ type AnySupabase = ReturnType<typeof createClient<any>>;
  */
 export async function POST(request: Request): Promise<Response> {
   const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret");
-  if (!adminSecret || providedSecret !== adminSecret) {
+  const providedSecret = request.headers.get("x-admin-secret") ?? "";
+  if (!adminSecret || !providedSecret
+    || Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret)
+    || !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -44,7 +47,10 @@ export async function POST(request: Request): Promise<Response> {
     // defaults
   }
 
-  const batchSize = Math.min(body.batch_size ?? 50, 100);
+  const batchSize = Math.max(1, Math.min(
+    typeof body.batch_size === "number" ? body.batch_size : 50,
+    100
+  ));
 
   // Fetch all unprocessed filings (processed_at IS NULL)
   const { data: unprocessed, error: fetchErr } = await db

@@ -151,10 +151,22 @@ async function resolvePrimaryDocumentUrl(rawUrl: string): Promise<string> {
  * @param rawUrl - The EDGAR filing URL (index page or direct document)
  * @returns Cleaned, truncated filing text
  */
+function validateSecGovUrl(url: string): void {
+  const parsed = new URL(url);
+  if (parsed.hostname !== "www.sec.gov" && parsed.hostname !== "sec.gov") {
+    throw new Error(`SSRF blocked: URL hostname ${parsed.hostname} is not sec.gov`);
+  }
+  if (parsed.protocol !== "https:") {
+    throw new Error(`SSRF blocked: URL protocol ${parsed.protocol} is not https:`);
+  }
+}
+
 export async function downloadAndParseFiling(
   rawUrl: string
 ): Promise<string> {
+  validateSecGovUrl(rawUrl);
   const documentUrl = await resolvePrimaryDocumentUrl(rawUrl);
+  validateSecGovUrl(documentUrl);
 
   await rateLimitWait();
 

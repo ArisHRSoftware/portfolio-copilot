@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { timingSafeEqual } from "crypto";
 import type { Database } from "@/lib/types/database";
 import { downloadAndParseFiling } from "@/lib/edgar/filing-parser";
 import {
@@ -30,8 +31,10 @@ const INTER_CALL_DELAY_MS = process.env.GROQ_API_KEY ? 3_000 : 15_000;
  */
 export async function POST(request: Request): Promise<Response> {
   const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret");
-  if (!adminSecret || providedSecret !== adminSecret) {
+  const providedSecret = request.headers.get("x-admin-secret") ?? "";
+  if (!adminSecret || !providedSecret
+    || Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret)
+    || !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -57,7 +60,10 @@ export async function POST(request: Request): Promise<Response> {
     // defaults
   }
 
-  const batchSize = Math.min(body.batch_size ?? 20, 50);
+  const batchSize = Math.max(1, Math.min(
+    typeof body.batch_size === "number" ? body.batch_size : 20,
+    50
+  ));
   const skipErrored = body.skip_errored ?? false;
 
   // Fetch unanalyzed filings

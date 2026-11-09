@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { timingSafeEqual } from "crypto";
 import type { Database } from "@/lib/types/database";
 import { fetchAllTodaysFilings, type EdgarFiling } from "@/lib/edgar/rss-poller";
 import { sicToSector } from "@/lib/utils";
@@ -31,10 +32,12 @@ const FILING_TYPES = ["10-K", "10-Q", "8-K", "4", "DEF 14A", "13F-HR", "SC 13D",
  *   Body: { "days": 7, "clean_ghosts": true }
  */
 export async function POST(request: Request): Promise<Response> {
-  // Auth check
+  // Auth check (timing-safe)
   const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret");
-  if (!adminSecret || providedSecret !== adminSecret) {
+  const providedSecret = request.headers.get("x-admin-secret") ?? "";
+  if (!adminSecret || !providedSecret
+    || Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret)
+    || !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -188,7 +188,8 @@ ${safeText}`;
     throw new Error(`Failed to parse Groq JSON response: ${content.slice(0, 200)}`);
   }
 
-  analysis.significance_score = Math.max(1, Math.min(10, Math.round(analysis.significance_score)));
+  const rawScore = Number(analysis.significance_score);
+  analysis.significance_score = Number.isFinite(rawScore) ? Math.max(1, Math.min(10, Math.round(rawScore))) : 5;
 
   return {
     analysis,
@@ -320,7 +321,8 @@ ${safeText}`;
     throw new Error(`Failed to parse Gemini JSON response: ${text.slice(0, 200)}`);
   }
 
-  analysis.significance_score = Math.max(1, Math.min(10, Math.round(analysis.significance_score)));
+  const rawScore = Number(analysis.significance_score);
+  analysis.significance_score = Number.isFinite(rawScore) ? Math.max(1, Math.min(10, Math.round(rawScore))) : 5;
 
   const usageMetadata = response.usageMetadata;
   return {
