@@ -31,6 +31,7 @@ export interface EdgarFiling {
   company_cik: string;
   company_name: string;
   company_ticker: string | null;
+  company_sic: string | null;
   filed_date: string;
   filing_url: string;
 }
@@ -150,6 +151,7 @@ function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
       rawAccession.replace(/-/g, "").slice(0, 10).replace(/^0+/, "");
     const companyName = extractCompanyName(displayNames, (source.entity_name as string) ?? "");
     const companyTicker = extractTicker(displayNames);
+    const companySic = ((source.sics as string[]) ?? [])[0] ?? null;
 
     // Only include target filing types
     const normalizedType = filingType.toUpperCase().trim();
@@ -168,6 +170,7 @@ function parseSearchResults(data: Record<string, unknown>): EdgarFiling[] {
       company_cik: companyCik,
       company_name: companyName,
       company_ticker: companyTicker,
+      company_sic: companySic,
       filed_date: filedDate,
       filing_url: buildFilingUrl(accession),
     });

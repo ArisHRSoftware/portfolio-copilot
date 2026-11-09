@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import { getTrendingStocks, getRecentFilings, getFilingsWithCompanies } from "@/lib/supabase/queries";
+import { displayTicker, isRealTicker } from "@/lib/utils";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -160,9 +161,9 @@ export default async function TrendingPage() {
                       href={`/stocks/${row.ticker.toLowerCase()}`}
                       className="font-medium hover:underline"
                     >
-                      {row.ticker}
+                      {displayTicker(row.ticker, company?.name)}
                     </Link>
-                    {company && (
+                    {company && isRealTicker(row.ticker) && (
                       <p className="text-xs text-muted-foreground truncate max-w-[160px]">
                         {company.name}
                       </p>

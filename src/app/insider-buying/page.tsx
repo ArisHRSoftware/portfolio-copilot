@@ -5,6 +5,7 @@ import {
   getRecentFilings,
   getFilingsWithCompanies,
 } from "@/lib/supabase/queries";
+import { displayTicker, isRealTicker } from "@/lib/utils";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -123,11 +124,13 @@ export default async function InsiderBuyingPage() {
                       href={`/stocks/${(company?.ticker ?? "").toLowerCase()}`}
                       className="font-medium hover:underline"
                     >
-                      {company?.ticker ?? "N/A"}
+                      {displayTicker(company?.ticker ?? "N/A", company?.name)}
                     </Link>
-                    <p className="text-xs text-muted-foreground truncate max-w-[120px]">
-                      {company?.name}
-                    </p>
+                    {isRealTicker(company?.ticker ?? "") && (
+                      <p className="text-xs text-muted-foreground truncate max-w-[120px]">
+                        {company?.name}
+                      </p>
+                    )}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     {(insider?.name as string) ?? "—"}

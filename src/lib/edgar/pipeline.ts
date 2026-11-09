@@ -13,6 +13,7 @@ import { deliverWebhooks } from "@/lib/webhook-delivery";
 import { sendFilingAlert, type FilingEmailData } from "@/lib/resend";
 import type { Filing, Company } from "@/lib/supabase/queries";
 import { checkCostAlert } from "@/lib/claude-cost";
+import { sicToSector } from "@/lib/utils";
 
 type FilingsRow = Database["public"]["Tables"]["filings"]["Row"];
 type CompaniesRow = Database["public"]["Tables"]["companies"]["Row"];
@@ -120,7 +121,7 @@ async function findOrCreateCompany(
       ticker,
       name,
       cik_number: paddedCik,
-      sector: "",
+      sector: filing.company_sic ? sicToSector(filing.company_sic) : "",
       exchange: "",
       market_cap: 0,
       status: "active",

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";
 import { fetchAllTodaysFilings, type EdgarFiling } from "@/lib/edgar/rss-poller";
+import { sicToSector } from "@/lib/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabase = ReturnType<typeof createClient<any>>;
@@ -186,12 +187,15 @@ export async function POST(request: Request): Promise<Response> {
           }
         }
 
+        const companySic = ((source.sics as string[]) ?? [])[0] ?? null;
+
         allFilings.push({
           accession_number: accession,
           filing_type: filingType,
           company_cik: companyCik,
           company_name: companyName,
           company_ticker: companyTicker,
+          company_sic: companySic,
           filed_date: (source.file_date as string) ?? "",
           filing_url: buildFilingUrl(accession),
         });
@@ -245,7 +249,7 @@ export async function POST(request: Request): Promise<Response> {
               ticker,
               name: filing.company_name || `Company ${filing.company_cik}`,
               cik_number: paddedCik,
-              sector: "",
+              sector: filing.company_sic ? sicToSector(filing.company_sic) : "",
               exchange: "",
               market_cap: 0,
               status: "active",
