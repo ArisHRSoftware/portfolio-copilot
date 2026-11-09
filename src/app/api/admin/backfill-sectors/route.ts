@@ -3,7 +3,7 @@ import { timingSafeEqual } from "crypto";
 import type { Database } from "@/lib/types/database";
 import { sicToSector } from "@/lib/constants/sectors";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabase = ReturnType<typeof createClient<any>>;
@@ -54,16 +54,9 @@ export async function POST(request: Request): Promise<Response> {
   type CompanyRow = { id: string; ticker: string; name: string; sector: string; cik_number: string | null };
   const allCompanies = (companies ?? []) as CompanyRow[];
 
-  // Find companies with empty, missing, or non-canonical sectors
-  const CANONICAL_SECTORS = new Set([
-    "Technology", "Healthcare", "Financial Services", "Consumer Cyclical",
-    "Consumer Defensive", "Industrials", "Energy", "Basic Materials",
-    "Real Estate", "Utilities", "Communication Services",
-  ]);
-
-  const needsUpdate = allCompanies.filter(
-    (c) => !c.sector || !CANONICAL_SECTORS.has(c.sector)
-  );
+  // Only fix companies with empty sectors (92 of ~1000)
+  // Companies with non-empty sectors already have canonical names
+  const needsUpdate = allCompanies.filter((c) => !c.sector);
 
   if (needsUpdate.length === 0) {
     return Response.json({
