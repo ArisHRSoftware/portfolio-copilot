@@ -358,7 +358,16 @@ export async function analyzeFilingWithClaude(
   }
 
   if (hasGroq) {
-    return analyzeWithGroq(filingText, filingType, companyName, ticker);
+    try {
+      return await analyzeWithGroq(filingText, filingType, companyName, ticker);
+    } catch (err) {
+      // Fall back to Gemini on Groq rate limit (if available)
+      if (err instanceof RateLimitError && hasGemini) {
+        console.log("Groq daily quota hit — falling back to Gemini");
+        return analyzeWithGemini(filingText, filingType, companyName, ticker);
+      }
+      throw err;
+    }
   }
 
   return analyzeWithGemini(filingText, filingType, companyName, ticker);
