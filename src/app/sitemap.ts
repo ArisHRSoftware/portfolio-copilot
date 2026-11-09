@@ -12,16 +12,18 @@ import { SECTOR_SLUGS } from "@/lib/constants/sectors";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createStaticClient();
 
-  // Fetch all dynamic data in parallel — single query each, no per-item lookups
+  // Fetch all dynamic data in parallel
+  // Supabase PostgREST defaults to 1,000 rows — use explicit high limits
   const [companies, blogPosts, filings] = await Promise.all([
     supabase
       .from("companies")
       .select("*")
       .eq("status", "active")
       .order("last_filing_date", { ascending: false })
+      .limit(10000)
       .then(({ data }) => (data ?? []) as Company[]),
     getPublishedBlogPosts(supabase),
-    getRecentFilings(supabase, { limit: 500 }),
+    getRecentFilings(supabase, { limit: 5000 }),
   ]);
 
   const now = new Date();
