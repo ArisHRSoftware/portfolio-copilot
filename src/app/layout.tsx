@@ -6,6 +6,7 @@ import { OrganizationSchema } from "@/components/json-ld";
 import { PostHogProvider } from "@/components/posthog-provider";
 import { CookieConsent } from "@/components/cookie-consent";
 import { SkipToContent } from "@/components/skip-to-content";
+import { SiteFooter } from "@/components/site-footer";
 import "./globals.css";
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -82,7 +83,10 @@ export default function RootLayout({
         <SkipToContent />
         <OrganizationSchema />
         <PostHogProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            {children}
+            <SiteFooter />
+          </TooltipProvider>
           <CookieConsent />
         </PostHogProvider>
       </body>

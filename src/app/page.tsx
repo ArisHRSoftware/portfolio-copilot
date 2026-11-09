@@ -444,47 +444,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ===================== FOOTER — Full width ===================== */}
-        <footer className="px-6 py-10 border-t border-border">
-          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-foreground">Brefyr</span>
-              <span>&copy; {new Date().getFullYear()}</span>
-            </div>
-            <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              {[
-                ["/blog", "Blog"],
-                ["/archive", "Newsletter"],
-                ["/about", "About"],
-                ["/api-docs", "API"],
-                ["/privacy", "Privacy"],
-                ["/terms", "Terms"],
-                ["/disclaimer", "Disclaimer"],
-                ["/feed.xml", "RSS"],
-              ].map(([href, label]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="hover:text-foreground transition-colors"
-                >
-                  {label}
-                </Link>
-              ))}
-            </nav>
-            <p className="text-xs text-center sm:text-right max-w-sm">
-              Data from{" "}
-              <a
-                href="https://www.sec.gov/edgar"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
-                SEC EDGAR
-              </a>
-              . Not investment advice.
-            </p>
-          </div>
-        </footer>
+        {/* Footer is in layout.tsx (sitewide SiteFooter component) */}
       </main>
     </>
   );
