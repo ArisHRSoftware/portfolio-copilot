@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { sectorNameToSlug } from "@/lib/constants/sectors";
+import { formatJurisdiction } from "@/lib/utils";
 
 export const dynamicParams = true;
 export const revalidate = 3600;
@@ -109,7 +110,7 @@ function buildFAQs(
   const desc =
     company.description ??
     (company.sic_description
-      ? `${company.name} is a ${company.sic_description.toLowerCase()} company${company.state_of_incorporation ? ` incorporated in ${company.state_of_incorporation}` : ""}, trading on the ${company.exchange}.`
+      ? `${company.name} is a ${company.sic_description.toLowerCase()} company${formatJurisdiction(company.state_of_incorporation) ? ` incorporated in ${formatJurisdiction(company.state_of_incorporation)}` : ""}, trading on the ${company.exchange}.`
       : `${company.name} (${company.ticker}) is a publicly traded company on the ${company.exchange} in the ${company.sector} sector.`);
   faqs.push({ question: `What does ${company.name} do?`, answer: desc });
 
@@ -141,10 +142,10 @@ function buildFAQs(
   }
 
   // Q4: Location
-  if (company.state_of_incorporation) {
+  if (formatJurisdiction(company.state_of_incorporation)) {
     faqs.push({
       question: `Where is ${company.name} incorporated?`,
-      answer: `${company.name} is incorporated in ${company.state_of_incorporation} and is classified as a ${company.filer_category ?? "reporting"} filer with the SEC.`,
+      answer: `${company.name} is incorporated in ${formatJurisdiction(company.state_of_incorporation)} and is classified as a ${company.filer_category ?? "reporting"} filer with the SEC.`,
     });
   }
 
@@ -252,7 +253,7 @@ export default async function StockPage({
         ticker={company.ticker}
         exchange={company.exchange}
         url={stockUrl}
-        state={company.state_of_incorporation}
+        state={formatJurisdiction(company.state_of_incorporation)}
         description={company.description}
       />
       <FAQSchema questions={faqs} />
@@ -324,7 +325,7 @@ export default async function StockPage({
         <p className="text-muted-foreground leading-relaxed">
           {company.description ??
             (company.sic_description
-              ? `${company.name} is a ${company.sic_description.toLowerCase()} company${company.state_of_incorporation ? ` incorporated in ${company.state_of_incorporation}` : ""}, trading on the ${company.exchange}.`
+              ? `${company.name} is a ${company.sic_description.toLowerCase()} company${formatJurisdiction(company.state_of_incorporation) ? ` incorporated in ${formatJurisdiction(company.state_of_incorporation)}` : ""}, trading on the ${company.exchange}.`
               : `${company.name} (${company.ticker}) is a publicly traded company on the ${company.exchange} in the ${company.sector} sector.`)}
         </p>
         {filings.length > 0 && (
