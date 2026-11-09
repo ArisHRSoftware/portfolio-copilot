@@ -73,8 +73,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // --- Stock pages (7600+, single query already done) ---
+  // Sanitize tickers: multi-ticker companies (e.g. "JETBF, JETMF") take first ticker only
   const stockPages: MetadataRoute.Sitemap = companies.map((c) => ({
-    url: `${siteUrl}/stocks/${c.ticker.toLowerCase()}`,
+    url: `${siteUrl}/stocks/${c.ticker.split(",")[0].trim().toLowerCase()}`,
     lastModified: c.updated_at ? new Date(c.updated_at) : now,
     changeFrequency: "daily" as const,
     priority: 0.8,
