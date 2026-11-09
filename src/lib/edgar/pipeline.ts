@@ -13,7 +13,7 @@ import { deliverWebhooks } from "@/lib/webhook-delivery";
 import { sendFilingAlert, type FilingEmailData } from "@/lib/resend";
 import type { Filing, Company } from "@/lib/supabase/queries";
 import { checkCostAlert } from "@/lib/claude-cost";
-import { sicToSector } from "@/lib/utils";
+import { sicToSector } from "@/lib/constants/sectors";
 import { extractTemplateData } from "./template-extractor";
 
 type FilingsRow = Database["public"]["Tables"]["filings"]["Row"];

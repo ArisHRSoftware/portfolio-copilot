@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import { timingSafeEqual } from "crypto";
 import type { Database } from "@/lib/types/database";
 import { fetchAllTodaysFilings, type EdgarFiling } from "@/lib/edgar/rss-poller";
-import { sicToSector } from "@/lib/utils";
+import { sicToSector } from "@/lib/constants/sectors";
 import { downloadAndParseFiling } from "@/lib/edgar/filing-parser";
 import { extractTemplateData } from "@/lib/edgar/template-extractor";
 
