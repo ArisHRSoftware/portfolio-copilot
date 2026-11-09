@@ -188,6 +188,16 @@ ${safeText}`;
     throw new Error(`Failed to parse Groq JSON response: ${content.slice(0, 200)}`);
   }
 
+  // Validate/default all fields — Groq only guarantees valid JSON, not correct schema
+  analysis.key_facts = analysis.key_facts ?? [];
+  analysis.insider_trades = analysis.insider_trades ?? [];
+  analysis.risk_flags = analysis.risk_flags ?? [];
+  analysis.earnings_impact = analysis.earnings_impact ?? { revenue_change: null, eps_change: null, guidance: null, notable_items: [] };
+  analysis.earnings_impact.notable_items = analysis.earnings_impact.notable_items ?? [];
+  analysis.one_line_summary = analysis.one_line_summary ?? `${ticker} filed a ${filingType}`;
+  analysis.detailed_summary = analysis.detailed_summary ?? "";
+  analysis.faq = analysis.faq ?? [];
+
   const rawScore = Number(analysis.significance_score);
   analysis.significance_score = Number.isFinite(rawScore) ? Math.max(1, Math.min(10, Math.round(rawScore))) : 5;
 
@@ -363,12 +373,15 @@ export async function analyzeFilingWithClaude(
     try {
       return await analyzeWithGroq(filingText, filingType, companyName, ticker);
     } catch (err) {
-      // Fall back to Gemini on Groq rate limit (if available)
-      if (err instanceof RateLimitError && hasGemini) {
+      if (!hasGemini) throw err;
+      // Fall back to Gemini on any Groq failure
+      const msg = err instanceof Error ? err.message : String(err);
+      if (err instanceof RateLimitError) {
         console.log("Groq daily quota hit — falling back to Gemini");
-        return analyzeWithGemini(filingText, filingType, companyName, ticker);
+      } else {
+        console.log(`Groq error, falling back to Gemini: ${msg.slice(0, 100)}`);
       }
-      throw err;
+      return analyzeWithGemini(filingText, filingType, companyName, ticker);
     }
   }
 

@@ -230,7 +230,10 @@ async function storeFiling(
     .update({ last_filing_date: filing.filed_date })
     .eq("id", company.id);
 
-  return { ...insertedFiling, significance_score: template.significance_score };
+  const finalScore = analysisResult
+    ? analysisResult.analysis.significance_score
+    : template.significance_score;
+  return { ...insertedFiling, significance_score: finalScore };
 }
 
 /**

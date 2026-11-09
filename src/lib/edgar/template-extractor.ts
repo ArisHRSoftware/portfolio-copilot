@@ -123,9 +123,9 @@ function extractFormFour(
   // Form 4 text typically contains: "REPORTING OWNER" or "Name of Reporting Person"
   let insiderName = "An insider";
   const namePatterns = [
-    /(?:reporting\s+(?:owner|person))[:\s]*([A-Z][a-z]+(?:\s+[A-Z]\.?\s+)?[A-Z][a-z]+)/i,
-    /(?:name\s+of\s+reporting\s+person)[:\s]*([A-Z][a-z]+(?:\s+[A-Z]\.?\s+)?[A-Z][a-z]+)/i,
-    /(?:filed\s+by|filer)[:\s]*([A-Z][a-z]+(?:\s+[A-Z]\.?\s+)?[A-Z][a-z]+)/i,
+    /(?:reporting\s+(?:owner|person))[:\s]*([A-Za-z][A-Za-z'.,-]+(?:\s+[A-Za-z'.,-]+){1,4})/i,
+    /(?:name\s+of\s+reporting\s+person)[:\s]*([A-Za-z][A-Za-z'.,-]+(?:\s+[A-Za-z'.,-]+){1,4})/i,
+    /(?:filed\s+by|filer)[:\s]*([A-Za-z][A-Za-z'.,-]+(?:\s+[A-Za-z'.,-]+){1,4})/i,
   ];
   for (const pat of namePatterns) {
     const match = text.match(pat);
@@ -440,7 +440,9 @@ function extractSC13G(
 
 function formatDate(dateStr: string): string {
   try {
-    return new Date(dateStr).toLocaleDateString("en-US", {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr.slice(0, 10);
+    return d.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
