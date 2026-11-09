@@ -195,6 +195,17 @@ export default async function FilingDetailPage({
               </p>
             </CardContent>
           </Card>
+        ) : filing.one_line_summary ? (
+          <Card>
+            <CardContent className="py-4 space-y-3">
+              <p className="text-sm leading-relaxed">
+                {filing.one_line_summary}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Detailed AI analysis will be available shortly.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           <Card>
             <CardContent className="py-8 text-center text-muted-foreground">

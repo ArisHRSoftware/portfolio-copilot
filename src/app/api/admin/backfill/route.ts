@@ -2,6 +2,8 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database";
 import { fetchAllTodaysFilings, type EdgarFiling } from "@/lib/edgar/rss-poller";
 import { sicToSector } from "@/lib/utils";
+import { downloadAndParseFiling } from "@/lib/edgar/filing-parser";
+import { extractTemplateData } from "@/lib/edgar/template-extractor";
 
 export const maxDuration = 300;
 

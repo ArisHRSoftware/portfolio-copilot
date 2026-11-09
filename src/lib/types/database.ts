@@ -100,6 +100,7 @@ export type Database = {
           output_tokens: number | null;
           superseded_by: string | null;
           processed_at: string | null;
+          ai_enhanced_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -122,6 +123,7 @@ export type Database = {
           output_tokens?: number | null;
           superseded_by?: string | null;
           processed_at?: string | null;
+          ai_enhanced_at?: string | null;
         };
       };
       user_stocks: {

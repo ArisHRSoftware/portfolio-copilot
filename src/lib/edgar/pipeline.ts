@@ -14,6 +14,7 @@ import { sendFilingAlert, type FilingEmailData } from "@/lib/resend";
 import type { Filing, Company } from "@/lib/supabase/queries";
 import { checkCostAlert } from "@/lib/claude-cost";
 import { sicToSector } from "@/lib/utils";
+import { extractTemplateData } from "./template-extractor";
 
 type FilingsRow = Database["public"]["Tables"]["filings"]["Row"];
 type CompaniesRow = Database["public"]["Tables"]["companies"]["Row"];
@@ -148,15 +149,19 @@ async function storeFiling(
   supabase: AnySupabase,
   filing: EdgarFiling,
   company: CompaniesRow,
-  analysisResult: AnalysisResult
+  filingText: string,
+  analysisResult: AnalysisResult | null
 ): Promise<FilingsRow> {
-  const { analysis, usage } = analysisResult;
-
   const slug = generateFilingSlug(
     company.ticker,
     filing.filing_type,
     filing.filed_date,
     filing.accession_number
+  );
+
+  // Phase 1: Template extraction (always — instant, no AI)
+  const template = extractTemplateData(
+    filingText, filing.filing_type, company.name, company.ticker, filing.filed_date
   );
 
   const filingInsert = {
@@ -166,7 +171,13 @@ async function storeFiling(
     filed_date: filing.filed_date,
     accession_number: filing.accession_number,
     raw_url: filing.filing_url,
-    significance_score: analysis.significance_score,
+    one_line_summary: template.one_line_summary,
+    significance_score: template.significance_score,
+    insider_data: template.insider_data
+      ? (template.insider_data as unknown as Record<string, unknown>)
+      : null,
+    has_earnings_data: template.has_earnings_data,
+    processed_at: new Date().toISOString(),
   };
 
   const { data: inserted, error: insertError } = await supabase
@@ -181,31 +192,32 @@ async function storeFiling(
 
   const insertedFiling = inserted as FilingsRow;
 
-  // Update with AI analysis data
-  const { error: updateError } = await supabase
-    .from("filings")
-    .update({
-      ai_summary_json: analysis as unknown as Record<string, unknown>,
-      ai_summary_prose: analysis.detailed_summary,
-      one_line_summary: analysis.one_line_summary,
-      significance_score: analysis.significance_score,
-      insider_data:
-        analysis.insider_trades.length > 0
-          ? (analysis.insider_trades as unknown as Record<string, unknown>)
-          : null,
-      has_earnings_data:
-        analysis.earnings_impact.revenue_change !== null ||
-        analysis.earnings_impact.eps_change !== null,
-      input_tokens: usage.input_tokens,
-      output_tokens: usage.output_tokens,
-      processed_at: new Date().toISOString(),
-    })
-    .eq("id", insertedFiling.id);
+  // Phase 2: AI enhancement (if analysis succeeded)
+  if (analysisResult) {
+    const { analysis, usage } = analysisResult;
+    const { error: updateError } = await supabase
+      .from("filings")
+      .update({
+        ai_summary_json: analysis as unknown as Record<string, unknown>,
+        ai_summary_prose: analysis.detailed_summary,
+        one_line_summary: analysis.one_line_summary,
+        significance_score: analysis.significance_score,
+        insider_data:
+          analysis.insider_trades.length > 0
+            ? (analysis.insider_trades as unknown as Record<string, unknown>)
+            : null,
+        has_earnings_data:
+          analysis.earnings_impact.revenue_change !== null ||
+          analysis.earnings_impact.eps_change !== null,
+        input_tokens: usage.input_tokens,
+        output_tokens: usage.output_tokens,
+      })
+      .eq("id", insertedFiling.id);
 
-  if (updateError) {
-    throw new Error(
-      `Failed to update filing with analysis: ${updateError.message}`
-    );
+    if (updateError) {
+      // AI update failed — filing still has template data, which is fine
+      console.error(`AI update failed for ${filing.accession_number}: ${updateError.message}`);
+    }
   }
 
   // Update company's last_filing_date
@@ -214,7 +226,7 @@ async function storeFiling(
     .update({ last_filing_date: filing.filed_date })
     .eq("id", company.id);
 
-  return { ...insertedFiling, significance_score: analysis.significance_score };
+  return { ...insertedFiling, significance_score: template.significance_score };
 }
 
 /**
@@ -289,24 +301,36 @@ async function processSingleFiling(
       );
     }
 
-    // Analyze with Claude
-    const analysisResult = await analyzeFilingWithClaude(
-      filingText,
-      filing.filing_type,
-      company.name,
-      company.ticker
-    );
+    // Try AI analysis — if it fails, filing still gets template data
+    let analysisResult: AnalysisResult | null = null;
+    try {
+      analysisResult = await analyzeFilingWithClaude(
+        filingText,
+        filing.filing_type,
+        company.name,
+        company.ticker
+      );
+    } catch (aiErr) {
+      // Let RateLimitError propagate to stop the batch
+      if (aiErr instanceof RateLimitError) throw aiErr;
+      // Other AI errors: log but continue with template-only
+      console.log(
+        `AI analysis failed for ${filing.accession_number}, using template: ${aiErr instanceof Error ? aiErr.message : String(aiErr)}`
+      );
+    }
 
-    // Store in database
+    // Store in database (template data always, AI data if available)
     const storedFiling = await storeFiling(
       supabase,
       filing,
       company,
+      filingText,
       analysisResult
     );
 
     // Create draft social post if significance >= 8
-    if (analysisResult.analysis.significance_score >= 8) {
+    const score = analysisResult?.analysis.significance_score ?? storedFiling.significance_score;
+    if (score >= 8 && analysisResult) {
       await createDraftSocialPost(
         supabase,
         filing,
@@ -322,12 +346,11 @@ async function processSingleFiling(
     try {
       const completeFiling = {
         ...storedFiling,
-        ai_summary_prose: analysisResult.analysis.detailed_summary,
-        one_line_summary: analysisResult.analysis.one_line_summary,
-        insider_data:
-          analysisResult.analysis.insider_trades.length > 0
-            ? (analysisResult.analysis.insider_trades as unknown as Record<string, unknown>)
-            : null,
+        ai_summary_prose: analysisResult?.analysis.detailed_summary ?? null,
+        one_line_summary: analysisResult?.analysis.one_line_summary ?? storedFiling.one_line_summary,
+        insider_data: analysisResult?.analysis.insider_trades?.length
+          ? (analysisResult.analysis.insider_trades as unknown as Record<string, unknown>)
+          : storedFiling.insider_data ?? null,
       } as Filing;
 
       const typedCompany = company as Company;
@@ -381,9 +404,9 @@ async function processSingleFiling(
           companyName: typedCompany.name,
           filingType: filing.filing_type,
           filedDate: filing.filed_date,
-          oneLiner: analysisResult.analysis.one_line_summary,
+          oneLiner: analysisResult?.analysis.one_line_summary ?? completeFiling.one_line_summary ?? "",
           slug: storedFiling.slug,
-          significanceScore: analysisResult.analysis.significance_score,
+          significanceScore: analysisResult?.analysis.significance_score ?? storedFiling.significance_score,
         };
 
         // Send email alerts in parallel
@@ -486,17 +509,20 @@ export async function processNewFilings(
     // Phase 1: Poll EDGAR for new filings + check DB for unanalyzed backfill
     const newFilings = await pollEdgarRss(supabase);
 
-    // Also pick up backfilled filings waiting for AI analysis
+    // Pick up filings needing AI analysis:
+    // - Template-only (processed_at set, ai_summary_json null) → AI enhance
+    // - Unprocessed (processed_at null) → template extract + AI enhance
     const { data: unanalyzed } = await db
       .from("filings")
-      .select("id, accession_number, filing_type, filed_date, raw_url, company_id")
-      .is("processed_at", null)
+      .select("id, accession_number, filing_type, filed_date, raw_url, company_id, processed_at")
+      .is("ai_summary_json", null)
       .order("filed_date", { ascending: false })
       .limit(BATCH_SIZE);
 
     const pendingAnalysis = ((unanalyzed ?? []) as Array<{
       id: string; accession_number: string; filing_type: string;
       filed_date: string; raw_url: string; company_id: string;
+      processed_at: string | null;
     }>);
 
     if (newFilings.length === 0 && pendingAnalysis.length === 0) {
@@ -594,12 +620,28 @@ export async function processNewFilings(
           continue;
         }
 
-        // AI analysis
+        // If not yet template-processed, do template extraction first
+        if (!bf.processed_at) {
+          const template = extractTemplateData(
+            filingText, bf.filing_type, comp.name, comp.ticker, bf.filed_date
+          );
+          await db.from("filings").update({
+            one_line_summary: template.one_line_summary,
+            significance_score: template.significance_score,
+            insider_data: template.insider_data
+              ? (template.insider_data as unknown as Record<string, unknown>)
+              : null,
+            has_earnings_data: template.has_earnings_data,
+            processed_at: new Date().toISOString(),
+          }).eq("id", bf.id);
+        }
+
+        // AI analysis (enhances template data)
         const analysisResult = await analyzeFilingWithClaude(
           filingText, bf.filing_type, comp.name, comp.ticker
         );
 
-        // Update existing filing with analysis
+        // Update with AI enhancement
         const { error: updateErr } = await db.from("filings").update({
           ai_summary_json: analysisResult.analysis as unknown as Record<string, unknown>,
           ai_summary_prose: analysisResult.analysis.detailed_summary,
@@ -613,7 +655,6 @@ export async function processNewFilings(
             analysisResult.analysis.earnings_impact.eps_change !== null,
           input_tokens: analysisResult.usage.input_tokens,
           output_tokens: analysisResult.usage.output_tokens,
-          processed_at: new Date().toISOString(),
         }).eq("id", bf.id);
 
         if (updateErr) {
