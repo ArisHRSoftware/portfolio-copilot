@@ -575,12 +575,24 @@ export async function processNewFilings(
           .eq("id", bf.company_id)
           .single();
 
-        if (!company) continue;
+        if (!company) {
+          const err = new Error(`Company not found for company_id=${bf.company_id} (filing ${bf.accession_number})`);
+          console.error(`EDGAR pipeline backfill: ${err.message}`);
+          await recordPipelineError(db, runId, bf.accession_number, err);
+          errorsCount++;
+          continue;
+        }
         const comp = company as CompaniesRow;
 
         // Download and parse filing text
         const filingText = await downloadAndParseFiling(bf.raw_url);
-        if (filingText.length < 100) continue;
+        if (filingText.length < 100) {
+          const err = new Error(`Filing text too short (${filingText.length} chars) for ${bf.accession_number} — likely download/parse failure`);
+          console.error(`EDGAR pipeline backfill: ${err.message}`);
+          await recordPipelineError(db, runId, bf.accession_number, err);
+          errorsCount++;
+          continue;
+        }
 
         // AI analysis
         const analysisResult = await analyzeFilingWithClaude(
@@ -588,7 +600,7 @@ export async function processNewFilings(
         );
 
         // Update existing filing with analysis
-        await db.from("filings").update({
+        const { error: updateErr } = await db.from("filings").update({
           ai_summary_json: analysisResult.analysis as unknown as Record<string, unknown>,
           ai_summary_prose: analysisResult.analysis.detailed_summary,
           one_line_summary: analysisResult.analysis.one_line_summary,
@@ -603,6 +615,10 @@ export async function processNewFilings(
           output_tokens: analysisResult.usage.output_tokens,
           processed_at: new Date().toISOString(),
         }).eq("id", bf.id);
+
+        if (updateErr) {
+          throw new Error(`Failed to update filing ${bf.accession_number} with analysis: ${updateErr.message}`);
+        }
 
         await db.from("companies").update({ last_filing_date: bf.filed_date }).eq("id", comp.id);
         filingsProcessed++;
