@@ -52,7 +52,7 @@ export async function generateMetadata({
   params: Promise<{ ticker: string }>;
 }): Promise<Metadata> {
   const { ticker } = await params;
-  const upperTicker = ticker.toUpperCase();
+  const upperTicker = ticker.toUpperCase().split(",")[0].trim();
 
   const supabase = createStaticClient();
   const company = await getCompanyByTicker(supabase, upperTicker);
@@ -171,12 +171,15 @@ export default async function StockPage({
   const { ticker } = await params;
   const upperTicker = ticker.toUpperCase();
 
-  if (!/^[A-Z]{1,5}$/.test(upperTicker)) {
+  // Accept standard tickers (AAPL), CIK-based (CIK1234567), and
+  // multi-ticker (JETBF, JETMF → take first before comma)
+  const cleanTicker = upperTicker.split(",")[0].trim();
+  if (!/^[A-Z0-9]{1,15}$/.test(cleanTicker)) {
     notFound();
   }
 
   const supabase = createStaticClient();
-  const company = await getCompanyByTicker(supabase, upperTicker);
+  const company = await getCompanyByTicker(supabase, cleanTicker);
 
   if (!company) {
     return (

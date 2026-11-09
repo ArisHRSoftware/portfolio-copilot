@@ -144,7 +144,7 @@ export default async function RecentFilingsPage({
                   </TableCell>
                   <TableCell>
                     <Link
-                      href={`/stocks/${(company?.ticker ?? "").toLowerCase()}`}
+                      href={`/stocks/${(company?.ticker ?? "").split(",")[0].trim().toLowerCase()}`}
                       className="font-medium hover:underline"
                     >
                       {displayTicker(company?.ticker ?? "N/A", company?.name)}
