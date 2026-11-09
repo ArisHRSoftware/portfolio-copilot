@@ -6,6 +6,8 @@ import {
   RateLimitError,
 } from "@/lib/edgar/ai-analysis";
 
+export const maxDuration = 300;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabase = ReturnType<typeof createClient<any>>;
 
