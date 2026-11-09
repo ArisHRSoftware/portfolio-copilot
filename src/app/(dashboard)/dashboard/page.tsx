@@ -48,8 +48,9 @@ export default async function DashboardPage() {
   }
 
   // Check if onboarding is completed — redirect new users to onboarding flow.
-  // The profiles table may not have the onboarding_completed column yet,
-  // so we treat missing column / null value as "not completed".
+  // Only redirect if the column exists AND is explicitly false.
+  // If the column is missing or profile doesn't exist, skip onboarding
+  // (the column may not have been migrated yet).
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
@@ -57,7 +58,11 @@ export default async function DashboardPage() {
     .single();
 
   const profileRecord = profile as Record<string, unknown> | null;
-  if (profileRecord && profileRecord.onboarding_completed !== true) {
+  if (
+    profileRecord &&
+    "onboarding_completed" in profileRecord &&
+    profileRecord.onboarding_completed === false
+  ) {
     redirect("/onboarding");
   }
 

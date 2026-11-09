@@ -29,9 +29,10 @@ export default async function OnboardingPage() {
     .single();
 
   const profileRecord = profile as Record<string, unknown> | null;
-  const onboardingCompleted = profileRecord?.onboarding_completed === true;
-
-  if (onboardingCompleted) {
+  // If column exists and is true, redirect to dashboard.
+  // If column doesn't exist, also redirect (migration not run = skip onboarding).
+  const hasColumn = profileRecord && "onboarding_completed" in profileRecord;
+  if (!hasColumn || profileRecord?.onboarding_completed === true) {
     redirect("/dashboard");
   }
 
