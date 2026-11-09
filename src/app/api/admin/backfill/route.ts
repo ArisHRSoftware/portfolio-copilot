@@ -3,6 +3,8 @@ import type { Database } from "@/lib/types/database";
 import { fetchAllTodaysFilings, type EdgarFiling } from "@/lib/edgar/rss-poller";
 import { sicToSector } from "@/lib/utils";
 
+export const maxDuration = 300;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnySupabase = ReturnType<typeof createClient<any>>;
 

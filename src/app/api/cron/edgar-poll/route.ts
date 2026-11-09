@@ -3,6 +3,8 @@ import type { Database } from "@/lib/types/database";
 import { processNewFilings } from "@/lib/edgar/pipeline";
 import { verifyQStash } from "@/lib/qstash";
 
+export const maxDuration = 300;
+
 async function handler(_request: Request): Promise<Response> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
