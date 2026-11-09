@@ -573,7 +573,7 @@ console.log(\`Found \${data.meta.count} filings\`);`}</CodeBlock>
                 Pricing
               </Link>
               <Link
-                href="/privacy"
+                href="/privacy-policy"
                 className="hover:text-foreground transition-colors"
               >
                 Privacy

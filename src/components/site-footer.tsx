@@ -38,7 +38,7 @@ export function SiteFooter() {
             className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-muted-foreground"
             aria-label="Footer navigation"
           >
-            <Link href="/privacy" className="hover:text-foreground transition-colors">
+            <Link href="/privacy-policy" className="hover:text-foreground transition-colors">
               Privacy Policy
             </Link>
             <Link href="/terms" className="hover:text-foreground transition-colors">

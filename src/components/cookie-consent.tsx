@@ -68,7 +68,7 @@ export function CookieConsent() {
           <p className="text-sm text-muted-foreground text-center sm:text-left">
             We use cookies to improve your experience. See our{" "}
             <Link
-              href="/privacy"
+              href="/privacy-policy"
               className="underline underline-offset-4 hover:text-foreground"
             >
               Privacy Policy

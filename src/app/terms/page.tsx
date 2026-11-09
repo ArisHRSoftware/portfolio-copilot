@@ -181,7 +181,7 @@ export default function TermsPage() {
       <Separator />
 
       <div className="flex items-center gap-4">
-        <Button variant="outline" render={<Link href="/privacy" />}>
+        <Button variant="outline" render={<Link href="/privacy-policy" />}>
           Privacy Policy
         </Button>
         <Button variant="outline" render={<Link href="/" />}>

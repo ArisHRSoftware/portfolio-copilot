@@ -177,7 +177,7 @@ export default function DisclaimerPage() {
             </Link>
             {" | "}
             <Link
-              href="/privacy"
+              href="/privacy-policy"
               className="text-primary underline underline-offset-4 hover:text-primary/80"
             >
               Privacy Policy
