@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import {
-  getCompaniesBySector,
+  countCompaniesBySector,
+  getCompaniesBySectorPaginated,
   getRecentFilings,
   getFilingsWithCompanies,
   type Company,
 } from "@/lib/supabase/queries";
 import { SiteHeader } from "@/components/site-header";
+import { Pagination } from "@/components/pagination";
 import { BreadcrumbSchema } from "@/components/json-ld";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -72,12 +74,18 @@ function formatMarketCap(cap: number | null): string {
   return `$${cap.toLocaleString()}`;
 }
 
+const PER_PAGE = 50;
+
 export default async function SectorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ sector: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { sector: sectorSlug } = await params;
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
   if (!SECTOR_DEFINITIONS.some((s) => s.slug === sectorSlug)) {
     notFound();
@@ -87,15 +95,15 @@ export default async function SectorPage({
 
   const supabase = createStaticClient();
 
-  const companies = await getCompaniesBySector(supabase, sectorName);
+  const [sortedCompanies, totalCount] = await Promise.all([
+    getCompaniesBySectorPaginated(supabase, sectorName, {
+      limit: PER_PAGE,
+      offset: (page - 1) * PER_PAGE,
+    }),
+    countCompaniesBySector(supabase, sectorName),
+  ]);
 
-  // Sort by market_cap descending, nulls last
-  const sortedCompanies = [...companies].sort((a, b) => {
-    if (!a.market_cap && !b.market_cap) return 0;
-    if (!a.market_cap) return 1;
-    if (!b.market_cap) return -1;
-    return b.market_cap - a.market_cap;
-  }).slice(0, 50);
+  const totalPages = Math.ceil(totalCount / PER_PAGE);
 
   const companyIds = sortedCompanies.map((c) => c.id);
 
@@ -124,7 +132,7 @@ export default async function SectorPage({
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold tracking-tight">{sectorName}</h1>
           <Badge variant="secondary">
-            {sortedCompanies.length} companies
+            {totalCount} companies
           </Badge>
         </div>
         <p className="text-muted-foreground">
@@ -216,6 +224,20 @@ export default async function SectorPage({
               ))}
             </TableBody>
           </Table>
+        )}
+
+        {totalCount > 0 && (
+          <div className="flex flex-col items-center gap-4 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Showing {(page - 1) * PER_PAGE + 1}–
+              {Math.min(page * PER_PAGE, totalCount)} of {totalCount} companies
+            </p>
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              basePath={`/sectors/${sectorSlug}`}
+            />
+          </div>
         )}
       </section>
 

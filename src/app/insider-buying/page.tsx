@@ -6,6 +6,7 @@ import {
   getFilingsWithCompanies,
 } from "@/lib/supabase/queries";
 import { displayTicker, isRealTicker } from "@/lib/utils";
+import { Pagination } from "@/components/pagination";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,12 +44,21 @@ function significanceBadge(score: number) {
   return <Badge variant="secondary">Routine ({score}/10)</Badge>;
 }
 
-export default async function InsiderBuyingPage() {
+const PER_PAGE = 30;
+
+export default async function InsiderBuyingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const params = await searchParams;
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+
   const supabase = createStaticClient();
 
   const filings = await getRecentFilings(supabase, {
     filingType: "4",
-    limit: 100,
+    limit: 500,
   });
 
   const filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
@@ -68,6 +78,9 @@ export default async function InsiderBuyingPage() {
       );
     });
   });
+
+  const totalPages = Math.ceil(buyFilings.length / PER_PAGE);
+  const pageFilings = buyFilings.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <>
@@ -97,6 +110,10 @@ export default async function InsiderBuyingPage() {
           </CardContent>
         </Card>
       ) : (
+        <>
+        <p className="text-sm text-muted-foreground">
+          Showing {pageFilings.length} of {buyFilings.length} insider buys
+        </p>
         <Table>
           <TableHeader>
             <TableRow>
@@ -109,7 +126,7 @@ export default async function InsiderBuyingPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {buyFilings.map((filing) => {
+            {pageFilings.map((filing) => {
               const company = filing.company;
               const rawInsider = filing.insider_data;
               const insider = Array.isArray(rawInsider) ? (rawInsider[0] as Record<string, unknown> | undefined) ?? null : rawInsider as Record<string, unknown> | null;
@@ -158,6 +175,8 @@ export default async function InsiderBuyingPage() {
             })}
           </TableBody>
         </Table>
+        <Pagination currentPage={page} totalPages={totalPages} basePath="/insider-buying" />
+        </>
       )}
 
       <div className="flex flex-wrap items-center gap-3">

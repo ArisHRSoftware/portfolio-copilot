@@ -6,9 +6,11 @@ import {
   getCompanyByTicker,
   getTopCompanies,
   getRecentFilings,
+  countFilings,
   type Filing,
   type Company,
 } from "@/lib/supabase/queries";
+import { Pagination } from "@/components/pagination";
 import {
   BreadcrumbSchema,
   CorporationSchema,
@@ -160,17 +162,23 @@ function buildFAQs(
   return faqs;
 }
 
+const PER_PAGE = 20;
+
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default async function StockPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ ticker: string }>;
+  searchParams: Promise<{ page?: string }>;
 }) {
   const { ticker } = await params;
+  const { page: pageParam } = await searchParams;
   const upperTicker = ticker.toUpperCase();
+  const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
   // Accept standard tickers (AAPL), CIK-based (CIK1234567), and
   // multi-ticker (JETBF, JETMF → take first before comma)
@@ -196,10 +204,16 @@ export default async function StockPage({
     );
   }
 
-  const filings = await getRecentFilings(supabase, {
-    companyId: company.id,
-    limit: 50,
-  });
+  const [totalFilingCount, filings] = await Promise.all([
+    countFilings(supabase, { companyId: company.id }),
+    getRecentFilings(supabase, {
+      companyId: company.id,
+      limit: PER_PAGE,
+      offset: (page - 1) * PER_PAGE,
+    }),
+  ]);
+
+  const totalPages = Math.ceil(totalFilingCount / PER_PAGE);
 
   const mostRecentFilingDate =
     filings[0]?.filed_date ?? company.last_filing_date ?? null;
@@ -331,7 +345,7 @@ export default async function StockPage({
         {filings.length > 0 && (
           <p className="text-muted-foreground leading-relaxed">
             Brefyr has analyzed{" "}
-            <strong>{filings.length} SEC filing{filings.length !== 1 ? "s" : ""}</strong>{" "}
+            <strong>{totalFilingCount} SEC filing{totalFilingCount !== 1 ? "s" : ""}</strong>{" "}
             for {company.ticker}, with the most recent being a{" "}
             {filings[0].filing_type} filed on{" "}
             {new Date(filings[0].filed_date).toLocaleDateString("en-US", {
@@ -404,6 +418,10 @@ export default async function StockPage({
             </CardContent>
           </Card>
         ) : (
+          <>
+          <p className="text-sm text-muted-foreground">
+            Showing {(page - 1) * PER_PAGE + 1}&ndash;{Math.min(page * PER_PAGE, totalFilingCount)} of {totalFilingCount} filings
+          </p>
           <Table>
             <TableHeader>
               <TableRow>
@@ -448,6 +466,12 @@ export default async function StockPage({
               ))}
             </TableBody>
           </Table>
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            basePath={`/stocks/${ticker.toLowerCase()}`}
+          />
+          </>
         )}
       </section>
 

@@ -4,9 +4,11 @@ import { createStaticClient } from "@/lib/supabase/static";
 import {
   getRecentFilings,
   getFilingsWithCompanies,
+  countFilings,
 } from "@/lib/supabase/queries";
 import { displayTicker, isRealTicker } from "@/lib/utils";
 import { SiteHeader } from "@/components/site-header";
+import { Pagination } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,6 +45,8 @@ function significanceBadge(score: number) {
   return <Badge variant="secondary">Routine ({score}/10)</Badge>;
 }
 
+const PER_PAGE = 30;
+
 const FILING_TYPES = [
   "All",
   "10-K",
@@ -58,16 +62,25 @@ const FILING_TYPES = [
 export default async function RecentFilingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ type?: string }>;
+  searchParams: Promise<{ type?: string; page?: string }>;
 }) {
-  const { type: filterType } = await searchParams;
+  const params = await searchParams;
+  const filterType = params.type;
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
   const supabase = createStaticClient();
 
-  const filings = await getRecentFilings(supabase, {
-    limit: 100,
-    filingType: filterType && filterType !== "All" ? filterType : undefined,
-  });
+  const filingTypeFilter = filterType && filterType !== "All" ? filterType : undefined;
 
+  const [totalCount, filings] = await Promise.all([
+    countFilings(supabase, { filingType: filingTypeFilter }),
+    getRecentFilings(supabase, {
+      limit: PER_PAGE,
+      offset: (page - 1) * PER_PAGE,
+      filingType: filingTypeFilter,
+    }),
+  ]);
+
+  const totalPages = Math.ceil(totalCount / PER_PAGE);
   const filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
 
   return (
@@ -107,6 +120,12 @@ export default async function RecentFilingsPage({
           );
         })}
       </div>
+
+      {totalCount > 0 && (
+        <p className="text-sm text-muted-foreground">
+          Showing {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, totalCount)} of {totalCount} filings
+        </p>
+      )}
 
       {filingsWithCompanies.length === 0 ? (
         <Card>
@@ -179,6 +198,13 @@ export default async function RecentFilingsPage({
           </TableBody>
         </Table>
       )}
+
+      <Pagination
+        currentPage={page}
+        totalPages={totalPages}
+        basePath="/recent-filings"
+        params={filterType && filterType !== "All" ? { type: filterType } : undefined}
+      />
     </main>
     </>
   );

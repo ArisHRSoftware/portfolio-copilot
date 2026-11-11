@@ -56,24 +56,31 @@ export async function getFilingBySlug(supabase: Supabase, slug: string) {
   return { ...(filing as Filing), company: company as Company | null };
 }
 
+export interface FilingQueryOptions {
+  limit?: number;
+  filingType?: string;
+  minSignificance?: number;
+  hasEarnings?: boolean;
+  hasInsiderData?: boolean;
+  companyId?: string;
+  companyIds?: string[];
+  /** Offset for pagination (0-based) */
+  offset?: number;
+}
+
 export async function getRecentFilings(
   supabase: Supabase,
-  options: {
-    limit?: number;
-    filingType?: string;
-    minSignificance?: number;
-    hasEarnings?: boolean;
-    hasInsiderData?: boolean;
-    companyId?: string;
-    companyIds?: string[];
-  } = {}
+  options: FilingQueryOptions = {}
 ) {
+  const limit = options.limit ?? 50;
+  const offset = options.offset ?? 0;
+
   let query = supabase
     .from("filings")
     .select("*")
     .is("superseded_by", null)
     .order("filed_date", { ascending: false })
-    .limit(options.limit ?? 50);
+    .range(offset, offset + limit - 1);
 
   if (options.filingType) {
     query = query.eq("filing_type", options.filingType);
@@ -93,6 +100,65 @@ export async function getRecentFilings(
 
   const { data } = await query;
   return (data ?? []) as Filing[];
+}
+
+/** Count filings matching filters (for pagination totals) */
+export async function countFilings(
+  supabase: Supabase,
+  options: Omit<FilingQueryOptions, "limit" | "offset"> = {}
+) {
+  let query = supabase
+    .from("filings")
+    .select("id", { count: "exact", head: true })
+    .is("superseded_by", null);
+
+  if (options.filingType) {
+    query = query.eq("filing_type", options.filingType);
+  }
+  if (options.minSignificance) {
+    query = query.gte("significance_score", options.minSignificance);
+  }
+  if (options.hasEarnings) {
+    query = query.eq("has_earnings_data", true);
+  }
+  if (options.companyId) {
+    query = query.eq("company_id", options.companyId);
+  }
+  if (options.companyIds && options.companyIds.length > 0) {
+    query = query.in("company_id", options.companyIds);
+  }
+
+  const { count } = await query;
+  return count ?? 0;
+}
+
+/** Count companies matching filters */
+export async function countCompaniesBySector(
+  supabase: Supabase,
+  sector: string
+) {
+  const { count } = await supabase
+    .from("companies")
+    .select("id", { count: "exact", head: true })
+    .eq("sector", sector)
+    .eq("status", "active");
+  return count ?? 0;
+}
+
+/** Paginated companies by sector */
+export async function getCompaniesBySectorPaginated(
+  supabase: Supabase,
+  sector: string,
+  { limit = 50, offset = 0 }: { limit?: number; offset?: number } = {}
+) {
+  const { data } = await supabase
+    .from("companies")
+    .select("*")
+    .eq("sector", sector)
+    .eq("status", "active")
+    .order("market_cap", { ascending: false, nullsFirst: false })
+    .range(offset, offset + limit - 1);
+  return (data ?? []) as Company[];
 }
 
 export async function getFilingsWithCompanies(
