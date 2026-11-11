@@ -47,21 +47,26 @@ export default async function InsiderSellingPage() {
   const supabase = createStaticClient();
 
   const filings = await getRecentFilings(supabase, {
-    filingType: "Form 4",
+    filingType: "4",
     limit: 100,
   });
 
   const filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
 
   const sellFilings = filingsWithCompanies.filter((f) => {
-    const insider = f.insider_data as Record<string, unknown> | null;
-    if (!insider) return false;
-    const txType = (insider.transaction_type as string) ?? "";
-    return (
-      txType.toLowerCase().includes("sale") ||
-      txType.toLowerCase().includes("sell") ||
-      txType === "S"
-    );
+    // insider_data can be an array of trades or a single object
+    const raw = f.insider_data;
+    if (!raw) return false;
+    const trades = Array.isArray(raw) ? raw : [raw];
+    return trades.some((trade) => {
+      const txType = ((trade as Record<string, unknown>).transaction_type as string) ?? "";
+      return (
+        txType.toLowerCase().includes("sale") ||
+        txType.toLowerCase().includes("sell") ||
+        txType === "S" ||
+        txType === "sell"
+      );
+    });
   });
 
   return (
@@ -106,10 +111,8 @@ export default async function InsiderSellingPage() {
           <TableBody>
             {sellFilings.map((filing) => {
               const company = filing.company;
-              const insider = filing.insider_data as Record<
-                string,
-                unknown
-              > | null;
+              const rawInsider = filing.insider_data;
+              const insider = Array.isArray(rawInsider) ? (rawInsider[0] as Record<string, unknown> | undefined) ?? null : rawInsider as Record<string, unknown> | null;
 
               return (
                 <TableRow key={filing.id}>
@@ -133,7 +136,7 @@ export default async function InsiderSellingPage() {
                     )}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
-                    {(insider?.name as string) ?? "—"}
+                    {(insider?.person as string) ?? (insider?.name as string) ?? "—"}
                   </TableCell>
                   <TableCell className="hidden md:table-cell max-w-xs truncate">
                     {filing.one_line_summary ?? "Processing..."}

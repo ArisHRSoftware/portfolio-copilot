@@ -7,6 +7,11 @@ type Company = Database["public"]["Tables"]["companies"]["Row"];
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
+/** Escape ]]> inside CDATA sections to prevent XML injection */
+function cdataEscape(str: string): string {
+  return str.replace(/]]>/g, "]]]]><![CDATA[>");
+}
+
 export async function GET(): Promise<Response> {
   const supabase = createStaticClient();
 
@@ -49,11 +54,11 @@ export async function GET(): Promise<Response> {
       const pubDate = new Date(f.filed_date).toUTCString();
 
       return `    <item>
-      <title><![CDATA[${title}]]></title>
+      <title><![CDATA[${cdataEscape(title)}]]></title>
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${pubDate}</pubDate>
-      <description><![CDATA[${description}]]></description>
+      <description><![CDATA[${cdataEscape(description)}]]></description>
     </item>`;
     })
     .join("\n");

@@ -103,12 +103,18 @@ export async function onFilingProcessed(
   paths.push(`/trending`);
 
   // Insider trading hub pages (conditional on insider_data)
-  const insider = filing.insider_data as Record<string, unknown> | null;
-  if (insider?.action === "buy" || insider?.action === "purchase") {
-    paths.push(`/insider-buying`);
-  }
-  if (insider?.action === "sell" || insider?.action === "sale") {
-    paths.push(`/insider-selling`);
+  const rawInsider = filing.insider_data;
+  if (rawInsider) {
+    const trades: Array<Record<string, unknown>> = Array.isArray(rawInsider)
+      ? (rawInsider as Array<Record<string, unknown>>)
+      : [rawInsider as Record<string, unknown>];
+    const txTypes = trades.map((t) => ((t.transaction_type as string) ?? "").toLowerCase());
+    if (txTypes.some((t) => t === "buy" || t.includes("purchase"))) {
+      paths.push(`/insider-buying`);
+    }
+    if (txTypes.some((t) => t === "sell" || t.includes("sale"))) {
+      paths.push(`/insider-selling`);
+    }
   }
 
   // Earnings hub page (when filing contains earnings data)

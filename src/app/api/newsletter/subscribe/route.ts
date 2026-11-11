@@ -1,19 +1,22 @@
 import { NextResponse } from "next/server";
 import { createWebhookClient } from "@/lib/supabase/server";
+import { validateEmail } from "@/lib/validation";
 
 export async function POST(request: Request) {
   try {
-    const { email, source } = (await request.json()) as {
+    const { email: rawEmail, source } = (await request.json()) as {
       email: string;
       source?: string;
     };
 
-    if (!email || !email.includes("@")) {
+    const emailResult = validateEmail(rawEmail);
+    if (!emailResult.valid) {
       return NextResponse.json(
         { error: "Valid email address required" },
         { status: 400 }
       );
     }
+    const email = emailResult.value;
 
     const supabase = createWebhookClient();
 

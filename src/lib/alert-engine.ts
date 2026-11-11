@@ -44,22 +44,38 @@ function doesRuleMatch(rule: RuleJson, filing: Filing): boolean {
       if (filing.filing_type !== "Form 4" && filing.filing_type !== "4") {
         return false;
       }
-      const insiderData = filing.insider_data as Record<string, unknown> | null;
-      if (!insiderData) return false;
+      const rawInsider = filing.insider_data;
+      if (!rawInsider) return false;
+
+      // insider_data can be an array of trades or a single trade object
+      const trades: Array<Record<string, unknown>> = Array.isArray(rawInsider)
+        ? (rawInsider as Array<Record<string, unknown>>)
+        : [rawInsider as Record<string, unknown>];
+
+      if (trades.length === 0) return false;
 
       if (rule.activity && rule.activity !== "any") {
-        const txnType = (insiderData.transaction_type as string | undefined) ?? "";
-        if (rule.activity === "buy" && !txnType.toLowerCase().includes("buy") && !txnType.toLowerCase().includes("purchase")) {
+        const hasMatch = trades.some((trade) => {
+          const txnType = ((trade.transaction_type as string) ?? "").toLowerCase();
+          if (rule.activity === "buy") {
+            return txnType.includes("buy") || txnType.includes("purchase") || txnType === "p";
+          }
+          if (rule.activity === "sell") {
+            return txnType.includes("sell") || txnType.includes("sale") || txnType === "s";
+          }
           return false;
-        }
-        if (rule.activity === "sell" && !txnType.toLowerCase().includes("sell") && !txnType.toLowerCase().includes("sale")) {
-          return false;
-        }
+        });
+        if (!hasMatch) return false;
       }
 
       if (rule.min_amount != null) {
-        const amount = (insiderData.total_value as number | undefined) ?? 0;
-        if (amount < rule.min_amount) return false;
+        // Calculate total value from shares * price_per_share across all trades
+        const totalValue = trades.reduce((sum, trade) => {
+          const shares = (trade.shares as number) ?? 0;
+          const price = (trade.price_per_share as number) ?? 0;
+          return sum + shares * price;
+        }, 0);
+        if (totalValue < rule.min_amount) return false;
       }
 
       return true;

@@ -108,7 +108,12 @@ export default async function FilingDetailPage({
   const faq =
     (summaryJson?.faq as Array<{ question: string; answer: string }>) ?? [];
 
-  const insider = filing.insider_data as Record<string, unknown> | null;
+  const rawInsider = filing.insider_data;
+  const insiderTrades: Array<Record<string, unknown>> = rawInsider
+    ? Array.isArray(rawInsider)
+      ? (rawInsider as Array<Record<string, unknown>>)
+      : [rawInsider as Record<string, unknown>]
+    : [];
 
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
@@ -236,23 +241,27 @@ export default async function FilingDetailPage({
       )}
 
       {/* Insider Trades */}
-      {insider && Object.keys(insider).length > 0 && (
+      {insiderTrades.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Insider Trades</h2>
-          <Card>
-            <CardContent className="py-4">
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                {Object.entries(insider).map(([key, value]) => (
-                  <div key={key} className="contents">
-                    <dt className="font-medium capitalize">
-                      {key.replace(/_/g, " ")}
-                    </dt>
-                    <dd className="text-muted-foreground">{String(value)}</dd>
-                  </div>
-                ))}
-              </dl>
-            </CardContent>
-          </Card>
+          {insiderTrades.map((trade, idx) => (
+            <Card key={idx}>
+              <CardContent className="py-4">
+                <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                  {Object.entries(trade).map(([key, value]) => (
+                    <div key={key} className="contents">
+                      <dt className="font-medium capitalize">
+                        {key.replace(/_/g, " ")}
+                      </dt>
+                      <dd className="text-muted-foreground">
+                        {value == null ? "—" : String(value)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </CardContent>
+            </Card>
+          ))}
         </section>
       )}
 

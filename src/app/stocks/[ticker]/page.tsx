@@ -204,11 +204,11 @@ export default async function StockPage({
   const mostRecentFilingDate =
     filings[0]?.filed_date ?? company.last_filing_date ?? null;
 
-  const insiderFilings = filings.filter(
-    (f: Filing) =>
-      f.insider_data &&
-      Object.keys(f.insider_data as Record<string, unknown>).length > 0
-  );
+  const insiderFilings = filings.filter((f: Filing) => {
+    if (!f.insider_data) return false;
+    if (Array.isArray(f.insider_data)) return f.insider_data.length > 0;
+    return Object.keys(f.insider_data as Record<string, unknown>).length > 0;
+  });
 
   // Peer companies from same sector
   const { data: peerData } = await supabase
@@ -464,7 +464,10 @@ export default async function StockPage({
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {insiderFilings.slice(0, 6).map((filing) => {
-              const insider = filing.insider_data as Record<string, unknown>;
+              const rawInsider = filing.insider_data;
+              const insider: Record<string, unknown> = Array.isArray(rawInsider)
+                ? (rawInsider[0] as Record<string, unknown>) ?? {}
+                : (rawInsider as Record<string, unknown>) ?? {};
               return (
                 <Card key={filing.id} size="sm">
                   <CardHeader>

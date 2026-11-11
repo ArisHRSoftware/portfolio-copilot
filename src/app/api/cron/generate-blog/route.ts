@@ -94,8 +94,13 @@ export async function POST(request: Request): Promise<Response> {
       .slice(0, 5)
       .map((f) => {
         const company = companyMap.get(f.company_id);
-        const insider = f.insider_data as Record<string, unknown> | null;
-        return `- ${company?.ticker ?? "?"}: ${insider?.action ?? "trade"} by ${insider?.reporter_name ?? "insider"} — ${f.one_line_summary ?? ""} [/filings/${f.slug}]`;
+        const rawInsider = f.insider_data;
+        const firstTrade: Record<string, unknown> = Array.isArray(rawInsider)
+          ? ((rawInsider as Array<Record<string, unknown>>)[0] ?? {})
+          : ((rawInsider as Record<string, unknown>) ?? {});
+        const txType = (firstTrade.transaction_type as string) ?? "trade";
+        const person = (firstTrade.person as string) ?? (firstTrade.name as string) ?? "insider";
+        return `- ${company?.ticker ?? "?"}: ${txType} by ${person} — ${f.one_line_summary ?? ""} [/filings/${f.slug}]`;
       })
       .join("\n");
 

@@ -59,8 +59,11 @@ export function sicToSector(sicCode: string): string {
   if (sic >= 2000 && sic < 2800) return "Consumer Defensive"; // Food, tobacco, textiles
   if (sic >= 2800 && sic < 2900) return "Healthcare"; // Chemicals/pharma
   if (sic >= 2900 && sic < 3000) return "Energy"; // Petroleum refining
+  // Computer & office equipment (3570-3579): AAPL=3571, etc. — MUST be before 3000-3600 catch-all
+  if (sic >= 3570 && sic < 3580) return "Technology";
+  // Semiconductors & electronic components (3670-3679): must be before 3600-3700
+  if (sic >= 3670 && sic < 3680) return "Technology";
   if (sic >= 3000 && sic < 3600) return "Industrials"; // Rubber, metals, machinery
-  if (sic >= 3500 && sic < 3600) return "Industrials"; // Industrial machinery
   if (sic >= 3600 && sic < 3700) return "Technology"; // Electronics
   if (sic >= 3700 && sic < 3800) return "Consumer Cyclical"; // Transportation equipment
   if (sic >= 3800 && sic < 3900) return "Healthcare"; // Medical instruments

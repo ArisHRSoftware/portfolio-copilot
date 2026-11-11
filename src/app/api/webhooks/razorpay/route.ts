@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { createWebhookClient } from "@/lib/supabase/server";
+import { TIERS } from "@/lib/constants/tiers";
 
 /**
  * Razorpay webhook handler.
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
         const userId = payment.notes?.user_id;
         const planId = payment.notes?.plan_id;
 
-        if (userId && planId) {
+        if (userId && planId && planId in TIERS && planId !== "free") {
           const now = new Date();
           const periodEnd = new Date(now);
           periodEnd.setMonth(periodEnd.getMonth() + 1);
