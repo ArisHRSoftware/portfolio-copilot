@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import {
-  getRecentFilings,
   getFilingsWithCompanies,
+  type Filing,
 } from "@/lib/supabase/queries";
 import { displayTicker, isRealTicker } from "@/lib/utils";
 import { Pagination } from "@/components/pagination";
@@ -56,15 +56,22 @@ export default async function InsiderBuyingPage({
 
   const supabase = createStaticClient();
 
-  const filings = await getRecentFilings(supabase, {
-    filingType: "4",
-    limit: 500,
-  });
+  // Fetch a large batch of Form 4 filings with insider_data, then filter for buys
+  // We overfetch to ensure enough buy results after client-side filtering
+  const FETCH_LIMIT = 1000;
+  const { data: rawFilings } = await supabase
+    .from("filings")
+    .select("*")
+    .eq("filing_type", "4")
+    .not("insider_data", "is", null)
+    .is("superseded_by", null)
+    .order("filed_date", { ascending: false })
+    .limit(FETCH_LIMIT);
 
+  const filings = (rawFilings ?? []) as Filing[];
   const filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
 
   const buyFilings = filingsWithCompanies.filter((f) => {
-    // insider_data can be an array of trades or a single object
     const raw = f.insider_data;
     if (!raw) return false;
     const trades = Array.isArray(raw) ? raw : [raw];

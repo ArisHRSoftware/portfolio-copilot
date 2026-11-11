@@ -106,29 +106,50 @@ function ContentItemCard({
   const [founderNote, setFounderNote] = useState(item.founder_note ?? "");
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectField, setShowRejectField] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function handleApprove() {
+    setError(null);
     startTransition(async () => {
-      await approveContent(item.id, founderNote || undefined);
+      try {
+        await approveContent(item.id, founderNote || undefined);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Approve failed");
+      }
     });
   }
 
   function handleReject() {
     if (!rejectReason.trim()) return;
+    setError(null);
     startTransition(async () => {
-      await rejectContent(item.id, rejectReason);
+      try {
+        await rejectContent(item.id, rejectReason);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Reject failed");
+      }
     });
   }
 
   function handlePublish() {
+    setError(null);
     startTransition(async () => {
-      await publishContent(item.id);
+      try {
+        await publishContent(item.id);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Publish failed");
+      }
     });
   }
 
   function handleArchive() {
+    setError(null);
     startTransition(async () => {
-      await archiveContent(item.id);
+      try {
+        await archiveContent(item.id);
+      } catch (e) {
+        setError(e instanceof Error ? e.message : "Archive failed");
+      }
     });
   }
 
@@ -212,6 +233,13 @@ function ContentItemCard({
             <p className="mt-0.5 text-destructive/80">
               {item.rejection_reason}
             </p>
+          </div>
+        )}
+
+        {/* Error display */}
+        {error && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/20 p-2.5 text-sm text-destructive">
+            {error}
           </div>
         )}
 

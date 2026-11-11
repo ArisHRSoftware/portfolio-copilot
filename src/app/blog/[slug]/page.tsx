@@ -23,13 +23,14 @@ export async function generateStaticParams() {
 
 async function getPost(slug: string): Promise<BlogPost | null> {
   const supabase = createStaticClient();
-  const { data: post } = await supabase
+  const { data: post, error } = await supabase
     .from("blog_posts")
     .select("*")
     .eq("slug", slug)
     .not("published_at", "is", null)
-    .single();
-  return post as BlogPost | null;
+    .maybeSingle();
+  if (error || !post) return null;
+  return post as BlogPost;
 }
 
 export async function generateMetadata({
