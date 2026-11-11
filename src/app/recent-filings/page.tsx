@@ -155,13 +155,13 @@ export default async function RecentFilingsPage({
 
               return (
                 <TableRow key={filing.id}>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {new Date(filing.filed_date).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
                     })}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <Link
                       href={`/stocks/${(company?.ticker ?? "").split(",")[0].trim().toLowerCase()}`}
                       className="font-medium hover:underline"
@@ -174,16 +174,16 @@ export default async function RecentFilingsPage({
                       </p>
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     <Badge variant="outline">{filing.filing_type}</Badge>
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell max-w-xs truncate">
-                    {filing.one_line_summary ?? "Processing..."}
+                  <TableCell className="hidden sm:table-cell max-w-xs">
+                    <p className="line-clamp-2 text-sm">{filing.one_line_summary ?? "Processing..."}</p>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {significanceBadge(filing.significance_score)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right whitespace-nowrap">
                     <Button
                       variant="ghost"
                       size="sm"
