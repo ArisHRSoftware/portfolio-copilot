@@ -48,6 +48,7 @@ export interface DigestFilingItem {
 
 export interface DigestData {
   filings: DigestFilingItem[];
+  topFilings?: DigestFilingItem[];
   periodLabel: string; // e.g. "Today" or "This Week"
   startDate: string;
   endDate: string;
@@ -187,24 +188,56 @@ export async function sendWeeklyDigest(
 }
 
 /**
- * Send a daily digest of filings for paid-tier users.
+ * Send a daily digest of filings for all users with tracked stocks.
+ * Includes personalized filings matching tracked stocks plus top market-wide filings.
  */
 export async function sendDailyDigest(
   to: string,
   digestData: DigestData
 ): Promise<void> {
   const count = digestData.filings.length;
-  const subject = `Daily Filing Digest: ${count} filing${count !== 1 ? "s" : ""} today`;
+  const topFilings = digestData.topFilings ?? [];
+  const totalCount = count + topFilings.length;
+  const subject = totalCount > 0
+    ? `Daily Filing Digest: ${totalCount} filing${totalCount !== 1 ? "s" : ""} today`
+    : "Daily Filing Digest: Top market filings today";
 
-  const filingsHtml = digestData.filings.map(filingCardHtml).join("\n");
+  let body = "";
 
-  const body = `
+  // Personalized tracked-stock filings
+  if (count > 0) {
+    const filingsHtml = digestData.filings.map(filingCardHtml).join("\n");
+    body += `
     <p>Here's your daily summary of SEC filings for your tracked stocks
     (${digestData.endDate}).</p>
     <p><strong>${count} filing${count !== 1 ? "s" : ""}</strong> detected across your portfolio:</p>
     ${filingsHtml}
+    `;
+  } else {
+    body += `
+    <p>No new filings today for your tracked stocks. Here are the most significant filings across the market:</p>
+    `;
+  }
+
+  // Top market-wide filings section
+  if (topFilings.length > 0) {
+    const topFilingsHtml = topFilings.map(filingCardHtml).join("\n");
+    body += `
+    <div style="margin-top:24px;padding-top:20px;border-top:2px solid #e4e4e7;">
+      <h2 style="font-size:16px;margin:0 0 12px;color:#18181b;">Top Filings Today</h2>
+      <p style="font-size:13px;color:#52525b;margin:0 0 12px;">The most significant SEC filings across the market today.</p>
+      ${topFilingsHtml}
+    </div>
+    `;
+  }
+
+  // CTA
+  body += `
     <p style="margin-top:16px;">
       <a class="btn" href="${SITE_URL}/dashboard">Open Dashboard</a>
+    </p>
+    <p style="font-size:13px;color:#71717a;margin-top:16px;text-align:center;">
+      Want instant insider alerts? <a href="${SITE_URL}/dashboard" style="color:#18181b;font-weight:500;">Track more stocks at brefyr.com/dashboard</a>
     </p>
   `;
 

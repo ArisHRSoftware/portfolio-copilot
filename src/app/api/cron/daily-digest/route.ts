@@ -2,7 +2,7 @@ import { createWebhookClient } from "@/lib/supabase/server";
 import { verifyQStash } from "@/lib/qstash";
 import { sendDailyDigest } from "@/lib/resend";
 import type { DigestFilingItem } from "@/lib/resend";
-import type { Filing, Company, Subscription } from "@/lib/supabase/queries";
+import type { Filing, Company } from "@/lib/supabase/queries";
 
 export async function POST(request: Request): Promise<Response> {
   const qstashError = await verifyQStash(request);
@@ -12,29 +12,41 @@ export async function POST(request: Request): Promise<Response> {
   const supabase = createWebhookClient();
 
   try {
-    // 1. Get all users with active paid subscriptions (starter/plus/pro) — paginated
-    const activeSubs: Subscription[] = [];
-    let subOffset = 0;
-    const SUB_PAGE = 1000;
+    // 1. Get ALL users who have at least one tracked stock (paginated)
+    const allUserStocks: Array<{ user_id: string; company_id: string }> = [];
+    let usOffset = 0;
+    const US_PAGE = 1000;
     while (true) {
       const { data } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .in("plan", ["starter", "plus", "pro"])
-        .eq("status", "active")
-        .range(subOffset, subOffset + SUB_PAGE - 1);
-      const batch = (data ?? []) as Subscription[];
-      activeSubs.push(...batch);
-      if (batch.length < SUB_PAGE) break;
-      subOffset += SUB_PAGE;
+        .from("user_stocks")
+        .select("user_id, company_id")
+        .range(usOffset, usOffset + US_PAGE - 1);
+      const batch = (data ?? []) as Array<{ user_id: string; company_id: string }>;
+      allUserStocks.push(...batch);
+      if (batch.length < US_PAGE) break;
+      usOffset += US_PAGE;
     }
 
-    if (activeSubs.length === 0) {
+    // Deduplicate user IDs
+    const userIds = [...new Set(allUserStocks.map((us) => us.user_id))];
+
+    if (userIds.length === 0) {
       return Response.json({
         success: true,
-        message: "No active paid subscribers",
+        message: "No users with tracked stocks",
         emailsSent: 0,
       });
+    }
+
+    // Group stocks by user
+    const stocksByUser = new Map<string, Set<string>>();
+    for (const us of allUserStocks) {
+      const existing = stocksByUser.get(us.user_id);
+      if (existing) {
+        existing.add(us.company_id);
+      } else {
+        stocksByUser.set(us.user_id, new Set([us.company_id]));
+      }
     }
 
     // 2. Get filings from the last 24 hours
@@ -79,35 +91,23 @@ export async function POST(request: Request): Promise<Response> {
     const companies = (companiesData ?? []) as Company[];
     const companyMap = new Map(companies.map((c) => [c.id, c]));
 
-    // 4. For each user, find their tracked stocks and matching filings
-    const userIds = activeSubs.map((s) => s.user_id);
+    // 4. Build top 5 market-wide filings by significance score
+    const topMarketFilings = [...filings]
+      .sort((a, b) => b.significance_score - a.significance_score)
+      .slice(0, 5);
 
-    // Paginate user_stocks to avoid Supabase 1000-row default limit
-    const userStocks: Array<{ user_id: string; company_id: string }> = [];
-    let stockOffset = 0;
-    const STOCK_PAGE = 1000;
-    while (true) {
-      const { data } = await supabase
-        .from("user_stocks")
-        .select("*")
-        .in("user_id", userIds)
-        .range(stockOffset, stockOffset + STOCK_PAGE - 1);
-      const batch = (data ?? []) as Array<{ user_id: string; company_id: string }>;
-      userStocks.push(...batch);
-      if (batch.length < STOCK_PAGE) break;
-      stockOffset += STOCK_PAGE;
-    }
-
-    // Group stocks by user
-    const stocksByUser = new Map<string, Set<string>>();
-    for (const us of userStocks) {
-      const existing = stocksByUser.get(us.user_id);
-      if (existing) {
-        existing.add(us.company_id);
-      } else {
-        stocksByUser.set(us.user_id, new Set([us.company_id]));
-      }
-    }
+    const topFilingsItems: DigestFilingItem[] = topMarketFilings.map((f) => {
+      const company = companyMap.get(f.company_id);
+      return {
+        ticker: company?.ticker ?? "???",
+        companyName: company?.name ?? "Unknown",
+        filingType: f.filing_type,
+        filedDate: f.filed_date,
+        oneLiner: f.one_line_summary,
+        slug: f.slug,
+        significanceScore: f.significance_score,
+      };
+    });
 
     // 5. Get user emails from Supabase Auth admin API (paginated)
     const emailByUserId = new Map<string, string>();
@@ -125,22 +125,21 @@ export async function POST(request: Request): Promise<Response> {
       page++;
     }
 
-    // 6. Send digest emails
+    // 6. Send digest emails to ALL users with tracked stocks
     const today = new Date().toISOString().split("T")[0];
     let emailsSent = 0;
     const errors: string[] = [];
 
-    for (const sub of activeSubs) {
-      const trackedCompanyIds = stocksByUser.get(sub.user_id);
+    for (const userId of userIds) {
+      const trackedCompanyIds = stocksByUser.get(userId);
       if (!trackedCompanyIds || trackedCompanyIds.size === 0) continue;
+
+      const email = emailByUserId.get(userId);
+      if (!email) continue;
 
       const userFilings = filings.filter((f) =>
         trackedCompanyIds.has(f.company_id)
       );
-      if (userFilings.length === 0) continue;
-
-      const email = emailByUserId.get(sub.user_id);
-      if (!email) continue;
 
       const digestItems: DigestFilingItem[] = userFilings.map((f) => {
         const company = companyMap.get(f.company_id);
@@ -158,6 +157,7 @@ export async function POST(request: Request): Promise<Response> {
       try {
         await sendDailyDigest(email, {
           filings: digestItems,
+          topFilings: topFilingsItems,
           periodLabel: "Today",
           startDate: cutoff.split("T")[0],
           endDate: today,
@@ -166,16 +166,17 @@ export async function POST(request: Request): Promise<Response> {
       } catch (err) {
         const msg =
           err instanceof Error ? err.message : "Unknown email error";
-        errors.push(`${sub.user_id}: ${msg}`);
-        console.error(`Daily digest failed for ${sub.user_id}:`, msg);
+        errors.push(`${userId}: ${msg}`);
+        console.error(`Daily digest failed for ${userId}:`, msg);
       }
     }
 
     return Response.json({
       success: true,
       emailsSent,
-      totalSubscribers: activeSubs.length,
+      totalUsers: userIds.length,
       filingsFound: filings.length,
+      topFilingsIncluded: topFilingsItems.length,
       errors: errors.length > 0 ? errors : undefined,
       timestamp: new Date().toISOString(),
     });
