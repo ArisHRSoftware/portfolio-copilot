@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createStaticClient } from "@/lib/supabase/static";
-import { type Company } from "@/lib/supabase/queries";
+
+
 import { glossaryTerms } from "@/data/glossary/index";
 import { secFilingArticles } from "@/data/learn/sec-filings";
 
@@ -17,14 +18,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [companies, blogPosts, filings] = await Promise.all([
     supabase
       .from("companies")
-      .select("*")
+      .select("ticker, updated_at")
       .eq("status", "active")
       .order("last_filing_date", { ascending: false })
       .limit(50000)
-      .then(({ data }) => (data ?? []) as Company[]),
+      .then(({ data }) => (data ?? []) as { ticker: string; updated_at: string | null }[]),
     supabase
       .from("blog_posts")
-      .select("*")
+      .select("slug, published_at")
       .not("published_at", "is", null)
       .order("published_at", { ascending: false })
       .limit(50000)
@@ -89,30 +90,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  // --- Stock pages (7600+, single query already done) ---
-  // Sanitize tickers: multi-ticker companies (e.g. "JETBF, JETMF") take first ticker only
-  const stockPages: MetadataRoute.Sitemap = companies.map((c) => ({
-    url: `${siteUrl}/stocks/${c.ticker.split(",")[0].trim().toLowerCase()}`,
-    lastModified: c.updated_at ? new Date(c.updated_at) : now,
-    changeFrequency: "daily" as const,
-    priority: 0.8,
-  }));
+  // --- Stock pages — deduplicate multi-ticker companies ---
+  const seenTickers = new Set<string>();
+  const stockPages: MetadataRoute.Sitemap = [];
+  for (const c of companies) {
+    const ticker = c.ticker.split(",")[0].trim().toLowerCase();
+    if (!ticker || seenTickers.has(ticker)) continue;
+    seenTickers.add(ticker);
+    stockPages.push({
+      url: `${siteUrl}/stocks/${ticker}`,
+      lastModified: c.updated_at ? new Date(c.updated_at) : now,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    });
+  }
 
-  // --- Blog posts ---
-  const blogPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
-    url: `${siteUrl}/blog/${post.slug}`,
-    lastModified: post.published_at ? new Date(post.published_at) : now,
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
+  // --- Blog posts (filter null slugs) ---
+  const blogPages: MetadataRoute.Sitemap = blogPosts
+    .filter((post) => post.slug)
+    .map((post) => ({
+      url: `${siteUrl}/blog/${post.slug}`,
+      lastModified: post.published_at ? new Date(post.published_at) : now,
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    }));
 
-  // --- Filing pages (all non-superseded) ---
-  const filingPages: MetadataRoute.Sitemap = filings.map((filing) => ({
-    url: `${siteUrl}/filings/${filing.slug}`,
-    lastModified: filing.filed_date ? new Date(filing.filed_date) : now,
-    changeFrequency: "monthly" as const,
-    priority: 0.7,
-  }));
+  // --- Filing pages (all non-superseded, filter null slugs) ---
+  const filingPages: MetadataRoute.Sitemap = filings
+    .filter((filing) => filing.slug)
+    .map((filing) => ({
+      url: `${siteUrl}/filings/${filing.slug}`,
+      lastModified: filing.filed_date ? new Date(filing.filed_date) : now,
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    }));
 
   // --- Glossary pages ---
   const glossaryPages: MetadataRoute.Sitemap = glossaryTerms.map((term) => ({
