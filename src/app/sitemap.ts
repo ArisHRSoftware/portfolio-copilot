@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { createStaticClient } from "@/lib/supabase/static";
-import { getPublishedBlogPosts, getRecentFilings, type Company } from "@/lib/supabase/queries";
+import { type Company } from "@/lib/supabase/queries";
 import { glossaryTerms } from "@/data/glossary/index";
 import { secFilingArticles } from "@/data/learn/sec-filings";
 
@@ -12,18 +12,30 @@ import { SECTOR_SLUGS } from "@/lib/constants/sectors";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createStaticClient();
 
-  // Fetch all dynamic data in parallel
-  // Supabase PostgREST defaults to 1,000 rows — use explicit high limits
+  // Fetch ALL dynamic data — no caps. Google sitemaps support 50,000 URLs per file.
+  // Supabase PostgREST defaults to 1,000 rows — always use explicit .limit()
   const [companies, blogPosts, filings] = await Promise.all([
     supabase
       .from("companies")
       .select("*")
       .eq("status", "active")
       .order("last_filing_date", { ascending: false })
-      .limit(10000)
+      .limit(50000)
       .then(({ data }) => (data ?? []) as Company[]),
-    getPublishedBlogPosts(supabase),
-    getRecentFilings(supabase, { limit: 5000 }),
+    supabase
+      .from("blog_posts")
+      .select("*")
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(50000)
+      .then(({ data }) => (data ?? []) as { slug: string; published_at: string | null }[]),
+    supabase
+      .from("filings")
+      .select("slug, filed_date")
+      .is("superseded_by", null)
+      .order("filed_date", { ascending: false })
+      .limit(50000)
+      .then(({ data }) => (data ?? []) as { slug: string; filed_date: string | null }[]),
   ]);
 
   const now = new Date();
@@ -94,7 +106,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  // --- Filing pages (last 500) ---
+  // --- Filing pages (all non-superseded) ---
   const filingPages: MetadataRoute.Sitemap = filings.map((filing) => ({
     url: `${siteUrl}/filings/${filing.slug}`,
     lastModified: filing.filed_date ? new Date(filing.filed_date) : now,
