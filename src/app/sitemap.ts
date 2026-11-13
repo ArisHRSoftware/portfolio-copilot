@@ -1,42 +1,60 @@
 import type { MetadataRoute } from "next";
 import { createStaticClient } from "@/lib/supabase/static";
-
-
 import { glossaryTerms } from "@/data/glossary/index";
 import { secFilingArticles } from "@/data/learn/sec-filings";
+import { SECTOR_SLUGS } from "@/lib/constants/sectors";
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
-import { SECTOR_SLUGS } from "@/lib/constants/sectors";
+const PAGE_SIZE = 1000;
+
+/**
+ * Paginate through ALL rows in a Supabase table.
+ * PostgREST caps each request at ~1,000 rows regardless of .limit().
+ * This fetches in batches until no more rows are returned.
+ */
+async function fetchAll<T extends Record<string, unknown>>(
+  query: () => ReturnType<ReturnType<ReturnType<typeof createStaticClient>["from"]>["select"]>
+): Promise<T[]> {
+  const all: T[] = [];
+  let offset = 0;
+  while (true) {
+    const { data } = await (query() as any).range(offset, offset + PAGE_SIZE - 1);
+    const rows = (data ?? []) as T[];
+    all.push(...rows);
+    if (rows.length < PAGE_SIZE) break;
+    offset += PAGE_SIZE;
+  }
+  return all;
+}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createStaticClient();
 
-  // Fetch ALL dynamic data — no caps. Google sitemaps support 50,000 URLs per file.
-  // Supabase PostgREST defaults to 1,000 rows — always use explicit .limit()
+  // Paginate ALL dynamic data — PostgREST silently caps at 1,000 rows per request
   const [companies, blogPosts, filings] = await Promise.all([
-    supabase
-      .from("companies")
-      .select("ticker, updated_at")
-      .eq("status", "active")
-      .order("last_filing_date", { ascending: false })
-      .limit(50000)
-      .then(({ data }) => (data ?? []) as { ticker: string; updated_at: string | null }[]),
-    supabase
-      .from("blog_posts")
-      .select("slug, published_at")
-      .not("published_at", "is", null)
-      .order("published_at", { ascending: false })
-      .limit(50000)
-      .then(({ data }) => (data ?? []) as { slug: string; published_at: string | null }[]),
-    supabase
-      .from("filings")
-      .select("slug, filed_date")
-      .is("superseded_by", null)
-      .order("filed_date", { ascending: false })
-      .limit(50000)
-      .then(({ data }) => (data ?? []) as { slug: string; filed_date: string | null }[]),
+    fetchAll<{ ticker: string; updated_at: string | null }>(() =>
+      supabase
+        .from("companies")
+        .select("ticker, updated_at")
+        .eq("status", "active")
+        .order("last_filing_date", { ascending: false })
+    ),
+    fetchAll<{ slug: string; published_at: string | null }>(() =>
+      supabase
+        .from("blog_posts")
+        .select("slug, published_at")
+        .not("published_at", "is", null)
+        .order("published_at", { ascending: false })
+    ),
+    fetchAll<{ slug: string; filed_date: string | null }>(() =>
+      supabase
+        .from("filings")
+        .select("slug, filed_date")
+        .is("superseded_by", null)
+        .order("filed_date", { ascending: false })
+    ),
   ]);
 
   const now = new Date();
