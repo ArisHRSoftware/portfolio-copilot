@@ -159,7 +159,7 @@ Return ONLY the JSON, no other text.`;
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(googleKey!);
       const model = genAI.getGenerativeModel({
-        model: process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash",
+        model: process.env.GEMINI_FILING_MODEL || "gemini-2.0-flash",
         generationConfig: { maxOutputTokens: 3000, temperature: 0.7 },
       });
       const result = await model.generateContent(blogPrompt);

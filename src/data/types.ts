@@ -20,7 +20,7 @@ export interface GlossaryTerm extends ContentPage {
 }
 
 export interface LearnArticle extends ContentPage {
-  pillar: "sec-filings" | "sectors" | "states" | "stocks";
+  pillar: "sec-filings" | "sectors" | "states" | "stocks" | "insider-trading";
   readingTime: number; // minutes
   difficulty: "beginner" | "intermediate" | "advanced";
 }

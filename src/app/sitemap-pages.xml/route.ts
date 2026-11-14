@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { createStaticClient } from "@/lib/supabase/static";
 import { glossaryTerms } from "@/data/glossary/index";
 import { secFilingArticles } from "@/data/learn/sec-filings";
+import { sectorArticles } from "@/data/learn/sectors";
+import { insiderTradingArticles } from "@/data/learn/insider-trading";
 import { SECTOR_SLUGS } from "@/lib/constants/sectors";
 import { fetchAll, siteUrl, toSitemapXml, type SitemapEntry } from "@/lib/sitemap-utils";
 
@@ -25,7 +27,7 @@ export async function GET() {
       (path) => ({ url: `${siteUrl}${path}`, lastModified: now, changeFrequency: "monthly", priority: 0.3 })
     ),
     // Content index pages
-    ...["/blog", "/archive", "/trending", "/insider-buying", "/insider-selling", "/earnings-this-week", "/recent-filings", "/glossary", "/learn", "/learn/sec-filings"].map(
+    ...["/blog", "/archive", "/trending", "/insider-buying", "/insider-selling", "/earnings-this-week", "/recent-filings", "/glossary", "/learn", "/learn/sec-filings", "/learn/sectors", "/learn/insider-trading"].map(
       (path) => ({ url: `${siteUrl}${path}`, lastModified: now, changeFrequency: "daily", priority: 0.5 })
     ),
     // Sector pages
@@ -54,6 +56,20 @@ export async function GET() {
     // Learn articles
     ...secFilingArticles.map((a) => ({
       url: `${siteUrl}/learn/sec-filings/${a.slug}`,
+      lastModified: new Date(a.lastUpdated).toISOString(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    })),
+    // Sector analysis articles
+    ...sectorArticles.map((a) => ({
+      url: `${siteUrl}/learn/sectors/${a.slug}`,
+      lastModified: new Date(a.lastUpdated).toISOString(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    })),
+    // Insider trading articles
+    ...insiderTradingArticles.map((a) => ({
+      url: `${siteUrl}/learn/insider-trading/${a.slug}`,
       lastModified: new Date(a.lastUpdated).toISOString(),
       changeFrequency: "monthly",
       priority: 0.7,

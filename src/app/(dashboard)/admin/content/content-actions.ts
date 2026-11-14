@@ -111,11 +111,15 @@ export async function publishContent(contentId: string) {
       await onBlogPublished(blogPost as Database["public"]["Tables"]["blog_posts"]["Row"]);
     }
   } else if (typedItem.type === "newsletter") {
+    // Extract HTML from the structured body object (body.html), falling
+    // back to preview_html or an empty string.
+    const bodyObj = typedItem.body as Record<string, unknown> | null;
     const bodyHtml =
+      (typeof bodyObj === "object" && bodyObj !== null
+        ? (bodyObj.html as string | undefined)
+        : undefined) ??
       typedItem.preview_html ??
-      (typeof typedItem.body === "string"
-        ? typedItem.body
-        : JSON.stringify(typedItem.body));
+      "";
 
     const { data: newsletter } = await supabase
       .from("newsletter_issues")
@@ -127,7 +131,50 @@ export async function publishContent(contentId: string) {
       .single();
 
     if (newsletter) {
-      await onNewsletterSent(newsletter as Database["public"]["Tables"]["newsletter_issues"]["Row"]);
+      const typedNewsletter =
+        newsletter as Database["public"]["Tables"]["newsletter_issues"]["Row"];
+
+      // Fetch active subscribers (not unsubscribed)
+      const { data: subscribers } = await supabase
+        .from("newsletter_subscribers")
+        .select("email")
+        .is("unsubscribed_at", null);
+
+      const emails = ((subscribers ?? []) as { email: string }[]).map(
+        (s) => s.email
+      );
+
+      if (emails.length > 0) {
+        // Send via Resend in batches of 50 (Resend batch limit)
+        const { getResend } = await import("@/lib/resend");
+        const resend = getResend();
+        const fromEmail =
+          process.env.RESEND_FROM_EMAIL || "noreply@brefyr.com";
+        const BATCH_SIZE = 50;
+
+        for (let i = 0; i < emails.length; i += BATCH_SIZE) {
+          const batch = emails.slice(i, i + BATCH_SIZE);
+          await resend.batch.send(
+            batch.map((email) => ({
+              from: fromEmail,
+              to: email,
+              subject: typedItem.title,
+              html: bodyHtml,
+            }))
+          );
+        }
+      }
+
+      // Update sent_at and recipient_count on the newsletter row
+      await supabase
+        .from("newsletter_issues")
+        .update({
+          sent_at: new Date().toISOString(),
+          recipient_count: emails.length,
+        } as never)
+        .eq("id", typedNewsletter.id);
+
+      await onNewsletterSent(typedNewsletter);
     }
   }
 }

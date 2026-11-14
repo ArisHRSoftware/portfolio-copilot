@@ -202,7 +202,7 @@ async function analyzeWithGroq(text, filingType, companyName, ticker) {
 }
 
 async function analyzeWithGemini(text, filingType, companyName, ticker) {
-  const model = process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash";
+  const model = process.env.GEMINI_FILING_MODEL || "gemini-2.0-flash";
   const safeText = text.length > 120_000 ? text.slice(0, 120_000) + "\n[Truncated]" : text;
 
   for (let attempt = 0; attempt <= 3; attempt++) {

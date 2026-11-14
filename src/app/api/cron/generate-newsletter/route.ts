@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { createWebhookClient } from "@/lib/supabase/server";
 import { verifyQStash } from "@/lib/qstash";
 import type { Database } from "@/lib/types/database";
@@ -5,11 +6,34 @@ import type { Database } from "@/lib/types/database";
 type Filing = Database["public"]["Tables"]["filings"]["Row"];
 type Company = Database["public"]["Tables"]["companies"]["Row"];
 
-// Schedule: Monday 5am UTC via QStash
+// Schedule: Monday 5am UTC via QStash (also callable manually with CRON_SECRET)
+
+/**
+ * Allow manual triggers via CRON_SECRET (same pattern as heartbeat).
+ * Returns true if the caller authenticated with CRON_SECRET.
+ */
+function hasCronSecret(request: Request): boolean {
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) return false;
+
+  const authHeader = request.headers.get("authorization");
+  if (!authHeader) return false;
+
+  const expected = `Bearer ${cronSecret}`;
+  if (authHeader.length !== expected.length) return false;
+
+  return crypto.timingSafeEqual(
+    Buffer.from(authHeader),
+    Buffer.from(expected)
+  );
+}
 
 export async function POST(request: Request): Promise<Response> {
-  const qstashError = await verifyQStash(request);
-  if (qstashError) return qstashError;
+  // Accept either QStash signature or CRON_SECRET for manual triggers
+  if (!hasCronSecret(request)) {
+    const qstashError = await verifyQStash(request);
+    if (qstashError) return qstashError;
+  }
 
   // ── Main logic ─────────────────────────────────────────────────
   const supabase = createWebhookClient();
@@ -127,7 +151,7 @@ Use <h2> for section headers. Keep it concise and actionable. No fluff. Return O
       const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(googleKey!);
       const genModel = genAI.getGenerativeModel({
-        model: process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash",
+        model: process.env.GEMINI_FILING_MODEL || "gemini-2.0-flash",
         generationConfig: { maxOutputTokens: 2000, temperature: 0.7 },
       });
       const result = await genModel.generateContent(newsletterPrompt);

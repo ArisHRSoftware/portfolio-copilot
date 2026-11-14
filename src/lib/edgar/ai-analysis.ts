@@ -295,7 +295,7 @@ async function analyzeWithGemini(
   ticker: string
 ): Promise<AnalysisResult> {
   const googleKey = process.env.GOOGLE_API_KEY!;
-  const modelName = process.env.GEMINI_FILING_MODEL || "gemini-3.8-flash";
+  const modelName = process.env.GEMINI_FILING_MODEL || "gemini-2.0-flash";
 
   const genAI = new GoogleGenerativeAI(googleKey);
   const model = genAI.getGenerativeModel({
