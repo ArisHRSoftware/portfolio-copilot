@@ -141,7 +141,8 @@ export async function countCompaniesBySector(
     .from("companies")
     .select("id", { count: "exact", head: true })
     .eq("sector", sector)
-    .eq("status", "active");
+    .eq("status", "active")
+    .not("ticker", "ilike", "CIK%");
   return count ?? 0;
 }
 
@@ -156,6 +157,7 @@ export async function getCompaniesBySectorPaginated(
     .select("*")
     .eq("sector", sector)
     .eq("status", "active")
+    .not("ticker", "ilike", "CIK%")
     .order("market_cap", { ascending: false, nullsFirst: false })
     .range(offset, offset + limit - 1);
   return (data ?? []) as Company[];
@@ -193,6 +195,7 @@ export async function getCompaniesBySector(supabase: Supabase, sector: string) {
       .select("*")
       .eq("sector", sector)
       .eq("status", "active")
+      .not("ticker", "ilike", "CIK%")
       .order("last_filing_date", { ascending: false })
       .range(offset, offset + PAGE - 1);
     const batch = (data ?? []) as Company[];
