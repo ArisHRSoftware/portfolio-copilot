@@ -5,6 +5,9 @@ import { sicToSector } from "@/lib/constants/sectors";
 
 export const maxDuration = 300;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnySupabase = ReturnType<typeof createClient<any>>;
+
 const EDGAR_USER_AGENT = "Brefyr admin@brefyr.com";
 
 /**
@@ -40,7 +43,7 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "Supabase not configured" }, { status: 500 });
   }
 
-  const supabase = createClient<Database>(supabaseUrl, supabaseKey);
+  const supabase = createClient<Database>(supabaseUrl, supabaseKey) as AnySupabase;
 
   let body: { batch_size?: number } = {};
   try {
