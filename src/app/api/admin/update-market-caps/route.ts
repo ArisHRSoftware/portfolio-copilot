@@ -15,10 +15,12 @@ const FRAMES_BASE = "https://data.sec.gov/api/xbrl/frames/dei/EntityPublicFloat/
  * The XBRL Frames API uses CY{year}Q{quarter}I for instantaneous values.
  */
 const QUARTER_CANDIDATES = [
-  "CY2026Q3I",
-  "CY2026Q2I",
-  "CY2026Q1I",
+  "CY2025Q2I",
+  "CY2025Q3I",
   "CY2025Q4I",
+  "CY2026Q1I",
+  "CY2026Q2I",
+  "CY2026Q3I",
 ];
 
 interface FrameEntry {
@@ -80,32 +82,32 @@ export async function POST(request: Request): Promise<Response> {
 
   const batchSize = Math.min(body.batch_size ?? 50, 200);
 
-  // Step 1: Try each quarter until we find one with data
-  let framesData: FrameEntry[] = [];
-  let usedQuarter = "";
+  // Step 1: Fetch ALL quarters and merge — later filings overwrite older ones per CIK
+  const cikToValue = new Map<number, { val: number; filed: string }>();
+  const quartersUsed: string[] = [];
 
   for (const quarter of QUARTER_CANDIDATES) {
     const url = `${FRAMES_BASE}/${quarter}.json`;
     const res = await fetch(url, {
       headers: { "User-Agent": EDGAR_USER_AGENT },
     });
-
     if (!res.ok) continue;
 
     const parsed = (await res.json()) as FramesResponse;
-    if (parsed.data && parsed.data.length > 0) {
-      framesData = parsed.data;
-      usedQuarter = quarter;
-      break;
+    if (!parsed.data || parsed.data.length === 0) continue;
+
+    quartersUsed.push(`${quarter}(${parsed.data.length})`);
+    for (const entry of parsed.data) {
+      const existing = cikToValue.get(entry.cik);
+      if (!existing || entry.filed > existing.filed) {
+        cikToValue.set(entry.cik, { val: entry.val, filed: entry.filed });
+      }
     }
   }
 
-  if (framesData.length === 0) {
+  if (cikToValue.size === 0) {
     return Response.json(
-      {
-        error: "No EDGAR public float frames data found for any recent quarter",
-        tried: QUARTER_CANDIDATES,
-      },
+      { error: "No EDGAR public float frames data found", tried: QUARTER_CANDIDATES },
       { status: 502 }
     );
   }
@@ -128,10 +130,10 @@ export async function POST(request: Request): Promise<Response> {
 
   // Step 3: Build update list — only entries whose CIK exists in our DB
   const updates: { cik: string; val: number }[] = [];
-  for (const entry of framesData) {
-    const paddedCik = String(entry.cik).padStart(10, "0");
+  for (const [cik, { val }] of cikToValue) {
+    const paddedCik = String(cik).padStart(10, "0");
     if (existingCiks.has(paddedCik)) {
-      updates.push({ cik: paddedCik, val: entry.val });
+      updates.push({ cik: paddedCik, val });
     }
   }
 
@@ -171,8 +173,8 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   return Response.json({
-    quarter: usedQuarter,
-    total_frames: framesData.length,
+    quarters: quartersUsed,
+    unique_companies: cikToValue.size,
     matched: updates.length,
     updated,
     failed,
