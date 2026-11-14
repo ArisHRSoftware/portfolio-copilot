@@ -1,8 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { timingSafeEqual } from "crypto";
 import type { Database } from "@/lib/types/database";
-import { sicToSector } from "@/lib/constants/sectors";
-
 export const maxDuration = 300;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -107,68 +105,23 @@ export async function POST(request: Request): Promise<Response> {
   let failed = 0;
   const errors: string[] = [];
 
-  // Step 5: Insert missing companies in batches
+  // Step 5: Insert missing companies in batches (no SIC lookups — use backfill-sectors later)
   for (let i = 0; i < missing.length; i += batchSize) {
     const batch = missing.slice(i, i + batchSize);
 
-    // Fetch SIC codes from EDGAR submissions API (with rate limiting)
-    const companiesWithSic = await Promise.all(
-      batch.map(async (ec) => {
-        const cik = String(ec.cik_str).padStart(10, "0");
-        try {
-          const subRes = await fetch(
-            `https://data.sec.gov/submissions/CIK${cik}.json`,
-            { headers: { "User-Agent": EDGAR_USER_AGENT } }
-          );
-          if (subRes.ok) {
-            const subData = (await subRes.json()) as {
-              sic?: string;
-              sicDescription?: string;
-              exchanges?: string[];
-              stateOfIncorporation?: string;
-              fiscalYearEnd?: string;
-              category?: string;
-            };
-            return {
-              ticker: ec.ticker,
-              name: ec.title,
-              cik_number: cik,
-              sic_code: subData.sic || "",
-              sic_description: subData.sicDescription || "",
-              sector: subData.sic ? sicToSector(subData.sic) : "",
-              exchange: subData.exchanges?.[0] || "",
-              state_of_incorporation: subData.stateOfIncorporation || "",
-              fiscal_year_end: subData.fiscalYearEnd || "",
-              filer_category: subData.category || "",
-              market_cap: 0,
-              status: "active" as const,
-            };
-          }
-        } catch {
-          // SIC fetch failed — insert with minimal data
-        }
-        return {
-          ticker: ec.ticker,
-          name: ec.title,
-          cik_number: cik,
-          sic_code: "",
-          sic_description: "",
-          sector: "",
-          exchange: "",
-          state_of_incorporation: "",
-          fiscal_year_end: "",
-          filer_category: "",
-          market_cap: 0,
-          status: "active" as const,
-        };
-      })
-    );
+    const companiesToInsert = batch.map((ec) => ({
+      ticker: ec.ticker,
+      name: ec.title,
+      cik_number: String(ec.cik_str).padStart(10, "0"),
+      sector: "",
+      exchange: "",
+      market_cap: 0,
+      status: "active" as const,
+    }));
 
-    // Batch insert
-    const { error } = await supabase.from("companies").insert(companiesWithSic);
+    const { error } = await supabase.from("companies").insert(companiesToInsert);
     if (error) {
-      // If batch fails, try one-by-one
-      for (const company of companiesWithSic) {
+      for (const company of companiesToInsert) {
         const { error: singleError } = await supabase
           .from("companies")
           .insert(company);
@@ -182,11 +135,8 @@ export async function POST(request: Request): Promise<Response> {
         }
       }
     } else {
-      inserted += companiesWithSic.length;
+      inserted += companiesToInsert.length;
     }
-
-    // Rate limit: SEC asks for max 10 req/sec
-    await new Promise((r) => setTimeout(r, batchSize * 120));
   }
 
   // Step 6: Update CIK-based tickers to real tickers
