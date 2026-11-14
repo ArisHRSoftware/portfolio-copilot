@@ -112,7 +112,6 @@ export async function POST(request: Request): Promise<Response> {
     const companiesWithSic = await Promise.all(
       batch.map(async (ec) => {
         const cik = String(ec.cik_str).padStart(10, "0");
-        let sic = "";
         try {
           const subRes = await fetch(
             `https://data.sec.gov/submissions/CIK${cik}.json`,
