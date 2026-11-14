@@ -12,16 +12,11 @@ const EDGAR_USER_AGENT = "Brefyr admin@brefyr.com";
  * Admin endpoint: import ALL companies from EDGAR's company_tickers.json.
  *
  * Fetches the canonical SEC company list (~10,400 companies with tickers),
- * then for each company not already in the DB (by CIK), fetches SIC code
- * from EDGAR submissions API and inserts the company.
+ * compares by CIK against existing DB entries, and batch-inserts missing ones.
+ * Sectors can be backfilled separately via /api/admin/backfill-sectors.
  *
- * Also updates existing CIK-ticker companies (e.g. "CIK320193") with
- * real tickers from the EDGAR list.
- *
- * Auth: requires ADMIN_SECRET header.
- *
- * Usage: POST /api/admin/import-companies
- *   Body: { "batch_size": 100 }  (optional, default 100)
+ * Auth: requires x-admin-secret header.
+ * Usage: POST /api/admin/import-companies  { "batch_size": 100 }
  */
 export async function POST(request: Request): Promise<Response> {
   const adminSecret = process.env.ADMIN_SECRET;
@@ -91,17 +86,7 @@ export async function POST(request: Request): Promise<Response> {
     return !existingCiks.has(cik);
   });
 
-  // Step 4: Also find existing companies with CIK-based tickers that need real ticker updates
-  const cikTickerUpdates: { cik: string; realTicker: string }[] = [];
-  for (const ec of edgarCompanies) {
-    const cik = String(ec.cik_str).padStart(10, "0");
-    if (existingCiks.has(cik) && ec.ticker) {
-      cikTickerUpdates.push({ cik, realTicker: ec.ticker });
-    }
-  }
-
   let inserted = 0;
-  let tickerUpdated = 0;
   let failed = 0;
   const errors: string[] = [];
 
@@ -139,34 +124,11 @@ export async function POST(request: Request): Promise<Response> {
     }
   }
 
-  // Step 6: Update CIK-based tickers to real tickers
-  // Only update tickers that start with "CIK" (synthetic fallback tickers)
-  for (let i = 0; i < cikTickerUpdates.length; i += 100) {
-    const batch = cikTickerUpdates.slice(i, i + 100);
-    for (const { cik, realTicker } of batch) {
-      const { data: existing } = await supabase
-        .from("companies")
-        .select("ticker")
-        .eq("cik_number", cik)
-        .limit(1)
-        .single();
-
-      if (existing && existing.ticker.startsWith("CIK")) {
-        const { error } = await supabase
-          .from("companies")
-          .update({ ticker: realTicker, previous_tickers: existing.ticker })
-          .eq("cik_number", cik);
-        if (!error) tickerUpdated++;
-      }
-    }
-  }
-
   return Response.json({
     total_edgar: edgarCompanies.length,
     already_in_db: existingCiks.size,
     missing: missing.length,
     inserted,
-    ticker_updated: tickerUpdated,
     failed,
     errors: errors.length > 0 ? errors : undefined,
   });
