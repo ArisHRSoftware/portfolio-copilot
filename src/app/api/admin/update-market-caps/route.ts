@@ -149,7 +149,7 @@ export async function POST(request: Request): Promise<Response> {
       batch.map(({ cik, val }) =>
         supabase
           .from("companies")
-          .update({ market_cap: val })
+          .update({ market_cap: Math.round(val) })
           .eq("cik_number", cik)
       )
     );
