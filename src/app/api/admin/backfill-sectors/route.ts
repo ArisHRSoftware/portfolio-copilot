@@ -120,6 +120,7 @@ export async function POST(request: Request): Promise<Response> {
 
       if (!res.ok) {
         skipped++;
+        if (skippedSamples.length < 10) skippedSamples.push({ ticker: company.ticker, cik: cik, reason: `edgar_${res.status}` });
         continue;
       }
 
@@ -128,6 +129,7 @@ export async function POST(request: Request): Promise<Response> {
 
       if (!sic) {
         skipped++;
+        if (skippedSamples.length < 10) skippedSamples.push({ ticker: company.ticker, cik: cik, reason: "no_sic" });
         continue;
       }
 
