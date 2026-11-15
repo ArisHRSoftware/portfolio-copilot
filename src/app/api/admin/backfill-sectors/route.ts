@@ -89,6 +89,7 @@ export async function POST(request: Request): Promise<Response> {
   let updated = 0;
   let skipped = 0;
   const errors: string[] = [];
+  const skippedSamples: { ticker: string; cik: string | null; reason: string }[] = [];
 
   for (const company of needsUpdate) {
     try {
@@ -102,6 +103,7 @@ export async function POST(request: Request): Promise<Response> {
       }
       if (!cik) {
         skipped++;
+        if (skippedSamples.length < 10) skippedSamples.push({ ticker: company.ticker, cik: company.cik_number, reason: "no_cik" });
         continue;
       }
 
@@ -149,6 +151,8 @@ export async function POST(request: Request): Promise<Response> {
     updated,
     skipped,
     errors: errors.slice(0, 20),
+    skipped_samples: skippedSamples,
+    ticker_to_cik_loaded: tickerToCik.size,
     timestamp: new Date().toISOString(),
   });
 }
