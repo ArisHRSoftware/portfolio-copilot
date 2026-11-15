@@ -139,6 +139,30 @@ async function findOrCreateCompany(
     if (error.code === "23505") {
       const retry = await findCompanyByCik(supabase, filing.company_cik);
       if (retry) return retry;
+
+      // Ticker conflict with a different company — fall back to CIK-based ticker
+      const fallbackTicker = `CIK${filing.company_cik}`;
+      const { data: fallback, error: fallbackErr } = await supabase
+        .from("companies")
+        .insert({
+          ticker: fallbackTicker,
+          name,
+          cik_number: paddedCik,
+          sector: filing.company_sic ? sicToSector(filing.company_sic) : "",
+          exchange: "",
+          market_cap: 0,
+          status: "active",
+        })
+        .select()
+        .single();
+
+      if (fallback) return fallback as CompaniesRow;
+
+      // Even fallback failed — maybe another race, try one more lookup
+      if (fallbackErr?.code === "23505") {
+        const lastTry = await findCompanyByCik(supabase, filing.company_cik);
+        if (lastTry) return lastTry;
+      }
     }
     throw new Error(`Failed to create company ${ticker}: ${error.message}`);
   }
@@ -552,15 +576,17 @@ export async function processNewFilings(
     }
 
     // Phase 2: Sort new filings by priority (10-K first, Form 4 last)
+    // Reserve 2 slots for backfill so unanalyzed filings don't starve
+    const NEW_FILING_CAP = Math.max(1, BATCH_SIZE - 2);
     const sorted = [...newFilings].sort((a, b) => {
       const pa = FILING_TYPE_PRIORITY[a.filing_type.toUpperCase()] ?? 5;
       const pb = FILING_TYPE_PRIORITY[b.filing_type.toUpperCase()] ?? 5;
       return pa - pb;
     });
-    const newBatch = sorted.slice(0, BATCH_SIZE);
+    const newBatch = sorted.slice(0, NEW_FILING_CAP);
 
-    // Backfill gets remaining batch capacity
-    const backfillCapacity = Math.max(0, BATCH_SIZE - newBatch.length);
+    // Backfill gets remaining batch capacity (minimum 2 slots)
+    const backfillCapacity = Math.max(2, BATCH_SIZE - newBatch.length);
     const backfillBatch = pendingAnalysis.slice(0, backfillCapacity);
 
     console.log(
