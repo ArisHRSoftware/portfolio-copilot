@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
 import {
   onBlogPublished,
   onNewsletterSent,
@@ -24,7 +24,9 @@ async function requireAdmin() {
     throw new Error("Forbidden");
   }
 
-  return supabase;
+  // Use service role client for writes — anon key is blocked by RLS
+  const serviceClient = await createServiceClient();
+  return serviceClient;
 }
 
 async function updateContentQueue(
