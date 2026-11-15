@@ -519,6 +519,14 @@ export async function processNewFilings(
   // Cast once for all internal usage — see AnySupabase type doc above
   const db = supabase as AnySupabase;
 
+  // Clean up stale "running" pipeline runs (function timeouts leave these behind)
+  const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  await db
+    .from("pipeline_runs")
+    .update({ status: "failed", completed_at: new Date().toISOString(), errors_count: 1 })
+    .eq("status", "running")
+    .lt("started_at", tenMinAgo);
+
   // Create pipeline run record
   const { data: pipelineRun, error: runError } = await db
     .from("pipeline_runs")
