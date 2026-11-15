@@ -62,7 +62,7 @@ export default async function TrendingPage() {
     const tickerCounts = new Map<string, number>();
     for (const f of filingsWithCo) {
       const t = f.company?.ticker;
-      if (t) tickerCounts.set(t, (tickerCounts.get(t) ?? 0) + 1);
+      if (t && !t.startsWith("CIK")) tickerCounts.set(t, (tickerCounts.get(t) ?? 0) + 1);
     }
     activeCompanies = [...tickerCounts.entries()]
       .map(([ticker, filingCount]) => ({ ticker, filingCount }))

@@ -33,6 +33,7 @@ export async function getTopCompanies(supabase: Supabase, limit = 100) {
     .from("companies")
     .select("*")
     .eq("status", "active")
+    .not("ticker", "ilike", "CIK%")
     .order("last_filing_date", { ascending: false })
     .limit(limit);
   return (data ?? []) as Company[];
