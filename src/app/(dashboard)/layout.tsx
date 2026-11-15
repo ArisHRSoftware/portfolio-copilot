@@ -31,6 +31,7 @@ import {
   SlidersHorizontal,
   KeyRound,
   Gift,
+  Monitor,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 
@@ -47,6 +48,7 @@ const NAV_ITEMS = [
 ];
 
 const ADMIN_ITEMS = [
+  { title: "Monitor", href: "/admin/monitor", icon: Monitor },
   { title: "Content", href: "/admin/content", icon: FileText },
   { title: "Pipeline", href: "/admin/pipeline", icon: GitBranch },
 ];
