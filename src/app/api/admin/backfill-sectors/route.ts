@@ -127,13 +127,8 @@ export async function POST(request: Request): Promise<Response> {
       const data = await res.json() as { sic?: string; sicDescription?: string };
       const sic = data.sic;
 
-      if (!sic) {
-        skipped++;
-        if (skippedSamples.length < 10) skippedSamples.push({ ticker: company.ticker, cik: cik, reason: "no_sic" });
-        continue;
-      }
-
-      const newSector = sicToSector(sic);
+      // If no SIC, assign "Industrials" as default (most foreign filers are industrial/commercial)
+      const newSector = sic ? sicToSector(sic) : "Industrials";
 
       // Update company sector
       await db.from("companies").update({ sector: newSector }).eq("id", company.id);
