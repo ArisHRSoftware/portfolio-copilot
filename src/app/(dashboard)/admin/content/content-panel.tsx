@@ -95,10 +95,11 @@ function getBodyPreview(item: ContentQueueItem): string {
 
 function getFullHtml(item: ContentQueueItem): string | null {
   if (item.preview_html) return item.preview_html;
-  if (typeof item.body === "object" && item.body !== null && "html" in (item.body as Record<string, unknown>)) {
-    return (item.body as Record<string, string>).html;
+  const body = item.body as Record<string, unknown> | string | null;
+  if (typeof body === "object" && body !== null && typeof body.html === "string") {
+    return body.html;
   }
-  if (typeof item.body === "string" && item.body.startsWith("<")) return item.body;
+  if (typeof body === "string" && body.startsWith("<")) return body;
   return null;
 }
 
