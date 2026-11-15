@@ -61,7 +61,8 @@ export async function POST(request: Request): Promise<Response> {
     .limit(batchSize);
 
   if (fetchErr) {
-    return Response.json({ error: fetchErr.message }, { status: 500 });
+    console.error("Quick-process fetch error:", fetchErr.message);
+    return Response.json({ error: "Failed to fetch unprocessed filings" }, { status: 500 });
   }
 
   type FilingRow = {

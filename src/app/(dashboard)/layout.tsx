@@ -80,11 +80,18 @@ export default async function DashboardLayout({
     process.env.ADMIN_EMAIL && user.email === process.env.ADMIN_EMAIL;
 
   // Fetch unread notification count for the bell icon
-  const { count: unreadCount } = await supabase
-    .from("notifications" as never)
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", user.id)
-    .is("read_at", null);
+  // Gracefully handle missing notifications table
+  let unreadCount = 0;
+  try {
+    const { count } = await supabase
+      .from("notifications" as never)
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .is("read_at", null);
+    unreadCount = count ?? 0;
+  } catch {
+    // notifications table may not exist yet
+  }
 
   return (
     <SidebarProvider>
@@ -182,7 +189,7 @@ export default async function DashboardLayout({
           <div className="ml-auto">
             <NotificationBell
               userId={user.id}
-              initialUnreadCount={unreadCount ?? 0}
+              initialUnreadCount={unreadCount}
             />
           </div>
         </header>

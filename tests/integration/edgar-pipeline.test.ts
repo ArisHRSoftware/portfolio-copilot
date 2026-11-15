@@ -776,7 +776,7 @@ function buildPipelineSupabaseMock(
       return {
         insert: () => ({ select: () => ({ single: () => Promise.resolve({ data: null, error: null }) }) }),
         select: () => terminalProxy(),
-        update: () => ({ eq: () => Promise.resolve({ data: null, error: null }) }),
+        update: () => ({ eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }) }),
       };
     },
   };
@@ -824,7 +824,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       filings: () => ({
@@ -881,7 +881,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       filings: () => ({
@@ -966,7 +966,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       filings: () => ({
@@ -985,7 +985,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       companies: () => ({
@@ -1010,7 +1010,7 @@ describe("EDGAR pipeline orchestrator", () => {
           };
         },
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
     });
@@ -1070,7 +1070,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       filings: () => ({
@@ -1093,7 +1093,7 @@ describe("EDGAR pipeline orchestrator", () => {
           };
         },
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       companies: () => ({
@@ -1106,7 +1106,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       content_queue: () => ({
@@ -1188,7 +1188,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       filings: () => ({
@@ -1208,7 +1208,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       companies: () => ({
@@ -1221,7 +1221,7 @@ describe("EDGAR pipeline orchestrator", () => {
           }),
         }),
         update: () => ({
-          eq: () => Promise.resolve({ data: null, error: null }),
+          eq: () => ({ lt: () => Promise.resolve({ data: null, error: null }) }),
         }),
       }),
       content_queue: () => ({

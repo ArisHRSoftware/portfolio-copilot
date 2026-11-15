@@ -328,8 +328,9 @@ export async function POST(request: Request): Promise<Response> {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
+    console.error("Backfill error:", error instanceof Error ? error.message : error);
     return Response.json(
-      { error: error instanceof Error ? error.message : String(error) },
+      { error: "Backfill operation failed" },
       { status: 500 }
     );
   }

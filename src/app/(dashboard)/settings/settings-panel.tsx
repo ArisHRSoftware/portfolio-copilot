@@ -397,7 +397,7 @@ function SubscriptionTab({
             </Badge>
           </div>
           <CardDescription>
-            {isPaid ? `$${tierInfo.priceUSD}/month` : "Free forever"}
+            {isPaid ? `$${tierInfo.priceUSD}/year` : "Free forever"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

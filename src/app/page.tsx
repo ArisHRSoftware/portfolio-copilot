@@ -365,7 +365,7 @@ export default async function HomePage() {
                   </CardTitle>
                   <CardDescription className="text-base">
                     Our pipeline processes new SEC filings within minutes of
-                    publication. Get your alert within minutes of publication.
+                    publication, so you can act before the market reacts.
                   </CardDescription>
                 </CardHeader>
               </Card>

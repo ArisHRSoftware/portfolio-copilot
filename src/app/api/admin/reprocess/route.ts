@@ -99,7 +99,8 @@ export async function POST(request: Request): Promise<Response> {
   const { data: unanalyzed, error: fetchErr } = await query;
 
   if (fetchErr) {
-    return Response.json({ error: fetchErr.message }, { status: 500 });
+    console.error("Reprocess fetch error:", fetchErr.message);
+    return Response.json({ error: "Failed to fetch filings for reprocessing" }, { status: 500 });
   }
 
   type FilingRow = {

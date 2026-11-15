@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import DOMPurify from "isomorphic-dompurify";
 import type { ContentQueueItem } from "@/lib/supabase/queries";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -204,7 +205,17 @@ function ContentItemCard({
           <div className="rounded-md border bg-background p-4 max-h-[500px] overflow-y-auto">
             <div
               className="prose prose-sm dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: getFullHtml(item)! }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(getFullHtml(item)!, {
+                  ALLOWED_TAGS: [
+                    "h1","h2","h3","h4","h5","h6","p","br","hr","ul","ol","li",
+                    "strong","em","b","i","u","s","a","blockquote","code","pre",
+                    "table","thead","tbody","tr","th","td","img","span","div",
+                    "sup","sub","dl","dt","dd","figure","figcaption",
+                  ],
+                  ALLOWED_ATTR: ["href","src","alt","title","class","id","target","rel","width","height"],
+                }),
+              }}
             />
           </div>
         ) : (

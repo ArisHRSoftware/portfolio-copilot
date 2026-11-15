@@ -173,7 +173,7 @@ export function CheckoutPanel({
           amount,
           currency,
           name: "Brefyr",
-          description: `${tiers[planId].name} Plan - Monthly`,
+          description: `${tiers[planId].name} Plan - Annual`,
           order_id: orderId,
           handler: async (response: RazorpayResponse) => {
             // Verify payment on the server
@@ -326,7 +326,7 @@ export function CheckoutPanel({
                     {getPrice(planId)}
                   </span>
                   {tier.priceINR > 0 && (
-                    <span className="text-muted-foreground">/month</span>
+                    <span className="text-muted-foreground">/year</span>
                   )}
                 </CardDescription>
               </CardHeader>

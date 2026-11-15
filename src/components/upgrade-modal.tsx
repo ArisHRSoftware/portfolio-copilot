@@ -111,7 +111,7 @@ export function UpgradeModal({
           <span className="text-2xl font-bold tracking-tight">
             {formatPrice(price, currency)}
           </span>
-          <span className="text-sm text-muted-foreground">/month</span>
+          <span className="text-sm text-muted-foreground">/year</span>
         </div>
 
         {/* Actions */}

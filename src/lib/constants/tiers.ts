@@ -10,6 +10,7 @@ export const TIERS = {
     webhook: false,
     priceINR: 0,
     priceUSD: 0,
+    billing: "year",
   },
   starter: {
     name: "Starter",
@@ -20,8 +21,9 @@ export const TIERS = {
     api: false,
     export: false,
     webhook: false,
-    priceINR: 249,
-    priceUSD: 5,
+    priceINR: 499,
+    priceUSD: 9,
+    billing: "year",
   },
   plus: {
     name: "Plus",
@@ -32,8 +34,9 @@ export const TIERS = {
     api: false,
     export: false,
     webhook: true,
-    priceINR: 749,
-    priceUSD: 9,
+    priceINR: 1499,
+    priceUSD: 19,
+    billing: "year",
   },
   pro: {
     name: "Pro",
@@ -44,8 +47,9 @@ export const TIERS = {
     api: true,
     export: true,
     webhook: true,
-    priceINR: 1999,
+    priceINR: 2499,
     priceUSD: 29,
+    billing: "year",
   },
 } as const;
 

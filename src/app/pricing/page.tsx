@@ -135,13 +135,13 @@ export default function PricingPage() {
                     </span>
                     {tier.priceUSD > 0 && (
                       <span className="text-sm text-muted-foreground">
-                        /month
+                        /year
                       </span>
                     )}
                   </div>
                   {tier.priceINR > 0 && (
                     <p className="text-xs text-muted-foreground">
-                      or &#x20B9;{tier.priceINR}/month
+                      or &#x20B9;{tier.priceINR}/year
                     </p>
                   )}
                   {tier.priceUSD === 0 && (

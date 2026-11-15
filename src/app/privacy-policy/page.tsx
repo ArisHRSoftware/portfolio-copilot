@@ -36,8 +36,7 @@ export default function PrivacyPage() {
           </h2>
           <p>
             When you create an account, we collect your email address and any
-            profile information you choose to provide. When you use Portfolio
-            Copilot, we collect usage data such as which stock pages you visit,
+            profile information you choose to provide. When you use Brefyr, we collect usage data such as which stock pages you visit,
             alert preferences, and subscription status.
           </p>
           <p>
