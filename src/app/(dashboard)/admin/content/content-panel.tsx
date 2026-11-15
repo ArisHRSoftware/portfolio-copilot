@@ -93,6 +93,15 @@ function getBodyPreview(item: ContentQueueItem): string {
   return truncateText(bodyStr, 200);
 }
 
+function getFullHtml(item: ContentQueueItem): string | null {
+  if (item.preview_html) return item.preview_html;
+  if (typeof item.body === "object" && item.body !== null && "html" in (item.body as Record<string, unknown>)) {
+    return (item.body as Record<string, string>).html;
+  }
+  if (typeof item.body === "string" && item.body.startsWith("<")) return item.body;
+  return null;
+}
+
 function ContentItemCard({
   item,
   isSelected,
@@ -106,6 +115,7 @@ function ContentItemCard({
   const [founderNote, setFounderNote] = useState(item.founder_note ?? "");
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectField, setShowRejectField] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   function handleApprove() {
@@ -188,10 +198,30 @@ function ContentItemCard({
       </CardHeader>
 
       <CardContent className="space-y-3">
-        {/* Body preview */}
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {getBodyPreview(item)}
-        </p>
+        {/* Body preview / full preview toggle */}
+        {showPreview && getFullHtml(item) ? (
+          <div className="rounded-md border bg-background p-4 max-h-[500px] overflow-y-auto">
+            <div
+              className="prose prose-sm dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: getFullHtml(item)! }}
+            />
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {getBodyPreview(item)}
+          </p>
+        )}
+        {getFullHtml(item) && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowPreview(!showPreview)}
+            className="text-xs"
+          >
+            <Eye className="size-3.5" data-icon="inline-start" />
+            {showPreview ? "Hide preview" : "Preview full content"}
+          </Button>
+        )}
 
         {/* Founder note field */}
         {(item.status === "pending_review" || item.status === "draft") && (

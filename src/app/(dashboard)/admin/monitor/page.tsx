@@ -71,7 +71,8 @@ async function fetchEdgarTodayCount(): Promise<number | null> {
     );
     if (!res.ok) return null;
     const json = await res.json();
-    return json?.hits?.total ?? null;
+    const total = json?.hits?.total;
+    return typeof total === "number" ? total : total?.value ?? null;
   } catch {
     return null;
   }
