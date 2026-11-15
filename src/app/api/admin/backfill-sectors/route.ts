@@ -69,19 +69,45 @@ export async function POST(request: Request): Promise<Response> {
     });
   }
 
-  // For companies with CIK numbers, fetch their SIC codes from EDGAR
+  // Build ticker→CIK lookup from EDGAR's canonical list
   const EDGAR_UA = "Brefyr admin@brefyr.com";
+  let tickerToCik = new Map<string, string>();
+  try {
+    const listRes = await fetch("https://www.sec.gov/files/company_tickers.json", {
+      headers: { "User-Agent": EDGAR_UA },
+    });
+    if (listRes.ok) {
+      const listData = await listRes.json() as Record<string, { cik_str: number; ticker: string }>;
+      for (const entry of Object.values(listData)) {
+        tickerToCik.set(entry.ticker.toUpperCase(), String(entry.cik_str));
+      }
+    }
+  } catch {
+    // Non-critical — we'll fall back to CIK extraction
+  }
+
   let updated = 0;
   let skipped = 0;
   const errors: string[] = [];
 
-  // Batch: look up SIC codes from EDGAR for companies that need sector updates
   for (const company of needsUpdate) {
     try {
-      const cik = company.cik_number?.replace(/^0+/, "");
+      // Try multiple CIK sources: stored cik_number, CIK-based ticker, EDGAR ticker lookup
+      let cik = company.cik_number?.replace(/^0+/, "") || "";
+      if (!cik && company.ticker.startsWith("CIK")) {
+        cik = company.ticker.replace("CIK", "").replace(/^0+/, "");
+      }
+      if (!cik) {
+        cik = tickerToCik.get(company.ticker.toUpperCase()) || "";
+      }
       if (!cik) {
         skipped++;
         continue;
+      }
+
+      // Also backfill the cik_number if it was missing
+      if (!company.cik_number) {
+        await db.from("companies").update({ cik_number: cik.padStart(10, "0") }).eq("id", company.id);
       }
 
       // Fetch company info from EDGAR to get SIC code
