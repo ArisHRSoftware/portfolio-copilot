@@ -40,29 +40,31 @@ export async function POST(request: Request): Promise<Response> {
 
   const db = createClient<Database>(supabaseUrl, supabaseKey) as AnySupabase;
 
-  // Fetch all companies
-  const { data: companies, error } = await db
-    .from("companies")
-    .select("id, ticker, name, sector, cik_number")
-    .order("created_at", { ascending: false })
-    .limit(5000);
-
-  if (error) {
-    return Response.json({ error: "Failed to fetch companies" }, { status: 500 });
-  }
-
+  // Fetch only companies with empty or null sectors (paginated)
   type CompanyRow = { id: string; ticker: string; name: string; sector: string; cik_number: string | null };
-  const allCompanies = (companies ?? []) as CompanyRow[];
-
-  // Only fix companies with empty sectors (92 of ~1000)
-  // Companies with non-empty sectors already have canonical names
-  const needsUpdate = allCompanies.filter((c) => !c.sector);
+  const needsUpdate: CompanyRow[] = [];
+  let offset = 0;
+  while (true) {
+    const { data, error: fetchErr } = await db
+      .from("companies")
+      .select("id, ticker, name, sector, cik_number")
+      .or("sector.is.null,sector.eq.")
+      .eq("status", "active")
+      .range(offset, offset + 999);
+    if (fetchErr) {
+      return Response.json({ error: "Failed to fetch companies" }, { status: 500 });
+    }
+    const rows = (data ?? []) as CompanyRow[];
+    needsUpdate.push(...rows);
+    if (rows.length < 1000) break;
+    offset += 1000;
+  }
 
   if (needsUpdate.length === 0) {
     return Response.json({
       success: true,
-      message: "All companies already have canonical sectors",
-      total: allCompanies.length,
+      message: "All companies already have sectors",
+      total: 0,
       updated: 0,
     });
   }
@@ -116,7 +118,7 @@ export async function POST(request: Request): Promise<Response> {
 
   return Response.json({
     success: true,
-    total_companies: allCompanies.length,
+    total_companies: needsUpdate.length,
     needed_update: needsUpdate.length,
     updated,
     skipped,
