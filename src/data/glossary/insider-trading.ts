@@ -116,6 +116,8 @@ export const termInsiderTrading: GlossaryTerm = {
 
 <p><strong>Step 5: Combine with fundamental analysis.</strong> Insider buying in a stock with improving fundamentals (revenue growth, margin expansion, debt reduction) is a stronger signal than insider buying in a deteriorating business. The insider data tells you what management thinks; the fundamentals tell you whether they're right.</p>
 
-<p>Brefyr automates much of this workflow. Every Form 4 filing is processed, the transaction type and dollar amount are extracted, and the data appears on each stock page alongside the company's filing history and significance scores. For small-cap stocks with limited analyst coverage, this insider data is often the most valuable signal available.</p>
+<p>Brefyr automates much of this workflow. Every <a href="/glossary/form-4">Form 4</a> filing is processed, the transaction type and dollar amount are extracted, and the data appears on each stock page alongside the company's filing history and significance scores. For small-cap stocks with limited analyst coverage, this insider data is often the most valuable signal available.</p>
+
+<p><strong>See insider activity on real stocks:</strong> <a href="/stocks/aapl">Apple (AAPL)</a>, <a href="/stocks/msft">Microsoft (MSFT)</a>, <a href="/stocks/nvda">Nvidia (NVDA)</a>. Or browse all <a href="/insider-buying">recent insider purchases</a> and <a href="/insider-selling">insider sales</a>.</p>
 `,
 };

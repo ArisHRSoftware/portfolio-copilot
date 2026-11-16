@@ -105,6 +105,8 @@ export const termRevenueRecognition: GlossaryTerm = {
 
 <p><strong>Look at deferred revenue trends.</strong> For subscription businesses, declining deferred revenue while reported revenue grows can signal that new customer acquisition is slowing and the company is recognizing more from existing contracts than it's adding.</p>
 
-<p>Brefyr's AI filing analysis flags unusual revenue patterns — including significant accounts receivable changes, revenue spikes, and changes to accounting policies — as part of the significance scoring for each 10-K and 10-Q filing across all 7,600+ tracked companies.</p>
+<p>Brefyr's AI filing analysis flags unusual revenue patterns — including significant accounts receivable changes, revenue spikes, and changes to accounting policies — as part of the significance scoring for each <a href="/glossary/10-k-filing">10-K</a> and <a href="/glossary/10-q-filing">10-Q</a> filing across all 7,600+ tracked companies.</p>
+
+<p><strong>See revenue data in real filings:</strong> <a href="/stocks/aapl">Apple (AAPL)</a>, <a href="/stocks/nflx">Netflix (NFLX)</a>, <a href="/stocks/msft">Microsoft (MSFT)</a>. Browse <a href="/recent-filings">recent SEC filings</a> to find 10-K filings with revenue analysis.</p>
 `,
 };

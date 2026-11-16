@@ -116,6 +116,8 @@ export const termSecEdgar: GlossaryTerm = {
 
 <p><strong>Check the filing date vs the period date.</strong> A 10-K filed on March 15 covers the fiscal year ending December 31. The three-month gap means the financial statements are already somewhat stale by the time you read them. Always note both dates.</p>
 
-<p><strong>Read the exhibits.</strong> Material contracts, loan agreements, and acquisition documents are attached as exhibits to 8-K and 10-K filings. These are the actual legal documents — not summaries — and they contain details (pricing terms, termination clauses, change of control provisions) that don't appear in the main filing text.</p>
+<p><strong>Read the exhibits.</strong> Material contracts, loan agreements, and acquisition documents are attached as exhibits to <a href="/glossary/8-k-filing">8-K</a> and <a href="/glossary/10-k-filing">10-K</a> filings. These are the actual legal documents — not summaries — and they contain details (pricing terms, termination clauses, change of control provisions) that don't appear in the main filing text.</p>
+
+<p><strong>Browse real SEC filings on Brefyr:</strong> <a href="/stocks/aapl">Apple (AAPL)</a>, <a href="/stocks/nvda">Nvidia (NVDA)</a>, <a href="/stocks/meta">Meta (META)</a>. Or see all <a href="/recent-filings">recent filings</a> with AI analysis and significance scores.</p>
 `,
 };

@@ -108,6 +108,16 @@ export async function generateMetadata({
 // Helpers
 // ---------------------------------------------------------------------------
 
+const FILING_TYPE_GLOSSARY: Record<string, string> = {
+  "10-K": "/glossary/10-k-filing",
+  "10-Q": "/glossary/10-q-filing",
+  "8-K": "/glossary/8-k-filing",
+  "4": "/glossary/form-4",
+  "DEF 14A": "/glossary/proxy-statement",
+  "SC 13D": "/glossary/schedule-13d",
+  "13F-HR": "/glossary/13f-filing",
+};
+
 function significanceBadge(score: number) {
   if (score >= 8)
     return <Badge variant="destructive">Critical ({score}/10)</Badge>;
@@ -469,7 +479,13 @@ export default async function StockPage({
                     })}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <Badge variant="outline">{filing.filing_type}</Badge>
+                    {FILING_TYPE_GLOSSARY[filing.filing_type] ? (
+                      <Link href={FILING_TYPE_GLOSSARY[filing.filing_type]} className="hover:opacity-80">
+                        <Badge variant="outline">{filing.filing_type}</Badge>
+                      </Link>
+                    ) : (
+                      <Badge variant="outline">{filing.filing_type}</Badge>
+                    )}
                   </TableCell>
                   <TableCell className="hidden sm:table-cell max-w-xs">
                     <p className="line-clamp-2 text-sm">{filing.one_line_summary ?? "Processing..."}</p>
