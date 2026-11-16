@@ -31,7 +31,7 @@ export async function GET() {
   return new NextResponse(toSitemapXml(entries), {
     headers: {
       "Content-Type": "application/xml",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Cache-Control": "public, max-age=86400, s-maxage=86400",
     },
   });
 }

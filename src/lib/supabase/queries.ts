@@ -31,7 +31,7 @@ export async function getCompanyByTicker(supabase: Supabase, ticker: string) {
 export async function getTopCompanies(supabase: Supabase, limit = 100) {
   const { data } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, exchange, market_cap, last_filing_date, status, cik_number")
     .eq("status", "active")
     .not("ticker", "ilike", "CIK%")
     .order("last_filing_date", { ascending: false })
@@ -78,7 +78,7 @@ export async function getRecentFilings(
 
   let query = supabase
     .from("filings")
-    .select("*")
+    .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, has_earnings_data, insider_data, superseded_by, accession_number")
     .is("superseded_by", null)
     .order("filed_date", { ascending: false })
     .range(offset, offset + limit - 1);
@@ -155,7 +155,7 @@ export async function getCompaniesBySectorPaginated(
 ) {
   const { data } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, exchange, market_cap, last_filing_date, status")
     .eq("sector", sector)
     .eq("status", "active")
     .not("ticker", "ilike", "CIK%")
@@ -173,7 +173,7 @@ export async function getFilingsWithCompanies(
   const companyIds = [...new Set(filings.map((f) => f.company_id))];
   const { data: companies } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, exchange, market_cap, last_filing_date")
     .in("id", companyIds);
 
   const companyMap = new Map(
@@ -193,7 +193,7 @@ export async function getCompaniesBySector(supabase: Supabase, sector: string) {
   while (true) {
     const { data } = await supabase
       .from("companies")
-      .select("*")
+      .select("id, ticker, name, sector, exchange, market_cap, last_filing_date, status")
       .eq("sector", sector)
       .eq("status", "active")
       .not("ticker", "ilike", "CIK%")
@@ -213,7 +213,7 @@ export async function getTrendingStocks(supabase: Supabase, days = 7, limit = 10
 
   const { data } = await supabase
     .from("page_views")
-    .select("*")
+    .select("id, ticker, date, count")
     .gte("date", startDate.toISOString().split("T")[0])
     .order("count", { ascending: false })
     .limit(limit);
@@ -224,7 +224,7 @@ export async function getTrendingStocks(supabase: Supabase, days = 7, limit = 10
 export async function getPublishedBlogPosts(supabase: Supabase) {
   const { data } = await supabase
     .from("blog_posts")
-    .select("*")
+    .select("id, slug, title, meta_description, published_at, auto_generated, body")
     .not("published_at", "is", null)
     .order("published_at", { ascending: false });
   return (data ?? []) as BlogPost[];

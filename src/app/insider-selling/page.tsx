@@ -26,7 +26,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Insider Selling — Recent SEC Form 4 Sales",

@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 import {
   SECTOR_DEFINITIONS,

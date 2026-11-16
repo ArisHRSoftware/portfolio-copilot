@@ -41,7 +41,7 @@ import { sectorNameToSlug } from "@/lib/constants/sectors";
 import { formatJurisdiction } from "@/lib/utils";
 
 export const dynamicParams = true;
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export async function generateStaticParams() {
   const supabase = createStaticClient();
