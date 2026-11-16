@@ -33,15 +33,21 @@ export async function generateMetadata({
     };
   }
 
+  const rawTitle = `${article.title} — SEC Guide`;
+  const title = rawTitle.length > 40 ? article.title : rawTitle;
+  const desc = article.metaDescription.length > 150
+    ? article.metaDescription.slice(0, 147) + "..."
+    : article.metaDescription;
+
   return {
-    title: `${article.title} — SEC Filing Education`,
-    description: article.metaDescription,
+    title,
+    description: desc,
     alternates: {
       canonical: `/learn/sec-filings/${article.slug}`,
     },
     openGraph: {
       title: `${article.title} — Learn SEC Filings | Brefyr`,
-      description: article.metaDescription,
+      description: desc,
       type: "article",
     },
   };

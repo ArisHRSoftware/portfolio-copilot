@@ -33,15 +33,21 @@ export async function generateMetadata({
     };
   }
 
+  const rawTitle = `${article.title} — Insider Guide`;
+  const title = rawTitle.length > 40 ? article.title : rawTitle;
+  const desc = article.metaDescription.length > 150
+    ? article.metaDescription.slice(0, 147) + "..."
+    : article.metaDescription;
+
   return {
-    title: `${article.title} — Insider Trading Patterns`,
-    description: article.metaDescription,
+    title,
+    description: desc,
     alternates: {
       canonical: `/learn/insider-trading/${article.slug}`,
     },
     openGraph: {
       title: `${article.title} — Insider Trading Patterns | Brefyr`,
-      description: article.metaDescription,
+      description: desc,
       type: "article",
     },
   };

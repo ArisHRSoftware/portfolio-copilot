@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s | Brefyr",
   },
   description:
-    "SEC filing analysis for 7,600+ uncovered US small-cap stocks. Instant insider trading alerts, significance scores, and plain-English summaries.",
+    "Free SEC filing analysis for 7,600+ US small-cap stocks. Insider alerts, AI summaries, and 1-10 significance scores. Start free.",
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com"
   ),

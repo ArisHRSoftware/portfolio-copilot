@@ -33,15 +33,21 @@ export async function generateMetadata({
     };
   }
 
+  const rawTitle = `${entry.term} — Definition & Meaning`;
+  const title = rawTitle.length > 40 ? entry.term : rawTitle;
+  const desc = entry.metaDescription.length > 150
+    ? entry.metaDescription.slice(0, 147) + "..."
+    : entry.metaDescription;
+
   return {
-    title: `${entry.term} — Definition & Meaning`,
-    description: entry.metaDescription,
+    title,
+    description: desc,
     alternates: {
       canonical: `/glossary/${entry.slug}`,
     },
     openGraph: {
       title: `${entry.term} — Financial Glossary | Brefyr`,
-      description: entry.metaDescription,
+      description: desc,
     },
   };
 }

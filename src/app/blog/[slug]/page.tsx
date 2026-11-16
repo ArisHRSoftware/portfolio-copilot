@@ -48,16 +48,19 @@ export async function generateMetadata({
     };
   }
 
+  const rawDesc = post.meta_description ??
+    `${post.title} — insights on small-cap investing and SEC filing analysis.`;
+  const desc = rawDesc.length > 150 ? rawDesc.slice(0, 147) + "..." : rawDesc;
+  const title = post.title.length > 40
+    ? { absolute: post.title }
+    : post.title;
+
   return {
-    title: post.title,
-    description:
-      post.meta_description ??
-      `${post.title} — insights on small-cap investing and SEC filing analysis.`,
+    title,
+    description: desc,
     openGraph: {
       title: `${post.title} | Brefyr Blog`,
-      description:
-        post.meta_description ??
-        `${post.title} — insights on small-cap investing and SEC filing analysis.`,
+      description: desc,
       type: "article",
       publishedTime: post.published_at ?? undefined,
     },

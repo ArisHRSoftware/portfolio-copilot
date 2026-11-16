@@ -33,15 +33,21 @@ export async function generateMetadata({
     };
   }
 
+  const rawTitle = `${article.title} — Sector Guide`;
+  const title = rawTitle.length > 40 ? article.title : rawTitle;
+  const desc = article.metaDescription.length > 150
+    ? article.metaDescription.slice(0, 147) + "..."
+    : article.metaDescription;
+
   return {
-    title: `${article.title} — Sector Analysis`,
-    description: article.metaDescription,
+    title,
+    description: desc,
     alternates: {
       canonical: `/learn/sectors/${article.slug}`,
     },
     openGraph: {
       title: `${article.title} — Sector Analysis | Brefyr`,
-      description: article.metaDescription,
+      description: desc,
       type: "article",
     },
   };
