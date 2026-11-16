@@ -3,12 +3,15 @@ import { createWebhookClient } from "@/lib/supabase/server";
 import { validateEmail } from "@/lib/validation";
 import crypto from "crypto";
 
-function generateUnsubToken(email: string): string {
-  const secret = process.env.ADMIN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-  return crypto.createHmac("sha256", secret).update(email.toLowerCase()).digest("hex").slice(0, 32);
+function getUnsubSecret(): string | null {
+  return process.env.ADMIN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || null;
 }
 
-export { generateUnsubToken };
+export function generateUnsubToken(email: string): string {
+  const secret = getUnsubSecret();
+  if (!secret) throw new Error("No secret configured for unsubscribe tokens");
+  return crypto.createHmac("sha256", secret).update(email.toLowerCase()).digest("hex").slice(0, 32);
+}
 
 export async function GET(request: NextRequest) {
   const email = request.nextUrl.searchParams.get("email");
@@ -21,6 +24,15 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  // Guard: reject if no secret configured (prevents empty-key HMAC)
+  const secret = getUnsubSecret();
+  if (!secret) {
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 }
+    );
+  }
+
   const emailResult = validateEmail(email);
   if (!emailResult.valid) {
     return NextResponse.json(
@@ -29,9 +41,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Verify HMAC token to prevent unauthorized mass-unsubscribe
+  // Verify HMAC token with timing-safe comparison
   const expectedToken = generateUnsubToken(emailResult.value);
-  if (!token || token !== expectedToken) {
+  if (
+    !token ||
+    Buffer.byteLength(token) !== Buffer.byteLength(expectedToken) ||
+    !crypto.timingSafeEqual(Buffer.from(token), Buffer.from(expectedToken))
+  ) {
     return NextResponse.json(
       { error: "Invalid or missing unsubscribe token" },
       { status: 403 }
