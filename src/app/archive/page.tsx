@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "Newsletter Archive — Past Issues",
   description:
     "Browse past issues of the Brefyr newsletter. Weekly and daily digests covering small-cap SEC filings, insider trades, and market insights.",
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Newsletter Archive | Brefyr",
     description:

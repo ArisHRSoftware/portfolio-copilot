@@ -66,15 +66,39 @@ export async function generateMetadata({
   const companyName = company?.name ?? upperTicker;
   const sector = company?.sector ?? "";
   const exchange = company?.exchange ?? "";
-  const filingCount = filings.length > 0 ? "analyzed" : "tracked";
 
-  const description = `${companyName} (${upperTicker}) SEC filing analysis${sector ? ` — ${sector} company` : ""}${exchange ? ` on ${exchange}` : ""}. ${filingCount} filings with plain-English summaries, insider trade tracking, and significance scoring.`;
+  // Count total filings for this company
+  const totalFilingCount = company
+    ? (await countFilings(supabase, { companyId: company.id })) ?? 0
+    : 0;
+
+  // noindex pages with zero filings — thin content dilutes domain quality
+  if (totalFilingCount === 0) {
+    const thinDesc = `${companyName} (${upperTicker}) SEC filing tracking${sector ? ` — ${sector}` : ""}${exchange ? ` on ${exchange}` : ""}. Filings will be analyzed when available.`;
+    return {
+      title: `${companyName} (${upperTicker}) — SEC Filings`,
+      description: thinDesc.slice(0, 150),
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const year = new Date().getFullYear();
+  const shortName = companyName.length > 15 ? companyName.slice(0, 15).trim() : companyName;
+  const title = totalFilingCount >= 3
+    ? `${upperTicker} (${shortName}) — ${totalFilingCount} SEC Filings (${year})`
+    : `${companyName} (${upperTicker}) — SEC Filings & Analysis`;
+
+  const latestInfo = filings.length > 0
+    ? `Latest: ${filings[0].filing_type} (${new Date(filings[0].filed_date).toLocaleDateString("en-US", { month: "short", year: "numeric" })}).`
+    : "";
+  const rawDesc = `${companyName} (${upperTicker}) SEC filings with AI analysis.${latestInfo ? ` ${latestInfo}` : ""} Insider trades tracked. Free alerts.`;
+  const description = rawDesc.slice(0, 150);
 
   return {
-    title: `${companyName} (${upperTicker}) — SEC Filings & Analysis`,
+    title: title.length > 50 ? `${companyName} (${upperTicker}) — SEC Filings` : title,
     description,
     openGraph: {
-      title: `${companyName} (${upperTicker}) — SEC Filings & Analysis | Brefyr`,
+      title: `${companyName} (${upperTicker}) — SEC Filings & Analysis`,
       description,
     },
   };

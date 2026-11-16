@@ -20,11 +20,12 @@ export const revalidate = 3600;
 export const metadata: Metadata = {
   title: "Blog — Small-Cap Investing Insights",
   description:
-    "Expert analysis and insights on small-cap investing, SEC filings, insider trading patterns, and market trends. Expert analysis and founder-reviewed.",
+    "Small-cap investing insights: SEC filing analysis, insider trading patterns, and market trends. Founder-reviewed articles.",
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Blog — Small-Cap Investing Insights | Brefyr",
     description:
-      "Expert analysis on small-cap investing, SEC filings, and insider trading patterns.",
+      "Small-cap investing insights: SEC filing analysis, insider trading patterns, and market trends.",
   },
 };
 

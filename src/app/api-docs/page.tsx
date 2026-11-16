@@ -18,13 +18,13 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 export const metadata: Metadata = {
-  title: "API Documentation | Brefyr",
+  title: "SEC Filing API — Developer Docs",
   description:
-    "Filing Intelligence API documentation. Access SEC filings, insider trades, company data, and CSV exports programmatically. RESTful JSON API with simple API key authentication.",
+    "REST API for SEC filings, insider trades, and company data. JSON + CSV export. API key auth. Pro plan required.",
   openGraph: {
-    title: "API Documentation | Brefyr",
+    title: "SEC Filing API — Developer Documentation | Brefyr",
     description:
-      "Filing Intelligence API — programmatic access to analyzed SEC filings, insider trades, and company data for 7,600+ US small-cap stocks.",
+      "Programmatic access to analyzed SEC filings, insider trades, and company data for 7,600+ US small-cap stocks.",
   },
 };
 
