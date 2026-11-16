@@ -213,7 +213,7 @@ export async function getTrendingStocks(supabase: Supabase, days = 7, limit = 10
 
   const { data } = await supabase
     .from("page_views")
-    .select("id, ticker, date, count")
+    .select("id, page_path, date, count")
     .gte("date", startDate.toISOString().split("T")[0])
     .order("count", { ascending: false })
     .limit(limit);

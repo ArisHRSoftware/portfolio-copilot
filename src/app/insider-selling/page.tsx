@@ -103,7 +103,7 @@ export default async function InsiderSellingPage({
         <h1 className="text-3xl font-bold tracking-tight">Insider Selling</h1>
         <p className="text-muted-foreground">
           Recent insider selling activity from SEC Form 4 filings across
-          small-cap stocks. Updated every hour.
+          small-cap stocks. Updated daily.
         </p>
       </div>
 

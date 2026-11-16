@@ -52,8 +52,8 @@ export async function generateMetadata({
     month: "short",
   });
   const score = filing.significance_score;
-  const title = score && score > 0
-    ? `${ticker} ${filing.filing_type} (${shortDate}) — Score ${score}/10`
+  const title = score && score >= 7
+    ? `${ticker} ${filing.filing_type} (${shortDate}) — ${score >= 8 ? "Critical" : "Notable"}`
     : `${ticker} ${filing.filing_type} — ${filedDate}`;
   const rawDescription =
     filing.one_line_summary ??
