@@ -48,13 +48,27 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { sector: sectorSlug } = await params;
   const sectorName = sectorSlugToName(sectorSlug);
+  const year = new Date().getFullYear();
+
+  const supabase = createStaticClient();
+  const companyCount = await countCompaniesBySector(supabase, sectorName);
+  const countStr = companyCount ? `${companyCount}+` : "";
+
+  const rawTitle = countStr
+    ? `${sectorName} Stocks — ${countStr} Companies (${year})`
+    : `${sectorName} Stocks — SEC Filings (${year})`;
+  const title = rawTitle.length > 50 ? `${sectorName} Stocks — SEC Analysis` : rawTitle;
+
+  const description = countStr
+    ? `${countStr} ${sectorName} small-cap stocks with SEC filing analysis. Insider trades, AI summaries, and 1-10 scores.`
+    : `${sectorName} sector small-cap stocks with SEC filing analysis. Insider trades and significance scores.`;
 
   return {
-    title: `${sectorName} Stocks — SEC Filings & Filing Analysis`,
-    description: `Browse ${sectorName} sector small-cap stocks with SEC filing analysis. View recent filings, insider trades, and significance scores for ${sectorName} companies.`,
+    title,
+    description: description.slice(0, 150),
     openGraph: {
       title: `${sectorName} Stocks | Brefyr`,
-      description: `${sectorName} sector small-cap stocks with SEC filing analysis.`,
+      description: description.slice(0, 150),
     },
   };
 }

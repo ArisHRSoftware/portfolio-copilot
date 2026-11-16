@@ -12,7 +12,29 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
+import { BreadcrumbSchema, FAQSchema } from "@/components/json-ld";
 import { TIERS } from "@/lib/constants/tiers";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+
+const PRICING_FAQS = [
+  {
+    question: "Can I switch plans anytime?",
+    answer: "Yes. Upgrade or downgrade at any time. When upgrading, you get immediate access to new features. When downgrading, your current plan continues until the end of the billing cycle.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer: "We accept all major credit and debit cards globally. Indian users can also pay via UPI, net banking, and wallets through Razorpay.",
+  },
+  {
+    question: "Is there a free trial?",
+    answer: "All paid plans come with a 7-day free trial. No credit card required to start. You can also use the Free plan indefinitely for up to 3 stocks.",
+  },
+  {
+    question: "What SEC filings do you cover?",
+    answer: "We analyze 10-K, 10-Q, 8-K, Form 4 (insider trades), S-1, DEF 14A, SC 13D/G, and more across 7,600+ US small-cap stocks. Every filing gets an automated summary and significance score.",
+  },
+];
 
 export const metadata: Metadata = {
   title: "Pricing — Plans for Every Investor",
@@ -96,6 +118,11 @@ export default function PricingPage() {
   return (
     <>
       <SiteHeader />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: siteUrl },
+        { name: "Pricing", url: `${siteUrl}/pricing` },
+      ]} />
+      <FAQSchema questions={PRICING_FAQS} />
       <main className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full space-y-12">
       {/* Header */}
       <div className="text-center space-y-3">

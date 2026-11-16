@@ -8,6 +8,9 @@ import {
 } from "@/lib/supabase/queries";
 import { displayTicker, isRealTicker } from "@/lib/utils";
 import { SiteHeader } from "@/components/site-header";
+import { BreadcrumbSchema } from "@/components/json-ld";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 import { Pagination } from "@/components/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,6 +89,10 @@ export default async function RecentFilingsPage({
   return (
     <>
       <SiteHeader />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: siteUrl },
+        { name: "Recent Filings", url: `${siteUrl}/recent-filings` },
+      ]} />
       <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Recent Filings</h1>

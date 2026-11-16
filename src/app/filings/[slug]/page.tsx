@@ -47,10 +47,20 @@ export async function generateMetadata({
     day: "numeric",
   });
 
-  const title = `${ticker} ${filing.filing_type} — ${filedDate}`;
-  const description =
+  const shortDate = new Date(filing.filed_date).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+  });
+  const score = filing.significance_score;
+  const title = score && score > 0
+    ? `${ticker} ${filing.filing_type} (${shortDate}) — Score ${score}/10`
+    : `${ticker} ${filing.filing_type} — ${filedDate}`;
+  const rawDescription =
     filing.one_line_summary ??
     `Analysis of ${companyName} (${ticker}) ${filing.filing_type} filing from ${filedDate}. Significance score: ${filing.significance_score}/10.`;
+  const description = rawDescription.length > 150
+    ? rawDescription.slice(0, 147) + "..."
+    : rawDescription;
 
   return {
     title,

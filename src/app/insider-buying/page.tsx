@@ -8,6 +8,9 @@ import {
 import { displayTicker, isRealTicker } from "@/lib/utils";
 import { Pagination } from "@/components/pagination";
 import { SiteHeader } from "@/components/site-header";
+import { BreadcrumbSchema } from "@/components/json-ld";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -92,6 +95,10 @@ export default async function InsiderBuyingPage({
   return (
     <>
       <SiteHeader />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: siteUrl },
+        { name: "Insider Buying", url: `${siteUrl}/insider-buying` },
+      ]} />
       <main className="flex-1 px-4 py-8 max-w-5xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Insider Buying</h1>

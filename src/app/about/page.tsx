@@ -10,6 +10,9 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SiteHeader } from "@/components/site-header";
+import { BreadcrumbSchema } from "@/components/json-ld";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
 export const metadata: Metadata = {
   title: "About — SEC Filing Analysis for Small-Cap Investors",
@@ -26,6 +29,10 @@ export default function AboutPage() {
   return (
     <>
       <SiteHeader />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: siteUrl },
+        { name: "About", url: `${siteUrl}/about` },
+      ]} />
       <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-12">
       {/* Hero */}
       <div className="space-y-4 text-center">

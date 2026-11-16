@@ -3,6 +3,9 @@ import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import { getNewsletterIssues } from "@/lib/supabase/queries";
 import { SiteHeader } from "@/components/site-header";
+import { BreadcrumbSchema } from "@/components/json-ld";
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,6 +37,10 @@ export default async function ArchivePage() {
   return (
     <>
       <SiteHeader />
+      <BreadcrumbSchema items={[
+        { name: "Home", url: siteUrl },
+        { name: "Newsletter Archive", url: `${siteUrl}/archive` },
+      ]} />
       <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">
