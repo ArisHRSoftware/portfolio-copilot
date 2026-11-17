@@ -7,7 +7,7 @@ describe("Test infrastructure smoke test", () => {
 
   it("path alias resolves", async () => {
     const { TIERS } = await import("@/lib/constants/tiers");
-    expect(TIERS.free.stocks).toBe(3);
+    expect(TIERS.free.stocks).toBe(5);
     expect(TIERS.pro.stocks).toBe(-1);
   });
 });

@@ -12,6 +12,7 @@ import { BreadcrumbSchema } from "@/components/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 import { Pagination } from "@/components/pagination";
+import { NewsletterCTA } from "@/components/newsletter-cta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Recent SEC Filings — All Filing Types",
@@ -212,6 +213,8 @@ export default async function RecentFilingsPage({
         basePath="/recent-filings"
         params={filterType && filterType !== "All" ? { type: filterType } : undefined}
       />
+
+      <NewsletterCTA source="recent-filings" />
     </main>
     </>
   );

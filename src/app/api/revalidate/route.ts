@@ -89,12 +89,13 @@ export async function POST(request: Request): Promise<Response> {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Revalidation failed";
-    console.error("Revalidation error:", message);
+    console.error(
+      "Revalidation error:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
 
     return Response.json(
-      { error: message },
+      { error: "Revalidation failed" },
       { status: 500 }
     );
   }

@@ -1,46 +1,20 @@
-import { revalidatePath } from "next/cache";
 import { verifyQStash } from "@/lib/qstash";
 
-// Hub page revalidation cron endpoint.
+// DISABLED: Hub page revalidation is now handled by ISR timers (revalidate: 86400).
+// This cron was consuming Vercel Hobby ISR write budget unnecessarily.
+// All hub pages self-refresh via their own revalidation interval.
 //
-// Revalidates all hub/index pages on a schedule to ensure freshness
-// even when no individual filing triggers a cascade for a given page.
-//
-// Schedule: Every 6 hours via QStash (cron: "0 */6 * * *")
-
-const HUB_PAGES = [
-  "/",
-  "/trending",
-  "/recent-filings",
-  "/insider-buying",
-  "/insider-selling",
-  "/earnings-this-week",
-  "/blog",
-  "/archive",
-];
+// To re-enable: restore revalidatePath calls and reduce hub page ISR intervals.
+// Original schedule: Every 6 hours via QStash (cron: "0 */6 * * *")
 
 export async function POST(request: Request): Promise<Response> {
   const qstashError = await verifyQStash(request);
   if (qstashError) return qstashError;
 
-  // Revalidate all hub pages
-  const results: Array<{ path: string; status: string }> = [];
-
-  for (const path of HUB_PAGES) {
-    try {
-      revalidatePath(path);
-      results.push({ path, status: "revalidated" });
-    } catch (error) {
-      results.push({
-        path,
-        status: `error: ${error instanceof Error ? error.message : "unknown"}`,
-      });
-    }
-  }
-
   return Response.json({
     success: true,
-    revalidated: results,
+    disabled: true,
+    reason: "Hub revalidation handled by ISR timers. Pause this QStash schedule.",
     timestamp: new Date().toISOString(),
   });
 }

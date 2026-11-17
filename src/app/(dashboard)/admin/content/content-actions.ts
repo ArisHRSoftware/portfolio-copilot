@@ -113,21 +113,38 @@ export async function publishContent(contentId: string) {
       await onBlogPublished(blogPost as Database["public"]["Tables"]["blog_posts"]["Row"]);
     }
   } else if (typedItem.type === "newsletter") {
-    // Extract HTML from the structured body object (body.html), falling
-    // back to preview_html or an empty string.
     const bodyObj = typedItem.body as Record<string, unknown> | null;
-    const bodyHtml =
-      (typeof bodyObj === "object" && bodyObj !== null
-        ? (bodyObj.html as string | undefined)
-        : undefined) ??
-      typedItem.preview_html ??
-      "";
+
+    // Render newsletter HTML using the v2 template if available
+    let renderedHtml: string;
+    let emailSubject: string;
+
+    if (bodyObj && bodyObj.version === 2) {
+      // V2 structured newsletter — render with template
+      const { renderNewsletterHtml } = await import("@/lib/newsletter-template");
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+      // Unsubscribe URL placeholder — replaced per-subscriber during send
+      renderedHtml = renderNewsletterHtml(
+        bodyObj as unknown as Parameters<typeof renderNewsletterHtml>[0],
+        `${siteUrl}/api/newsletter/unsubscribe?email=SUBSCRIBER_EMAIL`
+      );
+      emailSubject = (bodyObj.subject as string) || typedItem.title;
+    } else {
+      // Legacy v1 — use raw HTML
+      renderedHtml =
+        (typeof bodyObj === "object" && bodyObj !== null
+          ? (bodyObj.html as string | undefined)
+          : undefined) ??
+        typedItem.preview_html ??
+        "";
+      emailSubject = typedItem.title;
+    }
 
     const { data: newsletter } = await supabase
       .from("newsletter_issues")
       .insert({
-        subject: typedItem.title,
-        body_html: bodyHtml,
+        subject: emailSubject,
+        body_html: renderedHtml,
       } as never)
       .select()
       .single();
@@ -136,10 +153,11 @@ export async function publishContent(contentId: string) {
       const typedNewsletter =
         newsletter as Database["public"]["Tables"]["newsletter_issues"]["Row"];
 
-      // Fetch active subscribers (not unsubscribed)
+      // Fetch confirmed, active subscribers only (double opt-in)
       const { data: subscribers } = await supabase
         .from("newsletter_subscribers")
         .select("email")
+        .eq("confirmed", true)
         .is("unsubscribed_at", null);
 
       const emails = ((subscribers ?? []) as { email: string }[]).map(
@@ -147,24 +165,29 @@ export async function publishContent(contentId: string) {
       );
 
       if (emails.length > 0) {
-        // Send via Resend in batches of 50 (Resend batch limit)
-        const { getResend } = await import("@/lib/resend");
-        const resend = getResend();
-        const fromEmail =
-          process.env.RESEND_FROM_EMAIL || "noreply@brefyr.com";
-        const BATCH_SIZE = 50;
+        const { sendNewsletterBrief } = await import("@/lib/resend");
+        const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+        let sentCount = 0;
+        let failedCount = 0;
 
-        for (let i = 0; i < emails.length; i += BATCH_SIZE) {
-          const batch = emails.slice(i, i + BATCH_SIZE);
-          await resend.batch.send(
-            batch.map((email) => ({
-              from: fromEmail,
-              to: email,
-              subject: typedItem.title,
-              html: bodyHtml,
-            }))
+        for (const email of emails) {
+          // Replace placeholder with actual subscriber email in unsubscribe URL
+          const personalizedHtml = renderedHtml.replace(
+            "SUBSCRIBER_EMAIL",
+            encodeURIComponent(email)
           );
+          const unsubUrl = `${siteUrl}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}`;
+          const result = await sendNewsletterBrief(
+            email,
+            emailSubject,
+            personalizedHtml,
+            unsubUrl
+          );
+          if (result.success) sentCount++;
+          else failedCount++;
         }
+
+        console.log(`Newsletter sent: ${sentCount} ok, ${failedCount} failed`);
       }
 
       // Update sent_at and recipient_count on the newsletter row

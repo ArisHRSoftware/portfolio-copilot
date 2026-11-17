@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
-import { getTopCompanies, getRecentFilings } from "@/lib/supabase/queries";
+import {
+  getTopCompanies,
+  getRecentFilings,
+  getHomepageStats,
+  getRecentInsiderTrades,
+  getFilingsWithCompanies,
+} from "@/lib/supabase/queries";
 import { WebSiteSchema } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -23,10 +29,13 @@ import {
   ArrowRight,
   CheckCircle2,
   ChevronRight,
+  Activity,
+  Users,
+  AlertTriangle,
 } from "lucide-react";
 import { NewsletterForm } from "@/components/newsletter-form";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Brefyr — SEC Filing Intelligence for Small-Cap Investors",
@@ -41,10 +50,18 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const supabase = createStaticClient();
-  const [companies, recentFilings] = await Promise.all([
+  const [companies, recentFilings, stats, insiderTrades] = await Promise.all([
     getTopCompanies(supabase, 8),
     getRecentFilings(supabase, { limit: 6, minSignificance: 6 }),
+    getHomepageStats(supabase),
+    getRecentInsiderTrades(supabase, 5),
   ]);
+
+  // Get company names for insider trades
+  const insiderWithCompanies = await getFilingsWithCompanies(
+    supabase,
+    insiderTrades
+  );
 
   return (
     <>
@@ -79,7 +96,7 @@ export default async function HomePage() {
                 render={<Link href="/auth/signup" />}
                 className="text-base px-8 py-6"
               >
-                Start Free — Track 3 Stocks
+                Start Free — 30 Days of Plus
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button
@@ -92,7 +109,7 @@ export default async function HomePage() {
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              No credit card required. Upgrade anytime.
+              No credit card required. 30-day free trial, then upgrade or stay free.
             </p>
           </div>
         </section>
@@ -110,10 +127,10 @@ export default async function HomePage() {
             </div>
             <div className="px-6 py-8 text-center">
               <p className="text-3xl sm:text-4xl font-bold text-foreground">
-                8
+                {stats.totalFilingsAllTime.toLocaleString()}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Filing types analyzed
+                Filings analyzed
               </p>
             </div>
             <div className="px-6 py-8 text-center">
@@ -131,6 +148,221 @@ export default async function HomePage() {
               <p className="text-sm text-muted-foreground mt-1">
                 Significance score
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ===================== LIVE FILING INTELLIGENCE ===================== */}
+        <section className="py-16 px-6">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                    Live Filing Intelligence
+                  </h2>
+                </div>
+                <p className="text-muted-foreground">
+                  Real data from the last 7 days — last updated{" "}
+                  {new Date(stats.lastUpdated).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                    timeZoneName: "short",
+                  })}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                render={<Link href="/recent-filings" />}
+              >
+                View all
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Live stats cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Card className="bg-card/50 border-border">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Activity className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold">{stats.totalFilingsThisWeek.toLocaleString()}</p>
+                      <p className="text-sm text-muted-foreground">Filings this week</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-card/50 border-border">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Users className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold">{stats.insiderTradesThisWeek}</p>
+                      <p className="text-sm text-muted-foreground">Insider trades detected</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="bg-card/50 border-border">
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-destructive/10">
+                      <AlertTriangle className="h-5 w-5 text-destructive" />
+                    </div>
+                    <div>
+                      <p className="text-3xl font-bold">{stats.highSignificanceCount}</p>
+                      <p className="text-sm text-muted-foreground">High-significance filings (7+)</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Latest filings + insider trades side by side */}
+            <div className="grid lg:grid-cols-2 gap-6">
+              {/* Latest significant filings */}
+              <Card className="bg-card/50 border-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    Latest Significant Filings
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {recentFilings.slice(0, 5).map((f) => {
+                    const company = companies.find(
+                      (c) => c.id === f.company_id
+                    );
+                    return (
+                      <Link
+                        key={f.id}
+                        href={`/filings/${f.slug}`}
+                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
+                      >
+                        <Badge
+                          variant={
+                            f.significance_score >= 8
+                              ? "destructive"
+                              : "default"
+                          }
+                          className="shrink-0 mt-0.5"
+                        >
+                          {f.significance_score}/10
+                        </Badge>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-primary text-sm">
+                              {company?.ticker ?? "???"}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {f.filing_type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                            {f.one_line_summary ?? "Analysis in progress..."}
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {new Date(f.filed_date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                  {recentFilings.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No high-significance filings this week
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Latest insider trades */}
+              <Card className="bg-card/50 border-border">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    Latest Insider Trades
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {insiderWithCompanies.slice(0, 5).map((f) => {
+                    const insider = Array.isArray(f.insider_data)
+                      ? (f.insider_data as Array<Record<string, unknown>>)[0]
+                      : (f.insider_data as Record<string, unknown>);
+                    const txType =
+                      (insider?.transaction_type as string) ?? "Trade";
+                    const person =
+                      (insider?.person as string) ??
+                      (insider?.name as string) ??
+                      "Insider";
+                    const isBuy =
+                      txType.toLowerCase().includes("buy") ||
+                      txType.toLowerCase().includes("purchase") ||
+                      txType.toLowerCase().includes("acquisition");
+                    return (
+                      <Link
+                        key={f.id}
+                        href={`/stocks/${f.company?.ticker?.toLowerCase() ?? "unknown"}/${f.slug}`}
+                        className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors group"
+                      >
+                        <div
+                          className={`p-1.5 rounded-md shrink-0 mt-0.5 ${
+                            isBuy
+                              ? "bg-primary/10 text-primary"
+                              : "bg-destructive/10 text-destructive"
+                          }`}
+                        >
+                          <TrendingUp
+                            className={`h-4 w-4 ${!isBuy ? "rotate-180" : ""}`}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-primary text-sm">
+                              {f.company?.ticker ?? "???"}
+                            </span>
+                            <Badge
+                              variant={isBuy ? "default" : "destructive"}
+                              className="text-xs"
+                            >
+                              {isBuy ? "Buy" : "Sell"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-1 mt-1">
+                            {person} — {f.one_line_summary ?? txType}
+                          </p>
+                        </div>
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {new Date(f.filed_date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                  {insiderWithCompanies.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No insider trades detected recently
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </section>
@@ -156,7 +388,7 @@ export default async function HomePage() {
                 <h3 className="text-2xl font-bold">Track Your Stocks</h3>
                 <p className="text-muted-foreground text-lg leading-relaxed">
                   Add the stocks you care about — from mega-caps like AAPL to
-                  micro-caps with zero analyst coverage. Free plan covers 3
+                  micro-caps with zero analyst coverage. Free plan covers 5
                   stocks, paid plans go up to unlimited.
                 </p>
                 <Button
@@ -261,36 +493,85 @@ export default async function HomePage() {
                 </Button>
               </div>
               <div className="rounded-2xl border border-border bg-card/50 p-8 space-y-4">
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">Insider Buy Alert</span>
+                {/* Real alerts from database — insider trade */}
+                {insiderWithCompanies[0] ? (() => {
+                  const f = insiderWithCompanies[0];
+                  const insider = Array.isArray(f.insider_data)
+                    ? (f.insider_data as Array<Record<string, unknown>>)[0]
+                    : (f.insider_data as Record<string, unknown>);
+                  const person = (insider?.person as string) ?? (insider?.name as string) ?? "Insider";
+                  return (
+                    <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Bell className="h-5 w-5 text-primary" />
+                        <span className="font-semibold">Insider Trade — {f.company?.ticker ?? "???"}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {person}: {f.one_line_summary ?? "Insider transaction detected"}. Significance: {f.significance_score}/10
+                      </p>
+                    </div>
+                  );
+                })() : (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">Insider Trade Alerts</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Get notified when company insiders buy or sell shares.
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    CEO purchased 50,000 shares worth $11.2M in open market
-                    buy. Significance: 7/10
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-primary" />
-                    <span className="font-semibold">10-K Annual Report</span>
+                )}
+                {/* Real alert — high significance filing */}
+                {recentFilings[0] ? (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">
+                        {recentFilings[0].filing_type} — {companies.find(c => c.id === recentFilings[0].company_id)?.ticker ?? "???"}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {recentFilings[0].one_line_summary ?? "Analysis available"}. Significance: {recentFilings[0].significance_score}/10
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Record Q4 revenue, up 8% YoY. Earnings impact
-                    assessment included. Significance: 9/10
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-5 w-5 text-destructive" />
-                    <span className="font-semibold">Risk Flag Detected</span>
+                ) : (
+                  <div className="p-4 rounded-lg bg-primary/5 border border-primary/20 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <span className="font-semibold">Filing Analysis</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Every 10-K, 8-K, and Form 4 gets an AI-generated summary with significance scoring.
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Going-concern warning in 10-Q filing. Material weakness in
-                    internal controls. Significance: 10/10
-                  </p>
-                </div>
+                )}
+                {/* Real alert — critical filing or risk flag */}
+                {recentFilings.find(f => f.significance_score >= 8) ? (() => {
+                  const critical = recentFilings.find(f => f.significance_score >= 8)!;
+                  const ticker = companies.find(c => c.id === critical.company_id)?.ticker ?? "???";
+                  return (
+                    <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-5 w-5 text-destructive" />
+                        <span className="font-semibold">High Alert — {ticker}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {critical.one_line_summary ?? "Critical filing detected"}. Significance: {critical.significance_score}/10
+                      </p>
+                    </div>
+                  );
+                })() : (
+                  <div className="p-4 rounded-lg bg-destructive/5 border border-destructive/20 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-destructive" />
+                      <span className="font-semibold">Risk Monitoring</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Get alerted to going-concern warnings, material weaknesses, and other red flags.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -396,7 +677,7 @@ export default async function HomePage() {
             <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 text-base text-muted-foreground">
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                3 stocks free forever
+                30 days of Plus features free
               </span>
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
@@ -404,7 +685,7 @@ export default async function HomePage() {
               </span>
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-primary" />
-                Cancel anytime
+                50 stocks, daily digest, screener
               </span>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -432,11 +713,11 @@ export default async function HomePage() {
         <section className="py-16 px-6 border-t border-border bg-[#161616]">
           <div className="max-w-2xl mx-auto text-center space-y-6">
             <h2 className="text-2xl font-bold tracking-tight">
-              Weekly Small-Cap Briefing
+              The Filing Brief — Daily
             </h2>
             <p className="text-muted-foreground text-lg">
-              The most significant filings and insider trades, summarized and
-              reviewed by our team. Free, weekly, no spam.
+              The most significant SEC filings and insider trades, summarized
+              and reviewed every trading day. Free, no spam.
             </p>
             <div className="flex justify-center">
               <NewsletterForm source="homepage" />

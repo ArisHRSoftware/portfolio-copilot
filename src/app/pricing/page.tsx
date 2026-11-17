@@ -17,6 +17,13 @@ import { TIERS } from "@/lib/constants/tiers";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
+// Per-month cost when billed yearly
+const MONTHLY_COST: Record<string, string> = {
+  starter: "0.75",
+  plus: "1.58",
+  pro: "2.42",
+};
+
 const PRICING_FAQS = [
   {
     question: "Can I switch plans anytime?",
@@ -24,22 +31,22 @@ const PRICING_FAQS = [
   },
   {
     question: "What payment methods do you accept?",
-    answer: "We accept all major credit and debit cards globally. Indian users can also pay via UPI, net banking, and wallets through Razorpay.",
+    answer: "We accept all major credit and debit cards globally. Indian users can also pay via UPI, net banking, and wallets through Razorpay. More payment options coming soon.",
   },
   {
-    question: "Is there a free trial?",
-    answer: "All paid plans come with a 7-day free trial. No credit card required to start. You can also use the Free plan indefinitely for up to 3 stocks.",
+    question: "How does the 30-day free trial work?",
+    answer: "Every new account gets 30 days of Plus features completely free — no credit card required. Track up to 50 stocks, get daily digests, and use the screener. After 30 days, you can choose to subscribe or stay on the free plan with 5 stocks.",
   },
   {
     question: "What SEC filings do you cover?",
-    answer: "We analyze 10-K, 10-Q, 8-K, Form 4 (insider trades), S-1, DEF 14A, SC 13D/G, and more across 7,600+ US small-cap stocks. Every filing gets an automated summary and significance score.",
+    answer: "We analyze 10-K, 10-Q, 8-K, Form 4 (insider trades), S-1, DEF 14A, SC 13D/G, and more across 7,600+ US-listed stocks. Every filing gets an automated summary and significance score within minutes.",
   },
 ];
 
 export const metadata: Metadata = {
   title: "Pricing — Plans for Every Investor",
   description:
-    "Choose the right Brefyr plan. From free SEC filing alerts for 3 stocks to unlimited analysis, insider trade alerts, and API access for professionals.",
+    "Choose the right Brefyr plan. From free SEC filing alerts for 5 stocks to unlimited analysis, insider trade alerts, and API access for professionals.",
   openGraph: {
     title: "Pricing — Plans for Every Investor | Brefyr",
     description:
@@ -54,13 +61,6 @@ const TIER_HIGHLIGHTS: Record<string, string> = {
   starter: "Track more stocks with daily email digests",
   plus: "Advanced screening, webhooks, and up to 50 stocks",
   pro: "Unlimited everything, API access, and data exports",
-};
-
-const TIER_CTAS: Record<string, string> = {
-  free: "Get Started Free",
-  starter: "Start 7-Day Trial",
-  plus: "Start 7-Day Trial",
-  pro: "Start 7-Day Trial",
 };
 
 function CheckIcon() {
@@ -125,13 +125,17 @@ export default function PricingPage() {
       <FAQSchema questions={PRICING_FAQS} />
       <main className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full space-y-12">
       {/* Header */}
-      <div className="text-center space-y-3">
+      <div className="text-center space-y-4">
+        <Badge variant="default" className="text-sm px-4 py-1">
+          Launch Special — 30 Days Free on All Plans
+        </Badge>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           Simple, Transparent Pricing
         </h1>
         <p className="text-muted-foreground max-w-xl mx-auto">
-          Start free. Upgrade when you need more stocks, smarter alerts, or API
-          access. All plans include SEC filing analysis.
+          Start free. Every new account gets{" "}
+          <span className="font-semibold text-primary">30 days of Plus features free</span>
+          {" "}— no credit card required. Upgrade when you need more.
         </p>
       </div>
 
@@ -140,41 +144,57 @@ export default function PricingPage() {
         {TIER_ORDER.map((tierKey) => {
           const tier = TIERS[tierKey];
           const isPopular = tierKey === "plus";
+          const monthlyCost = MONTHLY_COST[tierKey];
 
           return (
             <Card
               key={tierKey}
-              className={isPopular ? "ring-2 ring-primary" : ""}
+              className={`relative ${isPopular ? "ring-2 ring-primary" : ""}`}
             >
+              {/* Monthly cost badge for paid tiers */}
+              {monthlyCost && (
+                <div className="absolute -top-3 right-4">
+                  <Badge variant="default" className="text-xs font-bold px-2">
+                    ${monthlyCost}/mo
+                  </Badge>
+                </div>
+              )}
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg">{tier.name}</CardTitle>
-                  {isPopular && <Badge variant="default">Popular</Badge>}
+                  {isPopular && <Badge variant="default">Most Popular</Badge>}
                 </div>
                 <CardDescription>{TIER_HIGHLIGHTS[tierKey]}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Price */}
+                {/* Price with discount appearance */}
                 <div className="space-y-1">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold">
-                      ${tier.priceUSD}
-                    </span>
-                    {tier.priceUSD > 0 && (
-                      <span className="text-sm text-muted-foreground">
-                        /year
-                      </span>
-                    )}
-                  </div>
-                  {tier.priceINR > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      or &#x20B9;{tier.priceINR}/year
-                    </p>
-                  )}
-                  {tier.priceUSD === 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      Free forever
-                    </p>
+                  {tier.priceUSD > 0 ? (
+                    <>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold text-primary">
+                          ${tier.priceUSD}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          /year
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Less than ${monthlyCost}/month — billed yearly
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        or &#x20B9;{tier.priceINR}/year
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-3xl font-bold">$0</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Free forever
+                      </p>
+                    </>
                   )}
                 </div>
 
@@ -209,7 +229,7 @@ export default function PricingPage() {
                     included={tier.screener}
                   />
                   <FeatureRow
-                    label="Webhook notifications"
+                    label="Real-time push alerts"
                     included={tier.webhook}
                   />
                   <FeatureRow label="API access" included={tier.api} />
@@ -231,12 +251,23 @@ export default function PricingPage() {
                     />
                   }
                 >
-                  {TIER_CTAS[tierKey]}
+                  {tierKey === "free" ? "Get Started Free" : "Start 30-Day Free Trial"}
                 </Button>
               </CardFooter>
             </Card>
           );
         })}
+      </div>
+
+      {/* Why so affordable */}
+      <div className="text-center space-y-2 py-4 max-w-lg mx-auto">
+        <p className="text-sm font-medium">Why is Brefyr so affordable?</p>
+        <p className="text-sm text-muted-foreground">
+          No human analysts, no overhead. Our AI pipeline reads SEC filings
+          automatically — the same analysis that costs $29-79/month elsewhere,
+          delivered at a fraction of the price. 7,600+ companies tracked, filings
+          analyzed within minutes, no credit card required.
+        </p>
       </div>
 
       {/* FAQ */}
@@ -245,55 +276,16 @@ export default function PricingPage() {
           Frequently Asked Questions
         </h2>
         <div className="space-y-4">
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Can I switch plans anytime?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Yes. Upgrade or downgrade at any time. When upgrading, you get
-                immediate access to new features. When downgrading, your current
-                plan continues until the end of the billing cycle.
-              </p>
-            </CardContent>
-          </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>What payment methods do you accept?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                We accept all major credit and debit cards globally. Indian users
-                can also pay via UPI, net banking, and wallets through
-                Razorpay.
-              </p>
-            </CardContent>
-          </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Is there a free trial?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                All paid plans come with a 7-day free trial. No credit card
-                required to start. You can also use the Free plan indefinitely
-                for up to 3 stocks.
-              </p>
-            </CardContent>
-          </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>What SEC filings do you cover?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                We analyze 10-K, 10-Q, 8-K, Form 4 (insider trades), S-1, DEF
-                14A, SC 13D/G, and more across 7,600+ US small-cap stocks.
-                Every filing gets an automated summary and significance
-                score.
-              </p>
-            </CardContent>
-          </Card>
+          {PRICING_FAQS.map((faq) => (
+            <Card size="sm" key={faq.question}>
+              <CardHeader>
+                <CardTitle>{faq.question}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{faq.answer}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </section>
     </main>

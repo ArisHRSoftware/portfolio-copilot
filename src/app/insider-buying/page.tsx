@@ -11,6 +11,7 @@ import { SiteHeader } from "@/components/site-header";
 import { BreadcrumbSchema } from "@/components/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+import { NewsletterCTA } from "@/components/newsletter-cta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -201,6 +202,8 @@ export default async function InsiderBuyingPage({
           All Recent Filings
         </Button>
       </div>
+
+      <NewsletterCTA source="insider-buying" />
     </main>
     </>
   );

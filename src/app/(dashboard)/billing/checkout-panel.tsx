@@ -85,7 +85,7 @@ const PLAN_ICONS: Record<TierName, React.ReactNode> = {
 };
 
 const PLAN_FEATURES: Record<TierName, string[]> = {
-  free: ["Track 3 stocks", "Weekly digest"],
+  free: ["Track 5 stocks", "Weekly digest"],
   starter: [
     "Track 15 stocks",
     "3 alert rules",

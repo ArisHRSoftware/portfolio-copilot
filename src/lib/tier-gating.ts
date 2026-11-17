@@ -14,11 +14,16 @@ async function getUserTier(supabase: Supabase, userId: string): Promise<TierName
 
   const sub = data as Subscription | null;
 
-  if (!sub || sub.status !== "active") {
+  if (!sub) {
     return "free";
   }
 
-  // If subscription expired, treat as free
+  // Active or trialing subscriptions get their plan tier
+  if (sub.status !== "active" && sub.status !== "trialing") {
+    return "free";
+  }
+
+  // If subscription/trial expired, treat as free
   if (sub.current_period_end && new Date(sub.current_period_end) < new Date()) {
     return "free";
   }

@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { BreadcrumbSchema } from "@/components/json-ld";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+import { NewsletterCTA } from "@/components/newsletter-cta";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Trending Stocks — Most Viewed Small-Cap Stocks",
@@ -215,6 +216,8 @@ export default async function TrendingPage() {
           Recent Filings
         </Button>
       </div>
+
+      <NewsletterCTA source="trending" />
     </main>
     </>
   );

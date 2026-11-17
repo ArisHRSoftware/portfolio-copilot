@@ -36,7 +36,10 @@ export function NewsletterForm({ source = "website" }: NewsletterFormProps) {
       const data = await res.json();
       if (data.status === "already_subscribed") {
         setStatus("already");
+      } else if (data.status === "confirmation_pending") {
+        setStatus("already");
       } else {
+        // confirmation_sent, resubscribed, or subscribed
         setStatus("success");
         setEmail("");
       }
@@ -49,7 +52,7 @@ export function NewsletterForm({ source = "website" }: NewsletterFormProps) {
     return (
       <div className="flex items-center gap-2 text-sm text-primary">
         <CheckCircle2 className="h-4 w-4" />
-        <span>You're subscribed! Check your inbox.</span>
+        <span>Check your inbox to confirm your subscription.</span>
       </div>
     );
   }

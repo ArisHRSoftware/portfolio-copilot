@@ -384,33 +384,18 @@ describe("POST /api/cron/revalidate-hubs", () => {
     "/archive",
   ];
 
-  it("revalidates all hub pages with valid QStash auth", async () => {
+  it("returns disabled status (hub revalidation handled by ISR timers)", async () => {
     const POST = await importHandler();
     const res = await POST(createMockRequest());
     const body = await json(res);
 
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
+    expect(body.disabled).toBe(true);
     expect(body.timestamp).toBeDefined();
 
-    // Verify all hub pages were revalidated
-    const revalidated = body.revalidated as Array<{
-      path: string;
-      status: string;
-    }>;
-    expect(revalidated).toHaveLength(HUB_PAGES.length);
-
-    for (const page of HUB_PAGES) {
-      const entry = revalidated.find((r) => r.path === page);
-      expect(entry).toBeDefined();
-      expect(entry!.status).toBe("revalidated");
-    }
-
-    // revalidatePath should have been called once per hub page
-    expect(mockRevalidatePath).toHaveBeenCalledTimes(HUB_PAGES.length);
-    for (const page of HUB_PAGES) {
-      expect(mockRevalidatePath).toHaveBeenCalledWith(page);
-    }
+    // revalidatePath should NOT have been called (endpoint is disabled)
+    expect(mockRevalidatePath).not.toHaveBeenCalled();
   });
 
   it("returns 401 when no signature is provided", async () => {
@@ -435,45 +420,15 @@ describe("POST /api/cron/revalidate-hubs", () => {
     expect(body.error).toBe("Invalid signature");
   });
 
-  it("succeeds with valid QStash signature", async () => {
+  it("succeeds with valid QStash signature (disabled — returns no-op)", async () => {
     const POST = await importHandler();
     const res = await POST(createMockRequest());
     const body = await json(res);
 
     expect(res.status).toBe(200);
     expect(body.success).toBe(true);
+    expect(body.disabled).toBe(true);
     expect(mockVerify).toHaveBeenCalled();
-  });
-
-  it("reports per-path errors when revalidatePath throws", async () => {
-    // Make revalidatePath throw for a specific path
-    mockRevalidatePath.mockImplementation((path: string) => {
-      if (path === "/trending") {
-        throw new Error("cache purge failed");
-      }
-    });
-
-    const POST = await importHandler();
-    const res = await POST(createMockRequest());
-    const body = await json(res);
-
-    expect(res.status).toBe(200);
-    expect(body.success).toBe(true);
-
-    const revalidated = body.revalidated as Array<{
-      path: string;
-      status: string;
-    }>;
-
-    const trending = revalidated.find((r) => r.path === "/trending");
-    expect(trending).toBeDefined();
-    expect(trending!.status).toContain("error");
-    expect(trending!.status).toContain("cache purge failed");
-
-    // Other pages should still be revalidated successfully
-    const home = revalidated.find((r) => r.path === "/");
-    expect(home).toBeDefined();
-    expect(home!.status).toBe("revalidated");
   });
 });
 

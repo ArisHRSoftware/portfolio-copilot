@@ -335,13 +335,27 @@ export type Database = {
           subscribed_at: string;
           unsubscribed_at: string | null;
           source: string | null;
+          confirmed: boolean;
+          confirm_token: string | null;
+          welcome_stage: number;
+          last_opened_at: string | null;
+          last_clicked_at: string | null;
+          open_count: number;
         };
         Insert: {
           email: string;
           source?: string | null;
+          confirmed?: boolean;
+          confirm_token?: string | null;
         };
         Update: {
           unsubscribed_at?: string | null;
+          confirmed?: boolean;
+          confirm_token?: string | null;
+          welcome_stage?: number;
+          last_opened_at?: string | null;
+          last_clicked_at?: string | null;
+          open_count?: number;
         };
       };
       referrals: {

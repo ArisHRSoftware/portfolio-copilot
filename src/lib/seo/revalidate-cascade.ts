@@ -86,50 +86,12 @@ export async function onFilingProcessed(
   const paths: string[] = [];
 
   const ticker = company.ticker.toLowerCase();
-  const sector = company.sector.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-  // Always revalidate the stock page and filing detail page
+  // Only revalidate the directly-affected pages to stay within Vercel Hobby
+  // ISR write limits. Hub pages (trending, recent-filings, etc.) use 24h ISR
+  // timers and will refresh on their own schedule.
   paths.push(`/stocks/${ticker}`);
-  paths.push(`/stocks/${ticker}/filings/${filing.slug}`);
-
-  // Sector hub
-  paths.push(`/sectors/${sector}`);
-
-  // Filings feed
-  paths.push(`/filings`);
-
-  // Hub pages affected by every filing
-  paths.push(`/recent-filings`);
-  paths.push(`/trending`);
-
-  // Insider trading hub pages (conditional on insider_data)
-  const rawInsider = filing.insider_data;
-  if (rawInsider) {
-    const trades: Array<Record<string, unknown>> = Array.isArray(rawInsider)
-      ? (rawInsider as Array<Record<string, unknown>>)
-      : [rawInsider as Record<string, unknown>];
-    const txTypes = trades.map((t) => ((t.transaction_type as string) ?? "").toLowerCase());
-    if (txTypes.some((t) => t === "buy" || t.includes("purchase"))) {
-      paths.push(`/insider-buying`);
-    }
-    if (txTypes.some((t) => t === "sell" || t.includes("sale"))) {
-      paths.push(`/insider-selling`);
-    }
-  }
-
-  // Earnings hub page (when filing contains earnings data)
-  if (
-    filing.has_earnings_data ||
-    filing.filing_type === "10-K" ||
-    filing.filing_type === "10-Q"
-  ) {
-    paths.push(`/earnings-this-week`);
-  }
-
-  // Homepage for high-significance filings
-  if (filing.significance_score >= 7) {
-    paths.push(`/`);
-  }
+  paths.push(`/filings/${filing.slug}`);
 
   // Revalidate all paths with debouncing
   const results = await Promise.allSettled(

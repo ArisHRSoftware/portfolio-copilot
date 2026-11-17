@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const revalidate = 86400;
 
@@ -125,6 +126,8 @@ export default function LearnHubPage() {
             Recent Filings
           </Button>
         </div>
+
+        <NewsletterCTA source="learn" />
       </main>
     </>
   );

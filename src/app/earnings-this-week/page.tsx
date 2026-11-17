@@ -19,7 +19,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Earnings This Week — Small-Cap Earnings Calendar",

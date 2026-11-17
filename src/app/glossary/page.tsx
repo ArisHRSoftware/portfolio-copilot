@@ -8,6 +8,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const revalidate = 86400;
 
@@ -136,6 +137,8 @@ export default function GlossaryIndexPage() {
             SEC Filing Education
           </Button>
         </div>
+
+        <NewsletterCTA source="glossary-index" />
       </main>
     </>
   );

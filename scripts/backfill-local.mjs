@@ -7,9 +7,11 @@
  * Stores filing metadata + template extraction (no AI analysis).
  *
  * Usage:
- *   node scripts/backfill-local.mjs                    # default: 90 days
+ *   node scripts/backfill-local.mjs                    # default: 90 days, all types
  *   node scripts/backfill-local.mjs --days 30          # last 30 days
  *   node scripts/backfill-local.mjs --start 2026-08-01 --end 2026-11-09
+ *   node scripts/backfill-local.mjs --type 4           # Form 4 only
+ *   node scripts/backfill-local.mjs --type 4 --process # Form 4 + extract insider data
  *   node scripts/backfill-local.mjs --dry-run          # preview without inserting
  */
 
@@ -51,6 +53,8 @@ function getArg(name, defaultVal) {
   return idx !== -1 && args[idx + 1] ? args[idx + 1] : defaultVal;
 }
 const DRY_RUN = args.includes("--dry-run");
+const PROCESS = args.includes("--process");  // Enable template extraction
+const FORM_TYPE = getArg("--type", null);     // Filter by form type (e.g. "4")
 const DAYS = parseInt(getArg("--days", "90"), 10);
 const CUSTOM_START = getArg("--start", null);
 const CUSTOM_END = getArg("--end", null);
@@ -202,9 +206,13 @@ async function sleep(ms) {
 /**
  * Fetch filings from EDGAR for a specific date range.
  * Paginates automatically. No limit on total filings.
+ * If FORM_TYPE is set, fetches only that form type.
  */
 async function fetchEdgarFilings(startDate, endDate) {
-  const forms = FILING_TYPES.map((t) => t.replace(/ /g, "+")).join(",");
+  const targetTypes = FORM_TYPE
+    ? [FORM_TYPE.toUpperCase().trim()]
+    : FILING_TYPES;
+  const forms = targetTypes.map((t) => t.replace(/ /g, "+")).join(",");
   const allFilings = [];
   const seenAccessions = new Set();
 
@@ -259,7 +267,7 @@ async function fetchEdgarFilings(startDate, endDate) {
       const rootForms = source.root_forms ?? [];
       const filingType = rootForms[0] ?? source.form_type ?? "";
       const normalizedType = filingType.toUpperCase().trim();
-      const isTarget = FILING_TYPES.some(
+      const isTarget = targetTypes.some(
         (t) => normalizedType === t || normalizedType.startsWith(t + "/") || normalizedType.startsWith(t + " ")
       );
       if (!isTarget) continue;
@@ -292,6 +300,176 @@ async function fetchEdgarFilings(startDate, endDate) {
   return allFilings;
 }
 
+// ── Filing download & template extraction ────────────────────────────
+const EDGAR_DOC_UA = "Brefyr admin@brefyr.com";
+
+/**
+ * Download Form 4 raw XML from EDGAR.
+ * Form 4 filings are XML-only — we parse the -index.htm page for the .xml link.
+ */
+async function downloadForm4Xml(rawUrl) {
+  const dir = rawUrl.substring(0, rawUrl.lastIndexOf("/") + 1);
+
+  // Step 1: Try index.json
+  try {
+    await sleep(120);
+    const jsonUrl = dir + "index.json";
+    const jr = await fetch(jsonUrl, { headers: { "User-Agent": EDGAR_DOC_UA, Accept: "application/json" } });
+    if (jr.ok) {
+      const idx = await jr.json();
+      const items = idx.directory?.item ?? [];
+      // Find raw XML doc (not the XSLT-rendered one in xslF345X06/)
+      const xmlDoc = items.find((i) => i.name.endsWith(".xml") && !i.name.includes("/"));
+      if (xmlDoc) {
+        await sleep(120);
+        const xr = await fetch(dir + xmlDoc.name, { headers: { "User-Agent": EDGAR_DOC_UA } });
+        if (xr.ok) return xr.text();
+      }
+    }
+  } catch { /* fallthrough */ }
+
+  // Step 2: Parse -index.htm for links (Form 4 often lacks index.json)
+  try {
+    await sleep(120);
+    const ir = await fetch(rawUrl, { headers: { "User-Agent": EDGAR_DOC_UA } });
+    if (ir.ok) {
+      const html = await ir.text();
+      // Find .xml links that aren't XSLT-rendered (not under xsl* path)
+      const xmlLinks = [];
+      const linkRe = /href="([^"]*\.xml)"/gi;
+      let m;
+      while ((m = linkRe.exec(html)) !== null) {
+        const href = m[1];
+        if (!href.includes("/xsl")) xmlLinks.push(href);
+      }
+      if (xmlLinks.length > 0) {
+        const xmlPath = xmlLinks[0].startsWith("http") ? xmlLinks[0] : "https://www.sec.gov" + xmlLinks[0];
+        await sleep(120);
+        const xr = await fetch(xmlPath, { headers: { "User-Agent": EDGAR_DOC_UA } });
+        if (xr.ok) return xr.text();
+      }
+    }
+  } catch { /* fallthrough */ }
+
+  return "";
+}
+
+/**
+ * Parse Form 4 XML directly for insider trade data.
+ * Much more reliable than regex on stripped HTML.
+ */
+function parseForm4Xml(xml, companyName, ticker, filedDate) {
+  function xmlVal(tag) {
+    const re = new RegExp(`<${tag}>\\s*([^<]+?)\\s*</${tag}>`, "i");
+    const m = xml.match(re);
+    return m ? m[1].trim() : "";
+  }
+
+  function xmlValInBlock(block, tag) {
+    // Try <tag><value>X</value></tag> format first (most XBRL fields)
+    const re1 = new RegExp(`<${tag}>\\s*<value>\\s*([^<]+?)\\s*</value>`, "i");
+    const m1 = block.match(re1);
+    if (m1) return m1[1].trim();
+    // Fallback: <tag>X</tag> format (e.g. transactionCode)
+    const re2 = new RegExp(`<${tag}>\\s*([^<]+?)\\s*</${tag}>`, "i");
+    const m2 = block.match(re2);
+    return m2 ? m2[1].trim() : "";
+  }
+
+  // Insider name
+  const insiderName = xmlVal("rptOwnerName") || "An insider";
+
+  // Role
+  const isDirector = /<isDirector>\s*1\s*<\/isDirector>/i.test(xml);
+  const isOfficer = /<isOfficer>\s*1\s*<\/isOfficer>/i.test(xml);
+  const isTenPctOwner = /<isTenPercentOwner>\s*1\s*<\/isTenPercentOwner>/i.test(xml);
+  const officerTitle = xmlVal("officerTitle");
+  let title = officerTitle || (isDirector ? "Director" : isTenPctOwner ? "10% Owner" : isOfficer ? "Officer" : "Insider");
+
+  // Transaction data — collect from all nonDerivativeTransaction blocks
+  const txBlocks = xml.match(/<nonDerivativeTransaction>[\s\S]*?<\/nonDerivativeTransaction>/gi) ?? [];
+  let totalShares = 0;
+  let weightedPrice = 0;
+  let mainCode = "";
+  const trades = [];
+
+  for (const block of txBlocks) {
+    const code = xmlValInBlock(block, "transactionCode") || "";
+    const shares = parseFloat(xmlValInBlock(block, "transactionShares")?.replace(/,/g, "") || "0");
+    const price = parseFloat(xmlValInBlock(block, "transactionPricePerShare")?.replace(/,/g, "") || "0");
+
+    if (!mainCode && code) mainCode = code.toUpperCase();
+    if (shares > 0) {
+      totalShares += shares;
+      if (price > 0) weightedPrice += shares * price;
+    }
+
+    const txType = { P: "buy", S: "sell", A: "grant", M: "exercise" }[code.toUpperCase()] || "other";
+    if (shares > 0) {
+      trades.push({
+        person: insiderName, title,
+        transaction_type: txType, shares,
+        price_per_share: price > 0 ? price : null,
+        date: xmlVal("transactionDate") || filedDate.slice(0, 10),
+      });
+    }
+  }
+
+  // Also check derivativeTransaction (options, warrants)
+  const dTxBlocks = xml.match(/<derivativeTransaction>[\s\S]*?<\/derivativeTransaction>/gi) ?? [];
+  for (const block of dTxBlocks) {
+    const code = xmlValInBlock(block, "transactionCode") || "";
+    const shares = parseFloat(xmlValInBlock(block, "transactionShares")?.replace(/,/g, "") || "0");
+    const price = parseFloat(xmlValInBlock(block, "exercisePrice")?.replace(/,/g, "") || xmlValInBlock(block, "transactionPricePerShare")?.replace(/,/g, "") || "0");
+
+    if (!mainCode && code) mainCode = code.toUpperCase();
+    const txType = { P: "buy", S: "sell", A: "grant", M: "exercise" }[code.toUpperCase()] || "other";
+    if (shares > 0) {
+      totalShares += shares;
+      trades.push({
+        person: insiderName, title,
+        transaction_type: txType, shares,
+        price_per_share: price > 0 ? price : null,
+        date: xmlVal("transactionDate") || filedDate.slice(0, 10),
+      });
+    }
+  }
+
+  const transactionType = { P: "buy", S: "sell", A: "grant", M: "exercise" }[mainCode] || "other";
+  const avgPrice = totalShares > 0 && weightedPrice > 0 ? weightedPrice / totalShares : null;
+
+  const txLabel = {
+    buy: "purchased", sell: "sold", grant: "was granted",
+    exercise: "exercised options for", other: "reported a transaction involving",
+  }[transactionType];
+
+  let summary;
+  if (totalShares > 0 && avgPrice) {
+    const total = totalShares * avgPrice;
+    const fmt = total >= 1e6 ? `${(total / 1e6).toFixed(1)}M` : total >= 1e3 ? `${(total / 1e3).toFixed(0)}K` : total.toFixed(0);
+    summary = `${insiderName} (${title}) ${txLabel} ${totalShares.toLocaleString()} shares at $${avgPrice.toFixed(2)} ($${fmt})`;
+  } else if (totalShares > 0) {
+    summary = `${insiderName} (${title}) ${txLabel} ${totalShares.toLocaleString()} shares of ${ticker}`;
+  } else {
+    summary = `Insider transaction filed for ${companyName} (${ticker})`;
+  }
+
+  let score = 2;
+  if (totalShares > 0 && avgPrice) {
+    const value = totalShares * avgPrice;
+    if (value >= 10_000_000) score = 7;
+    else if (value >= 1_000_000) score = 5;
+    else if (value >= 100_000) score = 4;
+  }
+
+  return {
+    one_line_summary: summary.slice(0, 150),
+    significance_score: score,
+    insider_data: trades.length > 0 ? trades : null,
+    has_earnings_data: false,
+  };
+}
+
 // ── Main ──────────────────────────────────────────────────────────────
 
 async function main() {
@@ -310,6 +488,8 @@ async function main() {
 
   console.log(`\n=== Brefyr Local Backfill ===`);
   console.log(`Date range: ${startStr} to ${endStr}`);
+  console.log(`Form type: ${FORM_TYPE || "ALL"}`);
+  console.log(`Template extraction: ${PROCESS}`);
   console.log(`Dry run: ${DRY_RUN}`);
   console.log(`Supabase: ${SUPABASE_URL}\n`);
 
@@ -462,17 +642,49 @@ async function main() {
         const ticker = (companyTicker || "unknown").toLowerCase();
         const slug = `${ticker}-${typePart}-${datePart}-${accSuffix}`;
 
+        // Template extraction (if --process flag set)
+        let templateData = null;
+        if (PROCESS) {
+          try {
+            const filingTypeUpper = filing.filing_type.toUpperCase().trim();
+            if (filingTypeUpper === "4" || filingTypeUpper.startsWith("4/")) {
+              // Form 4: download raw XML and parse structured data
+              const xml = await downloadForm4Xml(filing.filing_url);
+              if (xml.length >= 50 && xml.includes("<ownershipDocument")) {
+                templateData = parseForm4Xml(
+                  xml, filing.company_name, companyTicker || ticker, filing.filed_date
+                );
+              }
+              // Fall through to basic summary if XML download fails
+            }
+            // Other filing types get a basic summary (no download-based extraction yet)
+          } catch {
+            // Template extraction failed — still ingest with basic summary
+          }
+        }
+
         // Insert filing
-        const result = await dbInsert("filings", {
+        const filingRow = {
           company_id: companyId,
           slug,
           filing_type: filing.filing_type,
           filed_date: filing.filed_date,
           accession_number: filing.accession_number,
           raw_url: filing.filing_url,
-          significance_score: 0,
-          one_line_summary: `${companyTicker || ticker} filed a ${filing.filing_type} with the SEC on ${filing.filed_date}`,
-        });
+          significance_score: templateData?.significance_score ?? 0,
+          one_line_summary: templateData?.one_line_summary
+            ?? `${companyTicker || ticker} filed a ${filing.filing_type} with the SEC on ${filing.filed_date}`,
+        };
+
+        if (templateData) {
+          filingRow.processed_at = new Date().toISOString();
+          if (templateData.insider_data) {
+            filingRow.insider_data = templateData.insider_data;
+          }
+          filingRow.has_earnings_data = templateData.has_earnings_data;
+        }
+
+        const result = await dbInsert("filings", filingRow);
 
         if (result.skipped) {
           totalSkipped++;

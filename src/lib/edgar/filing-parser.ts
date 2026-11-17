@@ -87,9 +87,9 @@ async function resolvePrimaryDocumentUrl(rawUrl: string): Promise<string> {
   }
 
   // Try the JSON index first for structured data
-  const jsonIndexUrl = rawUrl
-    .replace(/-index\.html?$/, "/index.json")
-    .replace(/\/index\.json$/, "/index.json");
+  // Use parent directory + index.json (not suffix replacement which creates a wrong subdirectory)
+  const dir = rawUrl.substring(0, rawUrl.lastIndexOf("/") + 1);
+  const jsonIndexUrl = dir + "index.json";
 
   await rateLimitWait();
 
@@ -110,6 +110,8 @@ async function resolvePrimaryDocumentUrl(rawUrl: string): Promise<string> {
 
       const items = index.directory?.item ?? [];
 
+      const basePath = rawUrl.substring(0, rawUrl.lastIndexOf("/") + 1);
+
       // Find the primary document: prefer .htm files that aren't the index
       const primaryDoc = items.find(
         (item) =>
@@ -119,8 +121,17 @@ async function resolvePrimaryDocumentUrl(rawUrl: string): Promise<string> {
       );
 
       if (primaryDoc) {
-        const basePath = rawUrl.substring(0, rawUrl.lastIndexOf("/") + 1);
         return basePath + primaryDoc.name;
+      }
+
+      // Form 4 and other XML-primary filings: find .xml file (not in xsl subdirectory)
+      const xmlDoc = items.find(
+        (item) =>
+          item.name.endsWith(".xml") &&
+          !item.name.includes("/")
+      );
+      if (xmlDoc) {
+        return basePath + xmlDoc.name;
       }
 
       // Fallback: first .txt file
@@ -128,12 +139,52 @@ async function resolvePrimaryDocumentUrl(rawUrl: string): Promise<string> {
         (item) => item.name.endsWith(".txt") && !item.name.includes("index")
       );
       if (txtDoc) {
-        const basePath = rawUrl.substring(0, rawUrl.lastIndexOf("/") + 1);
         return basePath + txtDoc.name;
       }
     }
   } catch {
-    // JSON index unavailable — fall through to use raw URL
+    // JSON index unavailable — fall through to HTML index parsing
+  }
+
+  // Fallback: parse the -index.htm page for document links
+  // Form 4 filings often lack index.json but the HTML index has links
+  try {
+    await rateLimitWait();
+    const indexResponse = await fetch(rawUrl, {
+      headers: {
+        "User-Agent": EDGAR_USER_AGENT,
+        Accept: "text/html",
+      },
+    });
+
+    if (indexResponse.ok) {
+      const indexHtml = await indexResponse.text();
+      const dir = rawUrl.substring(0, rawUrl.lastIndexOf("/") + 1);
+
+      // Look for .xml links (not XSLT-rendered) — common for Form 4
+      const xmlLinkMatch = indexHtml.match(/href="([^"]*\.xml)"/gi);
+      if (xmlLinkMatch) {
+        for (const match of xmlLinkMatch) {
+          const href = match.replace(/^href="/i, "").replace(/"$/, "");
+          if (!href.includes("/xsl")) {
+            return href.startsWith("http") ? href : "https://www.sec.gov" + href;
+          }
+        }
+      }
+
+      // Look for .htm links (not index)
+      const htmLinkMatch = indexHtml.match(/href="([^"]*\.htm[l]?)"/gi);
+      if (htmLinkMatch) {
+        for (const match of htmLinkMatch) {
+          const href = match.replace(/^href="/i, "").replace(/"$/, "");
+          if (!href.includes("index") && !href.startsWith("/index")) {
+            return href.startsWith("http") ? href : "https://www.sec.gov" + href;
+          }
+        }
+      }
+    }
+  } catch {
+    // Fall through to raw URL
   }
 
   return rawUrl;

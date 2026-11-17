@@ -94,6 +94,7 @@ function baseLayout(title: string, bodyHtml: string): string {
       <div class="footer">
         <p>Brefyr &mdash; AI-powered SEC filing intelligence for small-cap stocks.</p>
         <p><a href="${SITE_URL}/dashboard/settings" style="color:#71717a;">Manage email preferences</a></p>
+        <p style="font-size:10px;color:#d4d4d8;margin-top:8px;">Brefyr &middot; This email contains SEC filing data, not investment advice.</p>
       </div>
     </div>
   </div>
@@ -265,7 +266,7 @@ export async function sendWelcomeEmail(
     for US small-cap stocks.</p>
     <p>Here's how to get started:</p>
     <ol>
-      <li><strong>Add stocks to your watchlist</strong> &mdash; track up to ${3} companies on the free plan.</li>
+      <li><strong>Add stocks to your watchlist</strong> &mdash; track up to 5 companies on the free plan, or 50 during your 30-day trial.</li>
       <li><strong>Get filing alerts</strong> &mdash; we'll notify you when new SEC filings are detected for your stocks.</li>
       <li><strong>Read AI analysis</strong> &mdash; every filing gets an instant AI-generated summary and significance score.</li>
     </ol>
@@ -282,5 +283,62 @@ export async function sendWelcomeEmail(
     to,
     subject,
     html: baseLayout("Welcome to Brefyr", body),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Newsletter Brief — sends the daily filing brief to a subscriber
+// ---------------------------------------------------------------------------
+
+export async function sendNewsletterBrief(
+  to: string,
+  subject: string,
+  html: string,
+  unsubscribeUrl: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await getResend().emails.send({
+      from: `Brefyr Filing Brief <${fromAddress()}>`,
+      to,
+      subject,
+      html,
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Send failed";
+    return { success: false, error: message };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Newsletter confirmation email (double opt-in)
+// ---------------------------------------------------------------------------
+
+export async function sendNewsletterConfirmation(
+  to: string,
+  confirmUrl: string
+): Promise<void> {
+  const body = `
+    <p>Thanks for subscribing to <strong>The Filing Brief</strong> by Brefyr.</p>
+    <p>Click the button below to confirm your subscription:</p>
+    <p style="margin:24px 0;">
+      <a href="${confirmUrl}" class="btn" style="display:inline-block;padding:12px 24px;background:#16a34a;color:#fff;text-decoration:none;border-radius:6px;font-weight:600;font-size:14px;">
+        Confirm Subscription
+      </a>
+    </p>
+    <p style="font-size:13px;color:#71717a;">
+      If you didn&apos;t subscribe, you can ignore this email. This link expires in 48 hours.
+    </p>
+  `;
+
+  await getResend().emails.send({
+    from: fromAddress(),
+    to,
+    subject: "Confirm your subscription to The Filing Brief",
+    html: baseLayout("Confirm Your Subscription", body),
   });
 }

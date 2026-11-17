@@ -177,7 +177,7 @@ export default function AboutPage() {
           Start tracking your small-cap portfolio today
         </h2>
         <p className="text-muted-foreground">
-          Free plan includes 3 stocks. No credit card required.
+          Free plan includes 5 stocks. No credit card required.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Button size="lg" render={<Link href="/pricing" />}>

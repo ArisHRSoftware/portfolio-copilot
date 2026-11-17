@@ -1,25 +1,45 @@
+import crypto from "crypto";
 import { NextResponse } from "next/server";
 import { createWebhookClient } from "@/lib/supabase/server";
 import { validateEmail } from "@/lib/validation";
 import { headers } from "next/headers";
+import { Redis } from "@upstash/redis";
 
-const VALID_SOURCES = ["website", "content", "footer", "popup", "landing", "learn"] as const;
+const VALID_SOURCES = ["website", "content", "footer", "popup", "landing", "learn", "stock", "filing", "glossary", "glossary-index", "homepage", "recent-filings", "insider-buying", "trending"] as const;
 
-// Simple in-memory rate limiter (per-instance, resets on cold start)
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const RATE_LIMIT = 5; // max 5 subscribes per IP per hour
-const RATE_WINDOW = 60 * 60 * 1000; // 1 hour
+// ── Redis rate limiter (survives cold starts, works across instances) ──
 
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const entry = rateLimitMap.get(ip);
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW });
-    return true;
+let redis: Redis | null = null;
+function getRedis(): Redis | null {
+  if (redis) return redis;
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  redis = new Redis({ url, token });
+  return redis;
+}
+
+async function checkRateLimit(ip: string): Promise<boolean> {
+  const r = getRedis();
+  if (!r) return true; // Allow if Redis is unavailable (graceful fallback)
+
+  const key = `nl_rl:${ip}`;
+  try {
+    const count = await r.incr(key);
+    if (count === 1) {
+      // First request — set expiry to 1 hour
+      await r.expire(key, 3600);
+    }
+    return count <= 5;
+  } catch {
+    return true; // Allow on Redis error
   }
-  if (entry.count >= RATE_LIMIT) return false;
-  entry.count++;
-  return true;
+}
+
+// ── Confirm token generation ──
+
+function generateConfirmToken(): string {
+  return crypto.randomBytes(32).toString("hex");
 }
 
 export async function POST(request: Request) {
@@ -27,7 +47,7 @@ export async function POST(request: Request) {
     // Rate limit by IP
     const hdrs = await headers();
     const ip = hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-    if (!checkRateLimit(ip)) {
+    if (!(await checkRateLimit(ip))) {
       return NextResponse.json(
         { error: "Too many requests. Try again later." },
         { status: 429 }
@@ -59,14 +79,14 @@ export async function POST(request: Request) {
     // Check if already subscribed
     const { data: existing } = await supabase
       .from("newsletter_subscribers")
-      .select("*")
+      .select("id, email, unsubscribed_at, confirmed")
       .eq("email", email.toLowerCase())
       .single();
 
     if (existing) {
-      const sub = existing as { unsubscribed_at: string | null };
+      const sub = existing as { unsubscribed_at: string | null; confirmed: boolean };
       if (sub.unsubscribed_at) {
-        // Re-subscribe
+        // Re-subscribe — if they were previously confirmed, skip double opt-in
         await supabase
           .from("newsletter_subscribers")
           .update({ unsubscribed_at: null } as never)
@@ -74,16 +94,33 @@ export async function POST(request: Request) {
 
         return NextResponse.json({ status: "resubscribed" });
       }
+      if (!sub.confirmed) {
+        // Resend confirmation email
+        return NextResponse.json({ status: "confirmation_pending" });
+      }
       return NextResponse.json({ status: "already_subscribed" });
     }
 
-    // New subscriber
+    // New subscriber — insert with confirm token (double opt-in)
+    const confirmToken = generateConfirmToken();
     await supabase.from("newsletter_subscribers").insert({
       email: email.toLowerCase(),
       source: cleanSource,
+      confirmed: false,
+      confirm_token: confirmToken,
     } as never);
 
-    return NextResponse.json({ status: "subscribed" });
+    // Send confirmation email
+    try {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+      const confirmUrl = `${siteUrl}/api/newsletter/confirm?token=${confirmToken}`;
+      const { sendNewsletterConfirmation } = await import("@/lib/resend");
+      await sendNewsletterConfirmation(email, confirmUrl);
+    } catch (emailErr) {
+      console.error("Failed to send confirmation email:", emailErr instanceof Error ? emailErr.message : emailErr);
+    }
+
+    return NextResponse.json({ status: "confirmation_sent" });
   } catch {
     return NextResponse.json(
       { error: "Failed to subscribe" },

@@ -35,8 +35,6 @@ import {
 } from "lucide-react";
 import { NotificationBell } from "@/components/notification-bell";
 
-export const dynamic = "force-dynamic";
-
 const NAV_ITEMS = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { title: "Portfolio", href: "/portfolio", icon: Briefcase },

@@ -20,7 +20,7 @@ export async function POST(request: Request): Promise<Response> {
     while (true) {
       const { data } = await supabase
         .from("user_stocks")
-        .select("*")
+        .select("user_id, company_id")
         .range(stockOffset, stockOffset + PAGE_SIZE - 1);
       const batch = (data ?? []) as Array<{
         user_id: string;
@@ -58,7 +58,7 @@ export async function POST(request: Request): Promise<Response> {
     while (true) {
       const { data } = await supabase
         .from("filings")
-        .select("*")
+        .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, insider_data")
         .eq("filing_type", "4")
         .not("insider_data", "is", null)
         .gte("filed_date", sixHoursAgo.split("T")[0])
@@ -86,7 +86,7 @@ export async function POST(request: Request): Promise<Response> {
       const chunk = companyIds.slice(i, i + PAGE_SIZE);
       const { data } = await supabase
         .from("companies")
-        .select("*")
+        .select("id, ticker, name, sector")
         .in("id", chunk);
       companies.push(...((data ?? []) as Company[]));
     }

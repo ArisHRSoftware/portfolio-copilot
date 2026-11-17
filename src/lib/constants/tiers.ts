@@ -1,7 +1,7 @@
 export const TIERS = {
   free: {
     name: "Free",
-    stocks: 3,
+    stocks: 5,
     alertRules: 0,
     digest: "weekly",
     screener: false,

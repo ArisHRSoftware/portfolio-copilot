@@ -145,19 +145,19 @@ describe("canTrackMoreStocks", () => {
     });
   }
 
-  describe("free tier (limit 3)", () => {
+  describe("free tier (limit 5)", () => {
     it("returns true when user has fewer stocks than the limit", async () => {
-      const sb = buildSupabaseForStocks(activeSubscription("free"), 2);
+      const sb = buildSupabaseForStocks(activeSubscription("free"), 4);
       expect(await canTrackMoreStocks(sb, USER_ID)).toBe(true);
     });
 
     it("returns false when user has reached the limit", async () => {
-      const sb = buildSupabaseForStocks(activeSubscription("free"), 3);
+      const sb = buildSupabaseForStocks(activeSubscription("free"), 5);
       expect(await canTrackMoreStocks(sb, USER_ID)).toBe(false);
     });
 
     it("returns false when user exceeds the limit", async () => {
-      const sb = buildSupabaseForStocks(activeSubscription("free"), 5);
+      const sb = buildSupabaseForStocks(activeSubscription("free"), 7);
       expect(await canTrackMoreStocks(sb, USER_ID)).toBe(false);
     });
 
@@ -212,19 +212,19 @@ describe("canTrackMoreStocks", () => {
 
   describe("edge cases", () => {
     it("expired subscription falls back to free limit", async () => {
-      const sb = buildSupabaseForStocks(expiredSubscription("pro"), 3);
-      // Expired pro -> free -> limit 3, count 3 -> false
+      const sb = buildSupabaseForStocks(expiredSubscription("pro"), 5);
+      // Expired pro -> free -> limit 5, count 5 -> false
       expect(await canTrackMoreStocks(sb, USER_ID)).toBe(false);
     });
 
     it("cancelled subscription falls back to free limit", async () => {
-      const sb = buildSupabaseForStocks(cancelledSubscription("plus"), 2);
-      // Cancelled -> free -> limit 3, count 2 -> true
+      const sb = buildSupabaseForStocks(cancelledSubscription("plus"), 4);
+      // Cancelled -> free -> limit 5, count 4 -> true
       expect(await canTrackMoreStocks(sb, USER_ID)).toBe(true);
     });
 
     it("no subscription row falls back to free limit", async () => {
-      const sb = buildSupabaseForStocks(noSubscription(), 3);
+      const sb = buildSupabaseForStocks(noSubscription(), 5);
       expect(await canTrackMoreStocks(sb, USER_ID)).toBe(false);
     });
   });

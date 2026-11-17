@@ -18,7 +18,7 @@ import { BreadcrumbSchema } from "@/components/json-ld";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 import { NewsletterForm } from "@/components/newsletter-form";
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata: Metadata = {
   title: "Blog — Small-Cap Investing Insights",

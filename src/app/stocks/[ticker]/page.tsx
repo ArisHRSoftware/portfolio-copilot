@@ -39,6 +39,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { sectorNameToSlug } from "@/lib/constants/sectors";
 import { formatJurisdiction } from "@/lib/utils";
+import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const dynamicParams = true;
 export const revalidate = 86400;
@@ -623,6 +624,8 @@ export default async function StockPage({
       </div>
 
       <LastUpdatedFooter date={mostRecentFilingDate} />
+
+      <NewsletterCTA source="stock" />
 
       {/* Financial Disclaimer */}
       <Separator />

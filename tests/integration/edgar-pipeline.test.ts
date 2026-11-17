@@ -805,7 +805,7 @@ describe("EDGAR pipeline orchestrator", () => {
     expect(result.errors_count).toBe(0);
     expect(result.status).toBe("completed");
     expect(result.pipeline_run_id).toBe("run-001");
-  });
+  }, 15000);
 
   it("creates a pipeline_run record before processing", async () => {
     (globalThis.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({

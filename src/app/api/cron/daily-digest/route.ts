@@ -60,7 +60,7 @@ export async function POST(request: Request): Promise<Response> {
     while (true) {
       const { data } = await supabase
         .from("filings")
-        .select("*")
+        .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, insider_data")
         .gte("filed_date", cutoff.split("T")[0])
         .is("superseded_by", null)
         .order("filed_date", { ascending: false })
@@ -85,7 +85,7 @@ export async function POST(request: Request): Promise<Response> {
     const companyIds = [...new Set(filings.map((f) => f.company_id))];
     const { data: companiesData } = await supabase
       .from("companies")
-      .select("*")
+      .select("id, ticker, name, sector")
       .in("id", companyIds);
 
     const companies = (companiesData ?? []) as Company[];

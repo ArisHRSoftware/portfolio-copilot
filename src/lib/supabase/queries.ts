@@ -399,6 +399,65 @@ export async function getPipelineRuns(supabase: Supabase, limit = 20) {
   return (data ?? []) as PipelineRun[];
 }
 
+// ─── Homepage live data ─────────────────────────────────────────
+
+export interface HomepageStats {
+  totalFilingsThisWeek: number;
+  totalFilingsAllTime: number;
+  insiderTradesThisWeek: number;
+  highSignificanceCount: number;
+  lastUpdated: string;
+}
+
+export async function getHomepageStats(supabase: Supabase): Promise<HomepageStats> {
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekStr = weekAgo.toISOString().split("T")[0];
+
+  const [totalRes, allTimeRes, insiderRes, highSigRes] = await Promise.all([
+    supabase
+      .from("filings")
+      .select("id", { count: "exact", head: true })
+      .gte("filed_date", weekStr)
+      .is("superseded_by", null),
+    supabase
+      .from("filings")
+      .select("id", { count: "exact", head: true })
+      .is("superseded_by", null),
+    supabase
+      .from("filings")
+      .select("id", { count: "exact", head: true })
+      .gte("filed_date", weekStr)
+      .is("superseded_by", null)
+      .not("insider_data", "is", null),
+    supabase
+      .from("filings")
+      .select("id", { count: "exact", head: true })
+      .gte("filed_date", weekStr)
+      .is("superseded_by", null)
+      .gte("significance_score", 7),
+  ]);
+
+  return {
+    totalFilingsThisWeek: totalRes.count ?? 0,
+    totalFilingsAllTime: allTimeRes.count ?? 0,
+    insiderTradesThisWeek: insiderRes.count ?? 0,
+    highSignificanceCount: highSigRes.count ?? 0,
+    lastUpdated: new Date().toISOString(),
+  };
+}
+
+export async function getRecentInsiderTrades(supabase: Supabase, limit = 5) {
+  const { data } = await supabase
+    .from("filings")
+    .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, insider_data")
+    .not("insider_data", "is", null)
+    .is("superseded_by", null)
+    .order("filed_date", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as Filing[];
+}
+
 export type PipelineError = Tables["pipeline_errors"]["Row"];
 
 export async function getPipelineErrors(

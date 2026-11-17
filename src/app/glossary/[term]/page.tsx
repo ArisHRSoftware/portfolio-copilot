@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { ArticleLayout } from "@/components/content/article-layout";
 import { ArticleSchema, BreadcrumbSchema, FAQSchema } from "@/components/json-ld";
 import { Button } from "@/components/ui/button";
+import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const revalidate = 86400;
 
@@ -125,6 +126,8 @@ export default async function GlossaryTermPage({
             Learn SEC Filings
           </Button>
         </div>
+
+        <NewsletterCTA source="glossary" />
       </main>
     </>
   );

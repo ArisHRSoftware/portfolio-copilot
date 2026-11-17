@@ -111,6 +111,59 @@ export default async function DashboardPage() {
         </p>
       </div>
 
+      {/* Trial Banner with upgrade CTA and urgency */}
+      {subscription?.status === "trialing" && subscription.current_period_end && (() => {
+        const daysLeft = Math.max(
+          0,
+          Math.ceil(
+            (new Date(subscription.current_period_end).getTime() -
+              Date.now()) /
+              (1000 * 60 * 60 * 24)
+          )
+        );
+        const isUrgent = daysLeft <= 7;
+        const isCritical = daysLeft <= 3;
+        const borderColor = isCritical
+          ? "border-destructive/50 bg-destructive/5"
+          : isUrgent
+            ? "border-yellow-500/30 bg-yellow-500/5"
+            : "border-primary/30 bg-primary/5";
+
+        return (
+          <div className={`rounded-lg border ${borderColor} px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3`}>
+            <div className="flex items-start sm:items-center gap-2">
+              <Zap className={`size-4 shrink-0 mt-0.5 sm:mt-0 ${isCritical ? "text-destructive" : "text-primary"}`} />
+              <div className="text-sm">
+                <span className={`font-medium ${isCritical ? "text-destructive" : "text-primary"}`}>
+                  Plus Trial — {daysLeft} day{daysLeft !== 1 ? "s" : ""} left
+                </span>
+                {isCritical ? (
+                  <p className="text-muted-foreground mt-0.5">
+                    You&apos;re tracking {stocksUsed} stock{stocksUsed !== 1 ? "s" : ""}. Free plan allows {TIERS.free.stocks}. Upgrade to keep your full watchlist.
+                  </p>
+                ) : isUrgent ? (
+                  <p className="text-muted-foreground mt-0.5">
+                    Your trial ends soon. Keep 50 stocks, daily digests, and screener access.
+                  </p>
+                ) : (
+                  <p className="text-muted-foreground mt-0.5">
+                    Enjoy 50 stocks, daily digests, and screener access.
+                  </p>
+                )}
+              </div>
+            </div>
+            <Button
+              variant={isCritical ? "destructive" : "default"}
+              size="sm"
+              className="shrink-0"
+              render={<Link href="/pricing" />}
+            >
+              {isCritical ? "Upgrade Now" : "See Plans"}
+            </Button>
+          </div>
+        );
+      })()}
+
       {/* Today's Briefing */}
       <Card>
         <CardHeader>
@@ -405,11 +458,13 @@ export default async function DashboardPage() {
             </div>
           </div>
         </CardContent>
-        {tierInfo.tier === "free" && (
+        {(tierInfo.tier === "free" || subscription?.status === "trialing") && (
           <CardFooter>
             <div className="flex w-full items-center justify-between">
               <span className="text-xs text-muted-foreground">
-                Unlock more stocks and real-time alerts
+                {subscription?.status === "trialing"
+                  ? "Subscribe to keep your Plus features after the trial"
+                  : "Unlock more stocks and real-time alerts"}
               </span>
               <Button
                 variant="outline"
@@ -417,7 +472,7 @@ export default async function DashboardPage() {
                 render={<Link href="/pricing" />}
               >
                 <Zap className="size-3.5" />
-                Upgrade
+                {subscription?.status === "trialing" ? "Subscribe" : "Upgrade"}
               </Button>
             </div>
           </CardFooter>
