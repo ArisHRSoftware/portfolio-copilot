@@ -4,6 +4,9 @@ import { sendFilingAlert } from "@/lib/resend";
 import type { FilingEmailData } from "@/lib/resend";
 import type { Filing, Company } from "@/lib/supabase/queries";
 
+// CPU budget: ~8s avg per invocation.
+// Recommended QStash schedule: "0 18,2 * * 1-5" (2x/day weekdays = 2pm+10pm ET)
+// Form 4s only published on trading days. 44 invocations/month × 8s = 0.1h.
 export const maxDuration = 300;
 
 export async function POST(request: Request): Promise<Response> {

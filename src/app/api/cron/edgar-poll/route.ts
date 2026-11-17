@@ -3,6 +3,10 @@ import type { Database } from "@/lib/types/database";
 import { processNewFilings } from "@/lib/edgar/pipeline";
 import { verifyQStash } from "@/lib/qstash";
 
+// CPU budget: ~90s avg per invocation.
+// Recommended QStash schedule: "0 10,14,18,22 * * 1-5" (4x/day weekdays only)
+// At 88 invocations/month × 90s = 2.2h of the 4h Hobby limit.
+// DO NOT run hourly — that alone exceeds the entire monthly budget.
 export const maxDuration = 300;
 
 async function handler(_request: Request): Promise<Response> {

@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Next.js runtime is auto-detected by Netlify
+# @netlify/plugin-nextjs is auto-installed
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy-policy"
+  status = 301

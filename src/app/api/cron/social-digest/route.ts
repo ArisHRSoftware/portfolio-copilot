@@ -4,7 +4,9 @@ import type { Database } from "@/lib/types/database";
 
 type ContentQueueRow = Database["public"]["Tables"]["content_queue"]["Row"];
 
-// Schedule: Daily 2pm UTC via QStash
+// Schedule: PAUSED — Twitter API keys not configured.
+// Re-enable in QStash when TWITTER_API_KEY is set.
+// Original schedule: Daily 2pm UTC via QStash
 
 export async function POST(request: Request): Promise<Response> {
   const qstashError = await verifyQStash(request);
