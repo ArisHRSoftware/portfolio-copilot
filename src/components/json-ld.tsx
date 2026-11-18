@@ -71,16 +71,18 @@ export function ArticleSchema({
   authorName?: string;
   locale?: "en" | "hi";
 }) {
-  const urlPrefix = slug.startsWith("glossary/") || slug.startsWith("learn/")
-    ? locale === "hi" ? `${siteUrl}/hi/${slug}` : `${siteUrl}/${slug}`
-    : `${siteUrl}/blog/${slug}`;
+  const articleUrl = slug.startsWith("hi/")
+    ? `${siteUrl}/${slug}`
+    : slug.startsWith("glossary/") || slug.startsWith("learn/")
+      ? locale === "hi" ? `${siteUrl}/hi/${slug}` : `${siteUrl}/${slug}`
+      : `${siteUrl}/blog/${slug}`;
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: title,
     description,
     inLanguage: locale,
-    url: urlPrefix,
+    url: articleUrl,
     publisher: {
       "@type": "Organization",
       name: "Brefyr",
