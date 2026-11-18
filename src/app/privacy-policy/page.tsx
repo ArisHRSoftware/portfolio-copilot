@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "Brefyr privacy policy. Learn how we collect, use, and protect your data.",
+  alternates: {
+    canonical: "/privacy-policy",
+    languages: { en: "/privacy-policy", hi: "/hi/privacy-policy", "x-default": "/privacy-policy" },
+  },
   openGraph: {
     title: "Privacy Policy | Brefyr",
     description:

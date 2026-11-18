@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Financial Glossary — SEC Filing & Investing Terms",
   description:
     "A comprehensive glossary of SEC filing terms, investing terminology, and financial definitions. Learn the language of SEC filings and small-cap investing.",
+  alternates: {
+    canonical: "/glossary",
+    languages: { en: "/glossary", hi: "/hi/glossary", "x-default": "/glossary" },
+  },
   openGraph: {
     title: "Financial Glossary — SEC Filing & Investing Terms | Brefyr",
     description:

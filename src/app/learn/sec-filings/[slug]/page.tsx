@@ -44,6 +44,11 @@ export async function generateMetadata({
     description: desc,
     alternates: {
       canonical: `/learn/sec-filings/${article.slug}`,
+      languages: {
+        'en': `/learn/sec-filings/${article.slug}`,
+        'hi': `/hi/learn/sec-filings/${article.slug}`,
+        'x-default': `/learn/sec-filings/${article.slug}`,
+      },
     },
     openGraph: {
       title: `${article.title} — Learn SEC Filings | Brefyr`,

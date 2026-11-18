@@ -47,6 +47,10 @@ export const metadata: Metadata = {
   title: "Pricing — Plans for Every Investor",
   description:
     "Choose the right Brefyr plan. From free SEC filing alerts for 5 stocks to unlimited analysis, insider trade alerts, and API access for professionals.",
+  alternates: {
+    canonical: "/pricing",
+    languages: { en: "/pricing", hi: "/hi/pricing", "x-default": "/pricing" },
+  },
   openGraph: {
     title: "Pricing — Plans for Every Investor | Brefyr",
     description:

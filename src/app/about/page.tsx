@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "About — SEC Filing Analysis for Small-Cap Investors",
   description:
     "Brefyr analyzes SEC filings for 7,600+ US small-cap stocks that Wall Street ignores. Get instant summaries, insider trade alerts, and significance scores.",
+  alternates: {
+    canonical: "/about",
+    languages: { en: "/about", hi: "/hi/about", "x-default": "/about" },
+  },
   openGraph: {
     title: "About Brefyr",
     description:

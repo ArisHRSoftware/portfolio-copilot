@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: "Insider Trading Patterns — Form 4 Analysis & Signals",
   description:
     "Learn how to interpret insider buying and selling signals from SEC Form 4 filings. Covers purchase evaluation, selling analysis, cluster buying patterns, and systematic insider trading screens.",
+  alternates: {
+    canonical: "/learn/insider-trading",
+    languages: { en: "/learn/insider-trading", hi: "/hi/learn/insider-trading", "x-default": "/learn/insider-trading" },
+  },
   openGraph: {
     title: "Insider Trading Patterns — Form 4 Analysis & Signals | Brefyr",
     description:

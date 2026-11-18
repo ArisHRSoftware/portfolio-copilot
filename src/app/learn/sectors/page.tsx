@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: "Sector Analysis — How to Evaluate Companies by Industry",
   description:
     "Industry-specific guides to analyzing SEC filings. Learn the metrics, red flags, and accounting nuances for technology, healthcare, financial, and energy sector stocks.",
+  alternates: {
+    canonical: "/learn/sectors",
+    languages: { en: "/learn/sectors", hi: "/hi/learn/sectors", "x-default": "/learn/sectors" },
+  },
   openGraph: {
     title: "Sector Analysis — Industry SEC Filing Guides | Brefyr",
     description:

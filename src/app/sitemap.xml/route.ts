@@ -9,6 +9,7 @@ export async function GET() {
     { loc: `${siteUrl}/sitemap-stocks.xml`, lastmod: now },
     { loc: `${siteUrl}/sitemap-filings-1.xml`, lastmod: now },
     { loc: `${siteUrl}/sitemap-filings-2.xml`, lastmod: now },
+    { loc: `${siteUrl}/sitemap-pages-hi.xml`, lastmod: now },
   ]);
 
   return new NextResponse(xml, {

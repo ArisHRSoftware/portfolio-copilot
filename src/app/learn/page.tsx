@@ -19,6 +19,10 @@ export const metadata: Metadata = {
   title: "Learn — SEC Filing Education & Investing Guides",
   description:
     "Free educational resources for understanding SEC filings, investing terminology, and small-cap stock analysis. Beginner-friendly guides and a comprehensive financial glossary.",
+  alternates: {
+    canonical: "/learn",
+    languages: { en: "/learn", hi: "/hi/learn", "x-default": "/learn" },
+  },
   openGraph: {
     title: "Learn — SEC Filing Education & Investing Guides | Brefyr",
     description:

@@ -19,6 +19,10 @@ export interface GlossaryTerm extends ContentPage {
   relatedTerms: string[]; // Slugs of related glossary entries
 }
 
+export interface CompanyGuide extends ContentPage {
+  ticker: string;
+}
+
 export interface LearnArticle extends ContentPage {
   pillar: "sec-filings" | "sectors" | "states" | "stocks" | "insider-trading";
   readingTime: number; // minutes

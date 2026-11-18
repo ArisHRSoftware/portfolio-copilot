@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   title: "Learn SEC Filings — Education & Guides",
   description:
     "Learn how to read and analyze SEC filings. Beginner-friendly guides covering 10-K, 10-Q, 8-K, proxy statements, and insider trading forms.",
+  alternates: {
+    canonical: "/learn/sec-filings",
+    languages: { en: "/learn/sec-filings", hi: "/hi/learn/sec-filings", "x-default": "/learn/sec-filings" },
+  },
   openGraph: {
     title: "Learn SEC Filings — Education & Guides | Brefyr",
     description:

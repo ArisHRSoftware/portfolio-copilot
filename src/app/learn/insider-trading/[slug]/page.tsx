@@ -44,6 +44,11 @@ export async function generateMetadata({
     description: desc,
     alternates: {
       canonical: `/learn/insider-trading/${article.slug}`,
+      languages: {
+        'en': `/learn/insider-trading/${article.slug}`,
+        'hi': `/hi/learn/insider-trading/${article.slug}`,
+        'x-default': `/learn/insider-trading/${article.slug}`,
+      },
     },
     openGraph: {
       title: `${article.title} — Insider Trading Patterns | Brefyr`,

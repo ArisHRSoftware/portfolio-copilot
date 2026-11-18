@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   title: "Terms of Service",
   description:
     "Brefyr terms of service. Read our terms governing the use of our AI-powered SEC filing analysis platform.",
+  alternates: {
+    canonical: "/terms",
+    languages: { en: "/terms", hi: "/hi/terms", "x-default": "/terms" },
+  },
   openGraph: {
     title: "Terms of Service | Brefyr",
     description:

@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "Disclaimer — Brefyr",
   description:
     "Important disclaimers regarding Brefyr's AI-powered SEC filing analysis. Not financial advice. Consult a qualified financial advisor before making investment decisions.",
+  alternates: {
+    canonical: "/disclaimer",
+    languages: { en: "/disclaimer", hi: "/hi/disclaimer", "x-default": "/disclaimer" },
+  },
   openGraph: {
     title: "Disclaimer | Brefyr",
     description:

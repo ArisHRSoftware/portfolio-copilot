@@ -44,6 +44,11 @@ export async function generateMetadata({
     description: desc,
     alternates: {
       canonical: `/learn/sectors/${article.slug}`,
+      languages: {
+        'en': `/learn/sectors/${article.slug}`,
+        'hi': `/hi/learn/sectors/${article.slug}`,
+        'x-default': `/learn/sectors/${article.slug}`,
+      },
     },
     openGraph: {
       title: `${article.title} — Sector Analysis | Brefyr`,

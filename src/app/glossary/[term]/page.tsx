@@ -45,6 +45,11 @@ export async function generateMetadata({
     description: desc,
     alternates: {
       canonical: `/glossary/${entry.slug}`,
+      languages: {
+        'en': `/glossary/${entry.slug}`,
+        'hi': `/hi/glossary/${entry.slug}`,
+        'x-default': `/glossary/${entry.slug}`,
+      },
     },
     openGraph: {
       title: `${entry.term} — Financial Glossary | Brefyr`,

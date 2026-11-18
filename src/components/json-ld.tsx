@@ -61,6 +61,7 @@ export function ArticleSchema({
   publishedAt,
   modifiedAt,
   authorName,
+  locale = "en",
 }: {
   title: string;
   description: string;
@@ -68,13 +69,18 @@ export function ArticleSchema({
   publishedAt: string | null;
   modifiedAt?: string | null;
   authorName?: string;
+  locale?: "en" | "hi";
 }) {
+  const urlPrefix = slug.startsWith("glossary/") || slug.startsWith("learn/")
+    ? locale === "hi" ? `${siteUrl}/hi/${slug}` : `${siteUrl}/${slug}`
+    : `${siteUrl}/blog/${slug}`;
   const data: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: title,
     description,
-    url: `${siteUrl}/blog/${slug}`,
+    inLanguage: locale,
+    url: urlPrefix,
     publisher: {
       "@type": "Organization",
       name: "Brefyr",
@@ -96,13 +102,16 @@ export function ArticleSchema({
 /** FAQPage schema — use on filing pages that contain FAQ data */
 export function FAQSchema({
   questions,
+  locale = "en",
 }: {
   questions: Array<{ question: string; answer: string }>;
+  locale?: "en" | "hi";
 }) {
   if (questions.length === 0) return null;
   const data = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
+    inLanguage: locale,
     mainEntity: questions.map((q) => ({
       "@type": "Question",
       name: q.question,
