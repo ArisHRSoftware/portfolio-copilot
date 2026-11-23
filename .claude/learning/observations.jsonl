@@ -507,3 +507,17 @@
 {"timestamp":"2026-11-23T11:06:43.867Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
 {"timestamp":"2026-11-23T11:14:30.503Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
 {"timestamp":"2026-11-23T11:15:23.539Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T11:33:15.567Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T12:12:44.065Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"id":"obs_1795436063806_f3ca689hu","timestamp":"2026-11-23T12:14:23.806Z","type":"test_pattern","data":{"test_tier":"unit","test_path":null,"is_pytest":false,"command_flags":[]},"context":{"session_id":"unknown","cwd":"C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web","framework":"unknown"}}
+{"id":"obs_1795436114867_s5zqt2p35","timestamp":"2026-11-23T12:15:14.867Z","type":"test_pattern","data":{"test_tier":"unit","test_path":null,"is_pytest":false,"command_flags":[]},"context":{"session_id":"unknown","cwd":"C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web","framework":"unknown"}}
+{"timestamp":"2026-11-23T12:16:46.864Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T15:50:35.624Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T16:04:08.135Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T16:14:26.480Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T16:24:50.506Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T16:45:29.131Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T16:51:47.031Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"timestamp":"2026-11-23T16:56:10.463Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"id":"obs_1795453289778_sl8bity0k","timestamp":"2026-11-23T17:01:29.778Z","type":"test_pattern","data":{"test_tier":"unit","test_path":null,"is_pytest":false,"command_flags":[]},"context":{"session_id":"unknown","cwd":"C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web","framework":"unknown"}}
+{"timestamp":"2026-11-23T17:03:33.789Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
