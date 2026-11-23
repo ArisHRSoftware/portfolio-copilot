@@ -524,3 +524,4 @@
 {"id":"obs_1795453801264_hq0xgp57m","timestamp":"2026-11-23T17:10:01.264Z","type":"test_pattern","data":{"test_tier":"unit","test_path":null,"is_pytest":false,"command_flags":[]},"context":{"session_id":"unknown","cwd":"C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web","framework":"unknown"}}
 {"timestamp":"2026-11-23T17:18:32.151Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
 {"timestamp":"2026-11-23T17:18:44.753Z","type":"stop","session_id":"4eb030c3-e240-4f83-b075-ce9671fdf6d6","reason":"signal","success":true}
+{"id":"obs_1795455701014_509i0xayy","timestamp":"2026-11-23T17:41:41.014Z","type":"test_pattern","data":{"test_tier":"unit","test_path":null,"is_pytest":false,"command_flags":[]},"context":{"session_id":"unknown","cwd":"C:\\Users\\MONICA\\Desktop\\Avinash\\LeadGenSoftware\\apps\\web","framework":"unknown"}}

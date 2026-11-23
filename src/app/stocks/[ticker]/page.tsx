@@ -42,10 +42,7 @@ import { formatJurisdiction } from "@/lib/utils";
 import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const dynamicParams = true;
-// 24h ISR. Stock pages use searchParams (pagination) so can't be fully static.
-// Each page renders once per day max. generateStaticParams returns [] to avoid
-// build-time Supabase queries — pages generate on first visit instead.
-export const revalidate = 86400;
+export const dynamic = "force-dynamic";
 
 export async function generateStaticParams() {
   return [];
