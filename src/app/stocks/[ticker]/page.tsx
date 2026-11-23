@@ -42,12 +42,16 @@ import { formatJurisdiction } from "@/lib/utils";
 import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const dynamicParams = true;
-export const revalidate = 86400;
+// revalidate = false: stock pages only refresh via on-demand revalidatePath()
+// when the EDGAR pipeline processes a new filing. Zero background ISR queries.
+// This eliminates Supabase egress from visitor/bot traffic on stock pages.
+export const revalidate = false;
 
+// Return empty array: don't query Supabase at build time.
+// Pages are generated on-demand on first visit, then cached forever
+// until a new filing triggers revalidatePath().
 export async function generateStaticParams() {
-  const supabase = createStaticClient();
-  const companies = await getTopCompanies(supabase, 100);
-  return companies.map((c) => ({ ticker: c.ticker.toLowerCase() }));
+  return [];
 }
 
 export async function generateMetadata({
@@ -59,10 +63,20 @@ export async function generateMetadata({
   const upperTicker = ticker.toUpperCase().split(",")[0].trim();
 
   const supabase = createStaticClient();
-  const company = await getCompanyByTicker(supabase, upperTicker);
-  const filings = company
-    ? await getRecentFilings(supabase, { companyId: company.id, limit: 1 })
-    : [];
+  let company: Company | null = null;
+  let filings: Filing[] = [];
+  try {
+    company = await getCompanyByTicker(supabase, upperTicker);
+    filings = company
+      ? await getRecentFilings(supabase, { companyId: company.id, limit: 1 })
+      : [];
+  } catch {
+    // Supabase down — return generic metadata
+    return {
+      title: `${upperTicker} — SEC Filings | Brefyr`,
+      description: `SEC filing analysis for ${upperTicker}. Insider trades, AI summaries, significance scores.`,
+    };
+  }
 
   const companyName = company?.name ?? upperTicker;
   const sector = company?.sector ?? "";
@@ -223,9 +237,21 @@ export default async function StockPage({
   }
 
   const supabase = createStaticClient();
-  const company = await getCompanyByTicker(supabase, cleanTicker);
 
-  if (!company) {
+  // Graceful degradation: if Supabase is down (egress exceeded, maintenance),
+  // show a helpful fallback instead of 500. Site never crashes.
+  let company: Company | null = null;
+  let totalFilingCount = 0;
+  let filings: Filing[] = [];
+  let supabaseDown = false;
+
+  try {
+    company = await getCompanyByTicker(supabase, cleanTicker);
+  } catch {
+    supabaseDown = true;
+  }
+
+  if (!company && !supabaseDown) {
     return (
       <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 py-16">
         <h1 className="text-3xl font-bold">Stock Not Found</h1>
@@ -239,14 +265,36 @@ export default async function StockPage({
     );
   }
 
-  const [totalFilingCount, filings] = await Promise.all([
-    countFilings(supabase, { companyId: company.id }),
-    getRecentFilings(supabase, {
-      companyId: company.id,
-      limit: PER_PAGE,
-      offset: (page - 1) * PER_PAGE,
-    }),
-  ]);
+  if (supabaseDown || !company) {
+    return (
+      <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 py-16">
+        <SiteHeader />
+        <h1 className="text-3xl font-bold">{cleanTicker} — SEC Filings</h1>
+        <p className="text-muted-foreground">
+          Filing data is temporarily being refreshed. Please check back shortly.
+        </p>
+        <div className="flex gap-3">
+          <Button render={<Link href="/glossary" />}>Browse Glossary</Button>
+          <Button variant="outline" render={<Link href="/trending" />}>Trending Stocks</Button>
+        </div>
+      </main>
+    );
+  }
+
+  try {
+    [totalFilingCount, filings] = await Promise.all([
+      countFilings(supabase, { companyId: company.id }),
+      getRecentFilings(supabase, {
+        companyId: company.id,
+        limit: PER_PAGE,
+        offset: (page - 1) * PER_PAGE,
+      }),
+    ]);
+  } catch {
+    // Supabase query failed mid-page — show company info with empty filings
+    totalFilingCount = 0;
+    filings = [];
+  }
 
   const totalPages = Math.ceil(totalFilingCount / PER_PAGE);
 

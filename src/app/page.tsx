@@ -50,18 +50,34 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const supabase = createStaticClient();
-  const [companies, recentFilings, stats, insiderTrades] = await Promise.all([
-    getTopCompanies(supabase, 8),
-    getRecentFilings(supabase, { limit: 6, minSignificance: 6 }),
-    getHomepageStats(supabase),
-    getRecentInsiderTrades(supabase, 5),
-  ]);
+
+  // Graceful degradation: if Supabase is down, show page with empty data
+  let companies: Awaited<ReturnType<typeof getTopCompanies>> = [];
+  let recentFilings: Awaited<ReturnType<typeof getRecentFilings>> = [];
+  let stats: Awaited<ReturnType<typeof getHomepageStats>> = { totalFilingsAllTime: 0, totalFilingsThisWeek: 0, insiderTradesThisWeek: 0, highSignificanceCount: 0, lastUpdated: new Date().toISOString() };
+  let insiderTrades: Awaited<ReturnType<typeof getRecentInsiderTrades>> = [];
+
+  try {
+    [companies, recentFilings, stats, insiderTrades] = await Promise.all([
+      getTopCompanies(supabase, 8),
+      getRecentFilings(supabase, { limit: 6, minSignificance: 6 }),
+      getHomepageStats(supabase),
+      getRecentInsiderTrades(supabase, 5),
+    ]);
+  } catch {
+    // Supabase unavailable — page renders with empty/default data
+  }
 
   // Get company names for insider trades
-  const insiderWithCompanies = await getFilingsWithCompanies(
-    supabase,
-    insiderTrades
-  );
+  let insiderWithCompanies: Awaited<ReturnType<typeof getFilingsWithCompanies>> = [];
+  try {
+    insiderWithCompanies = await getFilingsWithCompanies(
+      supabase,
+      insiderTrades
+    );
+  } catch {
+    // Supabase unavailable — insider trades section will be empty
+  }
 
   return (
     <>
