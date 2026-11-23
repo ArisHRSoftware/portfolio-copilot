@@ -42,14 +42,11 @@ import { formatJurisdiction } from "@/lib/utils";
 import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const dynamicParams = true;
-// revalidate = false: stock pages only refresh via on-demand revalidatePath()
-// when the EDGAR pipeline processes a new filing. Zero background ISR queries.
-// This eliminates Supabase egress from visitor/bot traffic on stock pages.
-export const revalidate = false;
+// 24h ISR. Stock pages use searchParams (pagination) so can't be fully static.
+// Each page renders once per day max. generateStaticParams returns [] to avoid
+// build-time Supabase queries — pages generate on first visit instead.
+export const revalidate = 86400;
 
-// Return empty array: don't query Supabase at build time.
-// Pages are generated on-demand on first visit, then cached forever
-// until a new filing triggers revalidatePath().
 export async function generateStaticParams() {
   return [];
 }
