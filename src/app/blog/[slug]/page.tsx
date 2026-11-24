@@ -25,7 +25,7 @@ async function getPost(slug: string): Promise<BlogPost | null> {
   const supabase = createStaticClient();
   const { data: post, error } = await supabase
     .from("blog_posts")
-    .select("*")
+    .select("id, slug, title, meta_description, body, published_at, auto_generated")
     .eq("slug", slug)
     .not("published_at", "is", null)
     .maybeSingle();

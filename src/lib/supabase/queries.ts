@@ -22,7 +22,7 @@ type Supabase = SupabaseClient<Database>;
 export async function getCompanyByTicker(supabase: Supabase, ticker: string) {
   const { data } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, market_cap, exchange, cik_number, last_filing_date, status, sic_description, state_of_incorporation, filer_category, fiscal_year_end, description")
     .eq("ticker", ticker.toUpperCase())
     .single();
   return data as Company | null;
@@ -42,7 +42,7 @@ export async function getTopCompanies(supabase: Supabase, limit = 100) {
 export async function getFilingBySlug(supabase: Supabase, slug: string) {
   const { data: filing } = await supabase
     .from("filings")
-    .select("*")
+    .select("id, slug, filing_type, filed_date, accepted_date, company_id, accession_number, raw_url, ai_summary_json, ai_summary_prose, one_line_summary, significance_score, insider_data, has_earnings_data, superseded_by, processed_at, ai_enhanced_at")
     .eq("slug", slug)
     .single();
 
@@ -50,7 +50,7 @@ export async function getFilingBySlug(supabase: Supabase, slug: string) {
 
   const { data: company } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, market_cap, exchange, cik_number, last_filing_date, status, sic_description, state_of_incorporation, filer_category, fiscal_year_end, description")
     .eq("id", (filing as Filing).company_id)
     .single();
 
@@ -224,7 +224,7 @@ export async function getTrendingStocks(supabase: Supabase, days = 7, limit = 10
 export async function getPublishedBlogPosts(supabase: Supabase) {
   const { data } = await supabase
     .from("blog_posts")
-    .select("id, slug, title, meta_description, published_at, auto_generated, body")
+    .select("id, slug, title, meta_description, published_at, auto_generated")
     .not("published_at", "is", null)
     .order("published_at", { ascending: false });
   return (data ?? []) as BlogPost[];
@@ -233,7 +233,7 @@ export async function getPublishedBlogPosts(supabase: Supabase) {
 export async function getNewsletterIssues(supabase: Supabase) {
   const { data } = await supabase
     .from("newsletter_issues")
-    .select("*")
+    .select("id, subject, sent_at, recipient_count, open_count, click_count")
     .not("sent_at", "is", null)
     .order("sent_at", { ascending: false });
   return (data ?? []) as NewsletterIssue[];
@@ -247,7 +247,7 @@ export type AlertRule = Tables["alert_rules"]["Row"];
 export async function getUserStocks(supabase: Supabase, userId: string) {
   const { data } = await supabase
     .from("user_stocks")
-    .select("*")
+    .select("id, user_id, company_id, added_at")
     .eq("user_id", userId)
     .order("added_at", { ascending: false });
   return (data ?? []) as UserStock[];
@@ -263,7 +263,7 @@ export async function getUserStocksWithCompanies(
   const companyIds = [...new Set(stocks.map((s) => s.company_id))];
   const { data: companies } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, exchange, market_cap, last_filing_date")
     .in("id", companyIds);
 
   const companyMap = new Map(
@@ -283,7 +283,7 @@ export async function getUserAlerts(
 ) {
   const { data } = await supabase
     .from("alerts")
-    .select("*")
+    .select("id, user_id, filing_id, alert_type, read, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(limit);
@@ -301,7 +301,7 @@ export async function getUserAlertsWithFilings(
   const filingIds = [...new Set(alerts.map((a) => a.filing_id))];
   const { data: filings } = await supabase
     .from("filings")
-    .select("*")
+    .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, insider_data")
     .in("id", filingIds);
 
   const filingMap = new Map(
@@ -313,7 +313,7 @@ export async function getUserAlertsWithFilings(
   ];
   const { data: companies } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, exchange")
     .in("id", companyIds.length > 0 ? companyIds : ["_none_"]);
 
   const companyMap = new Map(
@@ -333,7 +333,7 @@ export async function getUserAlertsWithFilings(
 export async function getUserSubscription(supabase: Supabase, userId: string) {
   const { data } = await supabase
     .from("subscriptions")
-    .select("*")
+    .select("id, user_id, plan, status, trial_ends_at, current_period_end, created_at")
     .eq("user_id", userId)
     .single();
   return data as Subscription | null;
@@ -342,7 +342,7 @@ export async function getUserSubscription(supabase: Supabase, userId: string) {
 export async function getUserProfile(supabase: Supabase, userId: string) {
   const { data } = await supabase
     .from("profiles")
-    .select("*")
+    .select("id, email, display_name, onboarding_completed, created_at")
     .eq("id", userId)
     .single();
   return data as Profile | null;
@@ -351,7 +351,7 @@ export async function getUserProfile(supabase: Supabase, userId: string) {
 export async function getUserAlertRules(supabase: Supabase, userId: string) {
   const { data } = await supabase
     .from("alert_rules")
-    .select("*")
+    .select("id, user_id, name, filing_types, min_significance, keywords, enabled, created_at")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   return (data ?? []) as AlertRule[];
@@ -364,7 +364,7 @@ export async function searchCompanies(
 ) {
   const { data } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, exchange, market_cap")
     .eq("status", "active")
     .or(`ticker.ilike.%${query.replace(/[%_\\]/g, (ch) => `\\${ch}`)}%,name.ilike.%${query.replace(/[%_\\]/g, (ch) => `\\${ch}`)}%`)
     .limit(limit);

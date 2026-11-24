@@ -42,7 +42,7 @@ import { formatJurisdiction } from "@/lib/utils";
 import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const dynamicParams = true;
-export const dynamic = "force-dynamic";
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,
