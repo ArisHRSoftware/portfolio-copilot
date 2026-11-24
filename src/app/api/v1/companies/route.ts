@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("companies")
-    .select("*")
+    .select("id, ticker, name, sector, market_cap, exchange, last_filing_date, status")
     .eq("status", "active")
     .order("ticker", { ascending: true })
     .range(offset, offset + limit - 1);

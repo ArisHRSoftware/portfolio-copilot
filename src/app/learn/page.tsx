@@ -55,14 +55,14 @@ const SECTIONS: {
     description:
       "How to evaluate companies in different sectors using SEC filings. Industry-specific metrics and red flags to watch.",
     href: "/learn/sectors",
-    available: false,
+    available: true,
   },
   {
     title: "Insider Trading Patterns",
     description:
       "Understanding insider buying and selling signals. How to interpret Form 4 filings and identify meaningful insider activity.",
     href: "/learn/insider-trading",
-    available: false,
+    available: true,
   },
 ];
 

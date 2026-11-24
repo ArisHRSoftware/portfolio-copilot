@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("filings")
-    .select("*")
+    .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, ai_summary_prose, has_earnings_data, insider_data, raw_url, superseded_by")
     .is("superseded_by", null)
     .gte("filed_date", startDate.toISOString().split("T")[0])
     .order("filed_date", { ascending: false })
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
   if (ticker) {
     const { data: company } = await supabase
       .from("companies")
-      .select("*")
+      .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, ai_summary_prose, has_earnings_data, insider_data, raw_url, superseded_by")
       .eq("ticker", ticker)
       .single();
 
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
   const companyIds = [...new Set(filings.map((f) => f.company_id))];
   const { data: companies } = await supabase
     .from("companies")
-    .select("*")
+    .select("id, slug, filing_type, filed_date, company_id, significance_score, one_line_summary, ai_summary_prose, has_earnings_data, insider_data, raw_url, superseded_by")
     .in("id", companyIds.length > 0 ? companyIds : ["_none_"]);
 
   const companyMap = new Map(
