@@ -23,7 +23,7 @@ export async function GET() {
     { url: `${siteUrl}/hi/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
     { url: `${siteUrl}/hi/privacy-policy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
 
-    // Hindi glossary terms (26)
+    // Hindi glossary terms (dynamic count)
     ...glossaryTermsHi.map((t) => ({
       url: `${siteUrl}/hi/glossary/${t.slug}`,
       lastModified: t.lastUpdated,

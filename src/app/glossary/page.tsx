@@ -130,7 +130,7 @@ export default function GlossaryIndexPage() {
           </>
         )}
 
-        <div className="flex items-center gap-3 pt-4">
+        <div className="flex flex-wrap items-center gap-3 pt-4">
           <Button variant="outline" render={<Link href="/learn" />}>
             Learning Hub
           </Button>
@@ -139,6 +139,12 @@ export default function GlossaryIndexPage() {
             render={<Link href="/learn/sec-filings" />}
           >
             SEC Filing Education
+          </Button>
+          <Button
+            variant="outline"
+            render={<Link href="/auth/signup" />}
+          >
+            Start Free — Track 5 Stocks
           </Button>
         </div>
 

@@ -16,6 +16,8 @@ export type SitemapEntry = {
  * Paginate through ALL rows in a Supabase table.
  * PostgREST caps each request at ~1,000 rows regardless of .limit().
  */
+const MAX_SITEMAP_ROWS = 500_000;
+
 export async function fetchAll<T extends Record<string, unknown>>(
   query: () => ReturnType<ReturnType<ReturnType<typeof createStaticClient>["from"]>["select"]>
 ): Promise<T[]> {
@@ -27,6 +29,7 @@ export async function fetchAll<T extends Record<string, unknown>>(
     all.push(...rows);
     if (rows.length < PAGE_SIZE) break;
     offset += PAGE_SIZE;
+    if (all.length >= MAX_SITEMAP_ROWS) break;
   }
   return all;
 }
@@ -41,7 +44,8 @@ export async function fetchRange<T extends Record<string, unknown>>(
 ): Promise<T[]> {
   const all: T[] = [];
   let offset = from;
-  const end = from + count;
+  const cappedCount = Math.min(count, MAX_SITEMAP_ROWS);
+  const end = from + cappedCount;
   while (offset < end) {
     const batchEnd = Math.min(offset + PAGE_SIZE - 1, end - 1);
     const { data } = await (query() as any).range(offset, batchEnd);

@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { timingSafeEqual } from "crypto";
+import { verifyAdminHeader } from "@/lib/admin-auth";
 import type { Database } from "@/lib/types/database";
 
 export const maxDuration = 60;
@@ -19,14 +19,7 @@ const EDGAR_USER_AGENT = "Brefyr admin@brefyr.com";
  * Usage: GET /api/admin/stats
  */
 export async function GET(request: Request): Promise<Response> {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret") ?? "";
-  if (
-    !adminSecret ||
-    !providedSecret ||
-    Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret) ||
-    !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))
-  ) {
+  if (!verifyAdminHeader(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

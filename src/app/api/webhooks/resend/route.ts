@@ -33,8 +33,8 @@ function verifySvixSignature(
 ): Response | null {
   const secret = process.env.RESEND_WEBHOOK_SECRET;
   if (!secret) {
-    console.warn("RESEND_WEBHOOK_SECRET not set — skipping webhook signature verification");
-    return null;
+    console.warn("RESEND_WEBHOOK_SECRET not set — rejecting webhook");
+    return Response.json({ error: "Webhook verification unavailable" }, { status: 500 });
   }
 
   const svixId = headers.get("svix-id");
@@ -65,18 +65,22 @@ function verifySvixSignature(
     .digest("base64");
 
   // Svix sends multiple signatures separated by spaces, each prefixed with "v1,"
+  // Use bitwise OR accumulation instead of .some() to avoid short-circuit timing leak
   const signatures = svixSignature.split(" ");
-  const isValid = signatures.some((sig) => {
+  let isValid = false;
+  for (const sig of signatures) {
     const sigValue = sig.startsWith("v1,") ? sig.slice(3) : sig;
     try {
-      return crypto.timingSafeEqual(
+      if (crypto.timingSafeEqual(
         Buffer.from(expectedSignature),
         Buffer.from(sigValue)
-      );
+      )) {
+        isValid = true;
+      }
     } catch {
-      return false;
+      // Length mismatch — skip this signature
     }
-  });
+  }
 
   if (!isValid) {
     return Response.json({ error: "Invalid signature" }, { status: 401 });

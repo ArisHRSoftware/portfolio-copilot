@@ -4,7 +4,7 @@ import { validateEmail } from "@/lib/validation";
 import crypto from "crypto";
 
 function getUnsubSecret(): string | null {
-  return process.env.ADMIN_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || null;
+  return process.env.UNSUB_SECRET || process.env.ADMIN_SECRET || null;
 }
 
 export function generateUnsubToken(email: string): string {
@@ -55,14 +55,18 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = createWebhookClient();
-
-  await supabase
-    .from("newsletter_subscribers")
-    .update({ unsubscribed_at: new Date().toISOString() } as never)
-    .eq("email", emailResult.value);
-
   const siteUrl =
     process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
+
+  try {
+    await supabase
+      .from("newsletter_subscribers")
+      .update({ unsubscribed_at: new Date().toISOString() } as never)
+      .eq("email", emailResult.value);
+  } catch {
+    // Supabase down — still redirect, subscriber will be cleaned up on next attempt
+    console.error("Unsubscribe DB update failed for:", emailResult.value.replace(/(.{2}).*@/, "$1***@"));
+  }
 
   return NextResponse.redirect(
     `${siteUrl}/unsubscribed?email=${encodeURIComponent(emailResult.value)}`

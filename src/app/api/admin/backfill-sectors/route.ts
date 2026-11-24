@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { timingSafeEqual } from "crypto";
+import { verifyAdminHeader } from "@/lib/admin-auth";
 import type { Database } from "@/lib/types/database";
 import { sicToSector } from "@/lib/constants/sectors";
 
@@ -24,11 +24,7 @@ type AnySupabase = ReturnType<typeof createClient<any>>;
  * Usage: POST /api/admin/backfill-sectors
  */
 export async function POST(request: Request): Promise<Response> {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret") ?? "";
-  if (!adminSecret || !providedSecret
-    || Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret)
-    || !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))) {
+  if (!verifyAdminHeader(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

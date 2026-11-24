@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     } as never)
     .eq("id", sub.id);
 
-  // Schedule welcome sequence via QStash
+  // Schedule welcome sequence via QStash (subscriber_id in body, not URL, for privacy)
   const qstashToken = process.env.QSTASH_TOKEN;
   if (qstashToken) {
     const welcomeUrl = `${SITE_URL}/api/cron/welcome-sequence`;
@@ -50,20 +50,20 @@ export async function GET(request: Request) {
 
       // Stage 1: immediate (Day 0)
       await qstash.publishJSON({
-        url: `${welcomeUrl}?subscriber_id=${sub.id}&stage=1`,
-        body: {},
+        url: `${welcomeUrl}?stage=1`,
+        body: { subscriber_id: sub.id },
       });
       // Stage 2: Day 3 (259200 seconds)
       await qstash.publishJSON({
-        url: `${welcomeUrl}?subscriber_id=${sub.id}&stage=2`,
+        url: `${welcomeUrl}?stage=2`,
         delay: 259200,
-        body: {},
+        body: { subscriber_id: sub.id },
       });
       // Stage 3: Day 7 (604800 seconds)
       await qstash.publishJSON({
-        url: `${welcomeUrl}?subscriber_id=${sub.id}&stage=3`,
+        url: `${welcomeUrl}?stage=3`,
         delay: 604800,
-        body: {},
+        body: { subscriber_id: sub.id },
       });
     } catch (err) {
       // Don't block confirmation if welcome scheduling fails

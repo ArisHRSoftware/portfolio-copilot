@@ -1,9 +1,10 @@
 import crypto from "crypto";
 import { createWebhookClient } from "@/lib/supabase/server";
 import { verifyQStash } from "@/lib/qstash";
+import { generateUnsubToken } from "@/app/api/newsletter/unsubscribe/route";
 
 // Welcome sequence emails triggered by QStash scheduled messages.
-// Called with ?subscriber_id=X&stage=N where stage is 1 (day 0), 2 (day 3), 3 (day 7).
+// Called with ?stage=N and { subscriber_id } in body. Stage is 1 (day 0), 2 (day 3), 3 (day 7).
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
@@ -24,8 +25,19 @@ export async function POST(request: Request): Promise<Response> {
   }
 
   const { searchParams } = new URL(request.url);
-  const subscriberId = searchParams.get("subscriber_id");
   const stage = parseInt(searchParams.get("stage") ?? "0", 10);
+
+  // subscriber_id comes from body (preferred) or query param (legacy compat)
+  let subscriberId: string | null = null;
+  try {
+    const body = await request.json();
+    subscriberId = body?.subscriber_id ?? null;
+  } catch {
+    // No body — fall back to query param for in-flight messages
+  }
+  if (!subscriberId) {
+    subscriberId = searchParams.get("subscriber_id");
+  }
 
   if (!subscriberId || stage < 1 || stage > 3) {
     return Response.json({ error: "Missing subscriber_id or invalid stage" }, { status: 400 });
@@ -71,7 +83,7 @@ export async function POST(request: Request): Promise<Response> {
         from: `Brefyr <${fromEmail}>`,
         to: subscriber.email,
         subject: "Welcome to The Filing Brief",
-        html: welcomeEmail1(),
+        html: welcomeEmail1(subscriber.email),
       });
     } else if (stage === 2) {
       // Day 3: Engagement prompt
@@ -79,7 +91,7 @@ export async function POST(request: Request): Promise<Response> {
         from: `Brefyr <${fromEmail}>`,
         to: subscriber.email,
         subject: "Have you added stocks to your watchlist?",
-        html: welcomeEmail2(),
+        html: welcomeEmail2(subscriber.email),
       });
     } else if (stage === 3) {
       // Day 7: Week summary + upgrade CTA
@@ -87,7 +99,7 @@ export async function POST(request: Request): Promise<Response> {
         from: `Brefyr <${fromEmail}>`,
         to: subscriber.email,
         subject: "Your first week of filing intelligence",
-        html: welcomeEmail3(),
+        html: welcomeEmail3(subscriber.email),
       });
     }
 
@@ -100,15 +112,19 @@ export async function POST(request: Request): Promise<Response> {
 
     return Response.json({ success: true, stage, email: subscriber.email });
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Send failed";
-    console.error(`Welcome email stage ${stage} failed for ${subscriber.email}:`, msg);
-    return Response.json({ success: false, error: msg }, { status: 500 });
+    console.error(`Welcome email stage ${stage} failed for ${subscriber.email}:`, err instanceof Error ? err.message : "Send failed");
+    return Response.json({ success: false, error: "Email send failed" }, { status: 500 });
   }
 }
 
 // ── Email templates ─────────────────────────────────────────────
 
-function emailWrapper(title: string, body: string): string {
+function buildUnsubUrl(email: string): string {
+  const token = generateUnsubToken(email);
+  return `${SITE_URL}/api/newsletter/unsubscribe?email=${encodeURIComponent(email)}&token=${token}`;
+}
+
+function emailWrapper(title: string, body: string, email: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>${title}</title></head>
@@ -127,7 +143,7 @@ function emailWrapper(title: string, body: string): string {
   <table width="100%" cellpadding="0" cellspacing="0">
     <tr><td style="padding:16px 28px;text-align:center;font-size:11px;color:#a1a1aa;">
       Brefyr &middot; AI-powered SEC filing intelligence<br/>
-      <a href="${SITE_URL}/api/newsletter/unsubscribe?email=SUBSCRIBER_EMAIL" style="color:#a1a1aa;">Unsubscribe</a>
+      <a href="${buildUnsubUrl(email)}" style="color:#a1a1aa;">Unsubscribe</a>
     </td></tr>
   </table>
 </div>
@@ -135,7 +151,7 @@ function emailWrapper(title: string, body: string): string {
 </html>`;
 }
 
-function welcomeEmail1(): string {
+function welcomeEmail1(email: string): string {
   return emailWrapper("Welcome to The Filing Brief", `
     <h2 style="margin:0 0 16px;font-size:22px;color:#18181b;">Welcome to The Filing Brief</h2>
     <p>You're in. Starting tomorrow, you'll receive the most significant SEC filings delivered to your inbox every trading day.</p>
@@ -153,10 +169,10 @@ function welcomeEmail1(): string {
     </p>
     <p style="font-size:13px;color:#6b7280;">Track up to 50 stocks during your 30-day trial. No credit card required.</p>
     <p style="font-size:13px;color:#6b7280;">Add <strong>brief@brefyr.com</strong> to your contacts so we don't land in spam.</p>
-  `);
+  `, email);
 }
 
-function welcomeEmail2(): string {
+function welcomeEmail2(email: string): string {
   return emailWrapper("Have you added stocks?", `
     <h2 style="margin:0 0 16px;font-size:22px;color:#18181b;">Quick question: have you added stocks to your watchlist?</h2>
     <p>When you add stocks, everything changes:</p>
@@ -171,10 +187,10 @@ function welcomeEmail2(): string {
       </a>
     </p>
     <p style="font-size:13px;color:#6b7280;">It takes 30 seconds. Just type in your tickers.</p>
-  `);
+  `, email);
 }
 
-function welcomeEmail3(): string {
+function welcomeEmail3(email: string): string {
   return emailWrapper("Your first week", `
     <h2 style="margin:0 0 16px;font-size:22px;color:#18181b;">Your first week of filing intelligence</h2>
     <p>You've been receiving The Filing Brief for a week now. The free brief covers the highlights, but the full story — personalized alerts, advanced screening, real-time insider trades — is what Brefyr Pro subscribers get.</p>
@@ -191,5 +207,5 @@ function welcomeEmail3(): string {
       </a>
     </p>
     <p style="font-size:13px;color:#6b7280;">No pressure. The daily brief is free forever.</p>
-  `);
+  `, email);
 }

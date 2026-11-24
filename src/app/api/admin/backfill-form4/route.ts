@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { timingSafeEqual } from "crypto";
+import { verifyAdminHeader } from "@/lib/admin-auth";
 import type { Database } from "@/lib/types/database";
 import { sicToSector } from "@/lib/constants/sectors";
 import { downloadAndParseFiling } from "@/lib/edgar/filing-parser";
@@ -44,15 +44,7 @@ export async function POST(request: Request): Promise<Response> {
   // Leave 30s buffer before Vercel timeout
   const DEADLINE_MS = (maxDuration - 30) * 1000;
 
-  // Auth check (timing-safe)
-  const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret") ?? "";
-  if (
-    !adminSecret ||
-    !providedSecret ||
-    Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret) ||
-    !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))
-  ) {
+  if (!verifyAdminHeader(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

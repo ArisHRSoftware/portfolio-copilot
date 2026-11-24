@@ -44,10 +44,6 @@ import { NewsletterCTA } from "@/components/newsletter-cta";
 export const dynamicParams = true;
 export const dynamic = "force-dynamic";
 
-export async function generateStaticParams() {
-  return [];
-}
-
 export async function generateMetadata({
   params,
 }: {
@@ -77,9 +73,14 @@ export async function generateMetadata({
   const exchange = company?.exchange ?? "";
 
   // Count total filings for this company
-  const totalFilingCount = company
-    ? (await countFilings(supabase, { companyId: company.id })) ?? 0
-    : 0;
+  let totalFilingCount = 0;
+  try {
+    totalFilingCount = company
+      ? (await countFilings(supabase, { companyId: company.id })) ?? 0
+      : 0;
+  } catch {
+    // Supabase flap — treat as zero filings for metadata purposes
+  }
 
   // noindex pages with zero filings — thin content dilutes domain quality
   if (totalFilingCount === 0) {
@@ -135,8 +136,8 @@ function significanceBadge(score: number) {
   return <Badge variant="secondary">Routine ({score}/10)</Badge>;
 }
 
-function formatMarketCap(cap: number | null): string {
-  if (!cap) return "N/A";
+function formatMarketCap(cap: number | null | undefined): string {
+  if (cap === null || cap === undefined) return "N/A";
   if (cap >= 1_000_000_000_000)
     return `$${(cap / 1_000_000_000_000).toFixed(1)}T`;
   if (cap >= 1_000_000_000) return `$${(cap / 1_000_000_000).toFixed(1)}B`;
@@ -302,14 +303,20 @@ export default async function StockPage({
   });
 
   // Peer companies from same sector
-  const { data: peerData } = await supabase
-    .from("companies")
-    .select("ticker, name, sector, last_filing_date")
-    .eq("sector", company.sector)
-    .neq("ticker", company.ticker)
-    .eq("status", "active")
-    .order("market_cap", { ascending: false, nullsFirst: false })
-    .limit(5);
+  let peerData: Array<Record<string, unknown>> | null = null;
+  try {
+    const result = await supabase
+      .from("companies")
+      .select("ticker, name, sector, last_filing_date")
+      .eq("sector", company.sector)
+      .neq("ticker", company.ticker)
+      .eq("status", "active")
+      .order("market_cap", { ascending: false, nullsFirst: false })
+      .limit(5);
+    peerData = result.data;
+  } catch {
+    // Supabase flap — peers section will be empty
+  }
 
   const peers = (peerData ?? []) as Array<{
     ticker: string;

@@ -34,6 +34,7 @@ export const metadata: Metadata = {
   title: "Recent SEC Filings — All Filing Types",
   description:
     "Browse the latest SEC filings across 7,600+ US small-cap stocks. Filter by filing type (10-K, 10-Q, 8-K, Form 4, and more) with summaries and significance scores.",
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Recent SEC Filings | Brefyr",
     description:

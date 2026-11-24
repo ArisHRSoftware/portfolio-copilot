@@ -152,6 +152,6 @@ export async function POST(request: Request): Promise<Response> {
       error_details: JSON.stringify({ error: message }),
     } as never);
 
-    return Response.json({ success: false, error: message }, { status: 500 });
+    return Response.json({ success: false, error: "Integrity check failed" }, { status: 500 });
   }
 }

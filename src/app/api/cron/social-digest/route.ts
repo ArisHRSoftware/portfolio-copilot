@@ -146,11 +146,9 @@ export async function POST(request: Request): Promise<Response> {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Unknown error";
-    console.error("Social digest error:", message);
+    console.error("Social digest error:", error instanceof Error ? error.message : "Unknown error");
     return Response.json(
-      { success: false, error: message },
+      { success: false, error: "Internal error" },
       { status: 500 },
     );
   }

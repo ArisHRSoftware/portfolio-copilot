@@ -41,6 +41,9 @@ export const metadata: Metadata = {
   title: "Brefyr — SEC Filing Intelligence for Small-Cap Investors",
   description:
     "SEC filing analysis for 7,600+ US-listed stocks. Instant insider trading alerts, significance scores, and plain-English summaries. Free to start.",
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     title: "Brefyr — SEC Filing Intelligence for Small-Cap Investors",
     description:
@@ -143,7 +146,7 @@ export default async function HomePage() {
             </div>
             <div className="px-6 py-8 text-center">
               <p className="text-3xl sm:text-4xl font-bold text-foreground">
-                {stats.totalFilingsAllTime.toLocaleString()}
+                {stats.totalFilingsAllTime > 0 ? stats.totalFilingsAllTime.toLocaleString() : "1,000+"}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
                 Filings analyzed

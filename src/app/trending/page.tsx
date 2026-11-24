@@ -29,6 +29,7 @@ export const metadata: Metadata = {
   title: "Trending Stocks — Most Viewed Small-Cap Stocks",
   description:
     "See which small-cap stocks investors are watching this week. Ranked by page views with SEC filing analysis and significance scores.",
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Trending Stocks — Most Viewed This Week | Brefyr",
     description:

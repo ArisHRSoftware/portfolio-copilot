@@ -17,11 +17,11 @@ import { TIERS } from "@/lib/constants/tiers";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
-// Per-month cost when billed yearly
-const MONTHLY_COST: Record<string, string> = {
-  starter: "0.75",
-  plus: "1.58",
-  pro: "2.42",
+// Per-day cost when billed yearly (avoids "/month" language)
+const DAILY_COST: Record<string, string> = {
+  starter: "0.02",
+  plus: "0.05",
+  pro: "0.07",
 };
 
 const PRICING_FAQS = [
@@ -31,7 +31,7 @@ const PRICING_FAQS = [
   },
   {
     question: "What payment methods do you accept?",
-    answer: "We accept all major credit and debit cards globally. Indian users can also pay via UPI, net banking, and wallets through Razorpay. More payment options coming soon.",
+    answer: "We accept all major credit and debit cards globally. More payment options including UPI and net banking are coming soon.",
   },
   {
     question: "How does the 30-day free trial work?",
@@ -148,18 +148,18 @@ export default function PricingPage() {
         {TIER_ORDER.map((tierKey) => {
           const tier = TIERS[tierKey];
           const isPopular = tierKey === "plus";
-          const monthlyCost = MONTHLY_COST[tierKey];
+          const dailyCost = DAILY_COST[tierKey];
 
           return (
             <Card
               key={tierKey}
               className={`relative ${isPopular ? "ring-2 ring-primary" : ""}`}
             >
-              {/* Monthly cost badge for paid tiers */}
-              {monthlyCost && (
+              {/* Daily cost badge for paid tiers */}
+              {dailyCost && (
                 <div className="absolute -top-3 right-4">
                   <Badge variant="default" className="text-xs font-bold px-2">
-                    ${monthlyCost}/mo
+                    ${dailyCost}/day
                   </Badge>
                 </div>
               )}
@@ -184,7 +184,7 @@ export default function PricingPage() {
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Less than ${monthlyCost}/month — billed yearly
+                        Less than ${dailyCost}/day — billed yearly
                       </p>
                       <p className="text-xs text-muted-foreground">
                         or &#x20B9;{tier.priceINR}/year
@@ -255,7 +255,7 @@ export default function PricingPage() {
                     />
                   }
                 >
-                  {tierKey === "free" ? "Get Started Free" : "Start 30-Day Free Trial"}
+                  {tierKey === "free" ? "Get Started Free" : "Start Free — No Card Required"}
                 </Button>
               </CardFooter>
             </Card>

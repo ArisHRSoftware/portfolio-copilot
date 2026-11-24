@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { revalidatePaths } from "@/lib/seo/revalidate-cascade";
 
 /**
- * Manual ISR revalidation endpoint (TODO-106).
+ * Manual ISR revalidation endpoint.
  *
  * Accepts a POST request with a secret and an array of paths to revalidate.
  * Used for manual cache busting when content changes outside the normal
@@ -19,7 +19,7 @@ export async function POST(request: Request): Promise<Response> {
 
   if (!revalidateSecret) {
     return Response.json(
-      { error: "REVALIDATE_SECRET not configured" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -34,15 +34,13 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
 
-  // Validate the secret using timing-safe comparison
+  // Validate the secret using timing-safe comparison (hash both to fix length leak)
+  const inputHash = crypto.createHash("sha256").update(body.secret ?? "").digest();
+  const secretHash = crypto.createHash("sha256").update(revalidateSecret).digest();
   if (
     !body.secret ||
     typeof body.secret !== "string" ||
-    body.secret.length !== revalidateSecret.length ||
-    !crypto.timingSafeEqual(
-      Buffer.from(body.secret),
-      Buffer.from(revalidateSecret)
-    )
+    !crypto.timingSafeEqual(inputHash, secretHash)
   ) {
     return Response.json(
       { error: "Invalid revalidation secret" },

@@ -1,18 +1,8 @@
-import crypto from "crypto";
+import { verifyAdminBearer } from "@/lib/admin-auth";
 import { createWebhookClient } from "@/lib/supabase/server";
 
-function verifyAdmin(request: Request): boolean {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return false;
-  const authHeader = request.headers.get("authorization");
-  if (!authHeader) return false;
-  const expected = `Bearer ${secret}`;
-  if (authHeader.length !== expected.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
-}
-
 export async function POST(request: Request): Promise<Response> {
-  if (!verifyAdmin(request)) {
+  if (!verifyAdminBearer(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

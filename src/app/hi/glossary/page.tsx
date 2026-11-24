@@ -4,6 +4,8 @@ import { glossaryTopicsHi } from "@/data/glossary/hi/index";
 import { BreadcrumbSchema } from "@/components/json-ld";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/site-header";
 import { NewsletterCTA } from "@/components/newsletter-cta";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
@@ -31,6 +33,8 @@ export const metadata: Metadata = {
 
 export default function HindiGlossaryPage() {
   return (
+    <>
+    <SiteHeader />
     <main className="flex-1 px-4 py-8 max-w-4xl mx-auto w-full space-y-8">
       <BreadcrumbSchema
         items={[
@@ -91,7 +95,19 @@ export default function HindiGlossaryPage() {
         </p>
       </div>
 
+      <div className="flex items-center gap-3">
+        <Button
+          render={<Link href="/auth/signup" />}
+        >
+          Start Free — Track 5 Stocks
+        </Button>
+        <Button variant="outline" render={<Link href="/glossary" />}>
+          English Version
+        </Button>
+      </div>
+
       <NewsletterCTA source="glossary-index-hi" />
     </main>
+    </>
   );
 }

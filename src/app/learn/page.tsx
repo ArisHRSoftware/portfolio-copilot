@@ -55,14 +55,14 @@ const SECTIONS: {
     description:
       "How to evaluate companies in different sectors using SEC filings. Industry-specific metrics and red flags to watch.",
     href: "/learn/sectors",
-    available: true,
+    available: false,
   },
   {
     title: "Insider Trading Patterns",
     description:
       "Understanding insider buying and selling signals. How to interpret Form 4 filings and identify meaningful insider activity.",
     href: "/learn/insider-trading",
-    available: true,
+    available: false,
   },
 ];
 
@@ -120,14 +120,14 @@ export default function LearnHubPage() {
         </div>
 
         <div className="flex items-center gap-3 pt-4">
-          <Button variant="outline" render={<Link href="/trending" />}>
-            Trending Stocks
+          <Button variant="outline" render={<Link href="/glossary" />}>
+            Financial Glossary
           </Button>
           <Button
             variant="outline"
-            render={<Link href="/recent-filings" />}
+            render={<Link href="/learn/sec-filings" />}
           >
-            Recent Filings
+            SEC Filing Guides
           </Button>
         </div>
 

@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { timingSafeEqual } from "crypto";
+import { verifyAdminHeader } from "@/lib/admin-auth";
 import type { Database } from "@/lib/types/database";
 import { downloadAndParseFiling } from "@/lib/edgar/filing-parser";
 import {
@@ -30,11 +30,7 @@ const INTER_CALL_DELAY_MS = process.env.GROQ_API_KEY ? 3_000 : 15_000;
  *   Body: { "batch_size": 20, "skip_errored": false }
  */
 export async function POST(request: Request): Promise<Response> {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret") ?? "";
-  if (!adminSecret || !providedSecret
-    || Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret)
-    || !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))) {
+  if (!verifyAdminHeader(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

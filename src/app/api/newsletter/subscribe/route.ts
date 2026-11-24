@@ -86,12 +86,16 @@ export async function POST(request: Request) {
     if (existing) {
       const sub = existing as { unsubscribed_at: string | null; confirmed: boolean };
       if (sub.unsubscribed_at) {
-        // Re-subscribe — if they were previously confirmed, skip double opt-in
+        // Re-subscribe — clear unsubscribe flag
         await supabase
           .from("newsletter_subscribers")
           .update({ unsubscribed_at: null } as never)
           .eq("email", email.toLowerCase());
 
+        // If not previously confirmed, treat as new subscriber needing confirmation
+        if (!sub.confirmed) {
+          return NextResponse.json({ status: "confirmation_pending" });
+        }
         return NextResponse.json({ status: "resubscribed" });
       }
       if (!sub.confirmed) {

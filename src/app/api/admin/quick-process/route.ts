@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import { timingSafeEqual } from "crypto";
+import { verifyAdminHeader } from "@/lib/admin-auth";
 import type { Database } from "@/lib/types/database";
 import { downloadAndParseFiling } from "@/lib/edgar/filing-parser";
 import { extractTemplateData } from "@/lib/edgar/template-extractor";
@@ -24,11 +24,7 @@ type AnySupabase = ReturnType<typeof createClient<any>>;
  *   Body: { "batch_size": 50 }
  */
 export async function POST(request: Request): Promise<Response> {
-  const adminSecret = process.env.ADMIN_SECRET;
-  const providedSecret = request.headers.get("x-admin-secret") ?? "";
-  if (!adminSecret || !providedSecret
-    || Buffer.byteLength(providedSecret) !== Buffer.byteLength(adminSecret)
-    || !timingSafeEqual(Buffer.from(providedSecret), Buffer.from(adminSecret))) {
+  if (!verifyAdminHeader(request)) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
