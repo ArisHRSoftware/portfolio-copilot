@@ -34,8 +34,12 @@ Configure at: https://console.upstash.com → QStash → Schedules
 - heartbeat: Runs via Vercel native cron (vercel.json), not QStash. Essentially free.
 - welcome-sequence: Triggered per-subscriber via QStash delay, not a schedule.
 
-## When moving back to Vercel
+## Deployment
 
-1. Update all QStash schedule URLs from `https://brefyr.netlify.app/api/cron/X` to `https://brefyr.com/api/cron/X`
-2. Verify NEXT_PUBLIC_SITE_URL and RESEND_FROM_EMAIL are set in Vercel env vars
-3. Confirm edgar-poll schedule is NOT hourly (must be 4x/day max)
+Site is on Vercel (new account: ambitionadvisorcareers-4480). QStash URLs must use `https://brefyr.com/api/cron/X`.
+
+Verify these env vars are set in Vercel:
+- NEXT_PUBLIC_SITE_URL=https://brefyr.com
+- RESEND_FROM_EMAIL=noreply@brefyr.com
+- QSTASH_TOKEN, QSTASH_CURRENT_SIGNING_KEY, QSTASH_NEXT_SIGNING_KEY
+- Confirm edgar-poll schedule is NOT hourly (must be 4x/day max)
