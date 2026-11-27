@@ -9,6 +9,7 @@ import { NewsletterCTA } from "@/components/newsletter-cta";
 import DOMPurify from "isomorphic-dompurify";
 
 export const revalidate = 86400;
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return secFilingArticlesHi.map((a) => ({ slug: a.slug }));

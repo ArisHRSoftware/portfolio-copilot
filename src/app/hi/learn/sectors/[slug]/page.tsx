@@ -9,6 +9,7 @@ import { NewsletterCTA } from "@/components/newsletter-cta";
 import DOMPurify from "isomorphic-dompurify";
 
 export const revalidate = 86400;
+export const dynamicParams = false;
 export function generateStaticParams() { return sectorArticlesHi.map((a) => ({ slug: a.slug })); }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

@@ -6,27 +6,32 @@ export async function GET() {
   const supabase = createStaticClient();
   const now = new Date().toISOString();
 
-  const companies = await fetchAll<{ ticker: string; updated_at: string | null }>(() =>
-    supabase
-      .from("companies")
-      .select("ticker, updated_at")
-      .eq("status", "active")
-      .order("last_filing_date", { ascending: false })
-  );
+  let entries: SitemapEntry[] = [];
 
-  // Deduplicate multi-ticker companies
-  const seenTickers = new Set<string>();
-  const entries: SitemapEntry[] = [];
-  for (const c of companies) {
-    const ticker = c.ticker.split(",")[0].trim().toLowerCase();
-    if (!ticker || seenTickers.has(ticker)) continue;
-    seenTickers.add(ticker);
-    entries.push({
-      url: `${siteUrl}/stocks/${ticker}`,
-      lastModified: c.updated_at ? new Date(c.updated_at).toISOString() : now,
-      changeFrequency: "daily",
-      priority: 0.8,
-    });
+  try {
+    const companies = await fetchAll<{ ticker: string; updated_at: string | null }>(() =>
+      supabase
+        .from("companies")
+        .select("ticker, updated_at")
+        .eq("status", "active")
+        .order("last_filing_date", { ascending: false })
+    );
+
+    // Deduplicate multi-ticker companies
+    const seenTickers = new Set<string>();
+    for (const c of companies) {
+      const ticker = c.ticker.split(",")[0].trim().toLowerCase();
+      if (!ticker || seenTickers.has(ticker)) continue;
+      seenTickers.add(ticker);
+      entries.push({
+        url: `${siteUrl}/stocks/${ticker}`,
+        lastModified: c.updated_at ? new Date(c.updated_at).toISOString() : now,
+        changeFrequency: "daily",
+        priority: 0.8,
+      });
+    }
+  } catch {
+    // Supabase down — return empty sitemap instead of 500
   }
 
   return new NextResponse(toSitemapXml(entries), {

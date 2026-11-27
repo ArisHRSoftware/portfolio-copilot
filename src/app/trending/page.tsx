@@ -40,46 +40,9 @@ export const metadata: Metadata = {
 export default async function TrendingPage() {
   const supabase = createStaticClient();
 
-  const pageViews = await getTrendingStocks(supabase, 7, 50);
-
-  // Aggregate views per ticker
-  const tickerViews = new Map<string, number>();
-  for (const pv of pageViews) {
-    const segments = pv.page_path.split("/");
-    const ticker = segments[2]?.toUpperCase();
-    if (ticker) {
-      tickerViews.set(ticker, (tickerViews.get(ticker) ?? 0) + pv.count);
-    }
-  }
-
-  const sortedTickers = [...tickerViews.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 25);
-
-  const hasViewData = sortedTickers.length > 0;
-
-  // Fallback: show most active companies by recent filings when no page views
+  let sortedTickers: [string, number][] = [];
   type ActiveEntry = { ticker: string; filingCount: number };
   let activeCompanies: ActiveEntry[] = [];
-  if (!hasViewData) {
-    const recentFilings = await getRecentFilings(supabase, { limit: 200 });
-    const filingsWithCo = await getFilingsWithCompanies(supabase, recentFilings);
-    const tickerCounts = new Map<string, number>();
-    for (const f of filingsWithCo) {
-      const t = f.company?.ticker;
-      if (t && !t.startsWith("CIK")) tickerCounts.set(t, (tickerCounts.get(t) ?? 0) + 1);
-    }
-    activeCompanies = [...tickerCounts.entries()]
-      .map(([ticker, filingCount]) => ({ ticker, filingCount }))
-      .sort((a, b) => b.filingCount - a.filingCount)
-      .slice(0, 25);
-  }
-
-  // Fetch company details for whichever list we're showing
-  const tickerList = hasViewData
-    ? sortedTickers.map(([t]) => t)
-    : activeCompanies.map((a) => a.ticker);
-
   let companies: Array<{
     ticker: string;
     name: string;
@@ -88,16 +51,59 @@ export default async function TrendingPage() {
     last_filing_date: string | null;
   }> = [];
 
-  if (tickerList.length > 0) {
-    const { data } = await supabase
-      .from("companies")
-      .select("ticker, name, sector, market_cap, last_filing_date")
-      .in("ticker", tickerList);
-    companies = (data ?? []) as typeof companies;
+  try {
+    const pageViews = await getTrendingStocks(supabase, 7, 50);
+
+    // Aggregate views per ticker
+    const tickerViews = new Map<string, number>();
+    for (const pv of pageViews) {
+      const segments = pv.page_path.split("/");
+      const ticker = segments[2]?.toUpperCase();
+      if (ticker) {
+        tickerViews.set(ticker, (tickerViews.get(ticker) ?? 0) + pv.count);
+      }
+    }
+
+    sortedTickers = [...tickerViews.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 25);
+
+    const hasViewData = sortedTickers.length > 0;
+
+    // Fallback: show most active companies by recent filings when no page views
+    if (!hasViewData) {
+      const recentFilings = await getRecentFilings(supabase, { limit: 200 });
+      const filingsWithCo = await getFilingsWithCompanies(supabase, recentFilings);
+      const tickerCounts = new Map<string, number>();
+      for (const f of filingsWithCo) {
+        const t = f.company?.ticker;
+        if (t && !t.startsWith("CIK")) tickerCounts.set(t, (tickerCounts.get(t) ?? 0) + 1);
+      }
+      activeCompanies = [...tickerCounts.entries()]
+        .map(([ticker, filingCount]) => ({ ticker, filingCount }))
+        .sort((a, b) => b.filingCount - a.filingCount)
+        .slice(0, 25);
+    }
+
+    // Fetch company details for whichever list we're showing
+    const tickerList = hasViewData
+      ? sortedTickers.map(([t]) => t)
+      : activeCompanies.map((a) => a.ticker);
+
+    if (tickerList.length > 0) {
+      const { data } = await supabase
+        .from("companies")
+        .select("ticker, name, sector, market_cap, last_filing_date")
+        .in("ticker", tickerList);
+      companies = (data ?? []) as typeof companies;
+    }
+  } catch {
+    // Supabase down — render with empty data instead of 500
   }
 
   const companyMap = new Map(companies.map((c) => [c.ticker, c]));
 
+  const hasViewData = sortedTickers.length > 0;
   const hasData = hasViewData || activeCompanies.length > 0;
   const heading = hasViewData ? "Trending Stocks" : "Most Active Stocks";
   const subtitle = hasViewData

@@ -23,11 +23,19 @@ export default async function BillingPage() {
     redirect("/auth/login");
   }
 
-  const [subscription, tierInfo, currency] = await Promise.all([
-    getUserSubscription(supabase, user.id),
-    getTierInfo(supabase, user.id),
-    detectCurrency(),
-  ]);
+  let subscription: Awaited<ReturnType<typeof getUserSubscription>> = null;
+  let tierInfo: Awaited<ReturnType<typeof getTierInfo>> = { tier: "free" as const, ...TIERS.free };
+  let currency: Awaited<ReturnType<typeof detectCurrency>> = "USD";
+
+  try {
+    [subscription, tierInfo, currency] = await Promise.all([
+      getUserSubscription(supabase, user.id),
+      getTierInfo(supabase, user.id),
+      detectCurrency(),
+    ]);
+  } catch {
+    // Supabase down — render with defaults instead of 500
+  }
 
   return (
     <CheckoutPanel

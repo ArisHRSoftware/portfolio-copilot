@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createStaticClient } from "@/lib/supabase/static";
 import { getFilingBySlug } from "@/lib/supabase/queries";
@@ -29,7 +30,17 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const supabase = createStaticClient();
-  const filing = await getFilingBySlug(supabase, slug);
+
+  let filing: Awaited<ReturnType<typeof getFilingBySlug>> = null;
+  try {
+    filing = await getFilingBySlug(supabase, slug);
+  } catch {
+    return {
+      title: "SEC Filing | Brefyr",
+      description: "SEC filing analysis with AI summaries and significance scores.",
+      robots: { index: false, follow: true },
+    };
+  }
 
   if (!filing) {
     return {
@@ -87,18 +98,37 @@ export default async function FilingDetailPage({
 }) {
   const { slug } = await params;
   const supabase = createStaticClient();
-  const filing = await getFilingBySlug(supabase, slug);
 
+  let filing: Awaited<ReturnType<typeof getFilingBySlug>> = null;
+  let supabaseDown = false;
+  try {
+    filing = await getFilingBySlug(supabase, slug);
+  } catch {
+    supabaseDown = true;
+  }
+
+  // Genuinely missing → proper 404 (tells Google this page doesn't exist)
+  if (!filing && !supabaseDown) {
+    notFound();
+  }
+
+  // Supabase down → temporary fallback (generateMetadata already sets noindex for this case)
   if (!filing) {
     return (
       <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 py-16">
-        <h1 className="text-3xl font-bold">Filing Not Found</h1>
-        <p className="text-muted-foreground">
-          This filing has not been processed yet or does not exist.
-        </p>
-        <Button render={<Link href="/recent-filings" />}>
-          Browse Recent Filings
-        </Button>
+        <SiteHeader />
+          <h1 className="text-3xl font-bold">Temporarily Unavailable</h1>
+          <p className="text-muted-foreground">
+            Filing data is temporarily being refreshed. Please check back shortly.
+          </p>
+          <div className="flex gap-3">
+            <Button render={<Link href="/recent-filings" />}>
+              Browse Recent Filings
+            </Button>
+            <Button variant="outline" render={<Link href="/glossary" />}>
+              Browse Glossary
+            </Button>
+          </div>
       </main>
     );
   }

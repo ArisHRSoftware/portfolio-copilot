@@ -89,43 +89,64 @@ export default async function MonitorPage() {
 
   const todayDate = new Date().toISOString().split("T")[0];
 
-  const [
-    pipelineRuns,
-    { count: totalFilings },
-    { count: todayFilings },
-    { count: unprocessedFilings },
-    { count: totalCompanies },
-    { count: realTickerCompanies },
-    { count: companiesWithMarketCap },
-    { count: companiesWithoutSector },
-    { count: pendingReviewCount },
-    { count: blogPostCount },
-    { count: newslettersSentCount },
-    { count: totalUsers },
-    { count: newsletterSubscribers },
-    { count: activeApiKeys },
-    edgarTodayCount,
-  ] = await Promise.all([
-    getPipelineRuns(supabase, 10),
-    supabase.from("filings").select("id", { count: "exact", head: true }),
-    supabase.from("filings").select("id", { count: "exact", head: true }).gte("filed_date", todayDate),
-    supabase.from("filings").select("id", { count: "exact", head: true }).is("ai_enhanced_at", null),
-    supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active"),
-    supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active").not("ticker", "ilike", "CIK%"),
-    supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active").gt("market_cap", 0),
-    supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active").or("sector.is.null,sector.eq."),
-    supabase.from("content_queue").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
-    supabase.from("blog_posts").select("id", { count: "exact", head: true }).not("published_at", "is", null),
-    supabase.from("newsletter_issues").select("id", { count: "exact", head: true }).not("sent_at", "is", null),
-    supabase.from("profiles").select("id", { count: "exact", head: true }),
-    supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }).is("unsubscribed_at", null),
-    supabase.from("api_keys").select("id", { count: "exact", head: true }),
-    fetchEdgarTodayCount(),
-  ]);
+  let pipelineRuns: Awaited<ReturnType<typeof getPipelineRuns>> = [];
+  let totalFilings: number | null = 0;
+  let todayFilings: number | null = 0;
+  let unprocessedFilings: number | null = 0;
+  let totalCompanies: number | null = 0;
+  let realTickerCompanies: number | null = 0;
+  let companiesWithMarketCap: number | null = 0;
+  let companiesWithoutSector: number | null = 0;
+  let pendingReviewCount: number | null = 0;
+  let blogPostCount: number | null = 0;
+  let newslettersSentCount: number | null = 0;
+  let totalUsers: number | null = 0;
+  let newsletterSubscribers: number | null = 0;
+  let activeApiKeys: number | null = 0;
+  let edgarTodayCount: number | null = null;
+  let apiCalls = 0;
 
-  // API calls sum
-  const { data: apiKeyRows } = await supabase.from("api_keys").select("calls_today").gt("calls_today", 0);
-  const apiCalls = (apiKeyRows ?? []).reduce((s, r) => s + ((r as { calls_today: number }).calls_today ?? 0), 0);
+  try {
+    [
+      pipelineRuns,
+      { count: totalFilings },
+      { count: todayFilings },
+      { count: unprocessedFilings },
+      { count: totalCompanies },
+      { count: realTickerCompanies },
+      { count: companiesWithMarketCap },
+      { count: companiesWithoutSector },
+      { count: pendingReviewCount },
+      { count: blogPostCount },
+      { count: newslettersSentCount },
+      { count: totalUsers },
+      { count: newsletterSubscribers },
+      { count: activeApiKeys },
+      edgarTodayCount,
+    ] = await Promise.all([
+      getPipelineRuns(supabase, 10),
+      supabase.from("filings").select("id", { count: "exact", head: true }),
+      supabase.from("filings").select("id", { count: "exact", head: true }).gte("filed_date", todayDate),
+      supabase.from("filings").select("id", { count: "exact", head: true }).is("ai_enhanced_at", null),
+      supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active"),
+      supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active").not("ticker", "ilike", "CIK%"),
+      supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active").gt("market_cap", 0),
+      supabase.from("companies").select("id", { count: "exact", head: true }).eq("status", "active").or("sector.is.null,sector.eq."),
+      supabase.from("content_queue").select("id", { count: "exact", head: true }).eq("status", "pending_review"),
+      supabase.from("blog_posts").select("id", { count: "exact", head: true }).not("published_at", "is", null),
+      supabase.from("newsletter_issues").select("id", { count: "exact", head: true }).not("sent_at", "is", null),
+      supabase.from("profiles").select("id", { count: "exact", head: true }),
+      supabase.from("newsletter_subscribers").select("id", { count: "exact", head: true }).is("unsubscribed_at", null),
+      supabase.from("api_keys").select("id", { count: "exact", head: true }),
+      fetchEdgarTodayCount(),
+    ]);
+
+    // API calls sum
+    const { data: apiKeyRows } = await supabase.from("api_keys").select("calls_today").gt("calls_today", 0);
+    apiCalls = (apiKeyRows ?? []).reduce((s, r) => s + ((r as { calls_today: number }).calls_today ?? 0), 0);
+  } catch {
+    // Supabase down — render monitor with zero data instead of 500
+  }
 
   // ── Derived metrics ─────────────────────────────────────────────
   const lastRun = pipelineRuns.length > 0 ? pipelineRuns[0] : null;

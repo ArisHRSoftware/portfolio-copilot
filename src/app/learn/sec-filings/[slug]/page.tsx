@@ -9,6 +9,7 @@ import { ArticleSchema, BreadcrumbSchema, FAQSchema } from "@/components/json-ld
 import { Button } from "@/components/ui/button";
 
 export const revalidate = 86400;
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return secFilingArticles.map((a) => ({ slug: a.slug }));

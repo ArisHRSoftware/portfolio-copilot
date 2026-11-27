@@ -51,7 +51,12 @@ export async function generateMetadata({
   const year = new Date().getFullYear();
 
   const supabase = createStaticClient();
-  const companyCount = await countCompaniesBySector(supabase, sectorName);
+  let companyCount = 0;
+  try {
+    companyCount = await countCompaniesBySector(supabase, sectorName);
+  } catch {
+    // Supabase down — use zero count for metadata
+  }
   const countStr = companyCount ? `${companyCount}+` : "";
 
   const rawTitle = countStr
@@ -109,25 +114,32 @@ export default async function SectorPage({
 
   const supabase = createStaticClient();
 
-  const [sortedCompanies, totalCount] = await Promise.all([
-    getCompaniesBySectorPaginated(supabase, sectorName, {
-      limit: PER_PAGE,
-      offset: (page - 1) * PER_PAGE,
-    }),
-    countCompaniesBySector(supabase, sectorName),
-  ]);
+  let sortedCompanies: Awaited<ReturnType<typeof getCompaniesBySectorPaginated>> = [];
+  let totalCount = 0;
+  let recentFilingsWithCompanies: Awaited<ReturnType<typeof getFilingsWithCompanies>> = [];
+
+  try {
+    [sortedCompanies, totalCount] = await Promise.all([
+      getCompaniesBySectorPaginated(supabase, sectorName, {
+        limit: PER_PAGE,
+        offset: (page - 1) * PER_PAGE,
+      }),
+      countCompaniesBySector(supabase, sectorName),
+    ]);
+
+    const companyIds = sortedCompanies.map((c) => c.id);
+
+    // Get recent filings directly filtered by these company IDs
+    const sectorFilings = companyIds.length > 0
+      ? await getRecentFilings(supabase, { companyIds, limit: 20 })
+      : [];
+
+    recentFilingsWithCompanies = await getFilingsWithCompanies(supabase, sectorFilings);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   const totalPages = Math.ceil(totalCount / PER_PAGE);
-
-  const companyIds = sortedCompanies.map((c) => c.id);
-
-  // Get recent filings directly filtered by these company IDs
-  const sectorFilings = companyIds.length > 0
-    ? await getRecentFilings(supabase, { companyIds, limit: 20 })
-    : [];
-
-  const recentFilingsWithCompanies = await getFilingsWithCompanies(supabase, sectorFilings);
-
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://brefyr.com";
 
   return (

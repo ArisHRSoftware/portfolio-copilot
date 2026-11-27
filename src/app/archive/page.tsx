@@ -32,7 +32,12 @@ export const metadata: Metadata = {
 export default async function ArchivePage() {
   const supabase = createStaticClient();
 
-  const issues = await getNewsletterIssues(supabase);
+  let issues: Awaited<ReturnType<typeof getNewsletterIssues>> = [];
+  try {
+    issues = await getNewsletterIssues(supabase);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   return (
     <>

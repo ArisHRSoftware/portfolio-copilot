@@ -7,6 +7,7 @@ import {
   getUserAlertRules,
 } from "@/lib/supabase/queries";
 import { getTierInfo } from "@/lib/tier-gating";
+import { TIERS } from "@/lib/constants/tiers";
 import { SettingsPanel } from "./settings-panel";
 
 export const dynamic = "force-dynamic";
@@ -25,12 +26,21 @@ export default async function SettingsPage() {
     redirect("/auth/login");
   }
 
-  const [profile, subscription, alertRules, tierInfo] = await Promise.all([
-    getUserProfile(supabase, user.id),
-    getUserSubscription(supabase, user.id),
-    getUserAlertRules(supabase, user.id),
-    getTierInfo(supabase, user.id),
-  ]);
+  let profile: Awaited<ReturnType<typeof getUserProfile>> = null;
+  let subscription: Awaited<ReturnType<typeof getUserSubscription>> = null;
+  let alertRules: Awaited<ReturnType<typeof getUserAlertRules>> = [];
+  let tierInfo: Awaited<ReturnType<typeof getTierInfo>> = { tier: "free" as const, ...TIERS.free };
+
+  try {
+    [profile, subscription, alertRules, tierInfo] = await Promise.all([
+      getUserProfile(supabase, user.id),
+      getUserSubscription(supabase, user.id),
+      getUserAlertRules(supabase, user.id),
+      getTierInfo(supabase, user.id),
+    ]);
+  } catch {
+    // Supabase down — render with defaults instead of 500
+  }
 
   return (
     <SettingsPanel

@@ -59,19 +59,25 @@ export default async function InsiderSellingPage({
 
   const supabase = createStaticClient();
 
-  // Fetch a large batch of Form 4 filings with insider_data, then filter for sells
-  const FETCH_LIMIT = 1000;
-  const { data: rawFilings } = await supabase
-    .from("filings")
-    .select("*")
-    .eq("filing_type", "4")
-    .not("insider_data", "is", null)
-    .is("superseded_by", null)
-    .order("filed_date", { ascending: false })
-    .limit(FETCH_LIMIT);
+  let filingsWithCompanies: Awaited<ReturnType<typeof getFilingsWithCompanies>> = [];
 
-  const filings = (rawFilings ?? []) as Filing[];
-  const filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
+  try {
+    // Fetch a large batch of Form 4 filings with insider_data, then filter for sells
+    const FETCH_LIMIT = 1000;
+    const { data: rawFilings } = await supabase
+      .from("filings")
+      .select("*")
+      .eq("filing_type", "4")
+      .not("insider_data", "is", null)
+      .is("superseded_by", null)
+      .order("filed_date", { ascending: false })
+      .limit(FETCH_LIMIT);
+
+    const filings = (rawFilings ?? []) as Filing[];
+    filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   const sellFilings = filingsWithCompanies.filter((f) => {
     const raw = f.insider_data;

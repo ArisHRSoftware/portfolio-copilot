@@ -50,11 +50,19 @@ export default async function PipelineMonitorPage() {
     redirect("/dashboard");
   }
 
-  const [runs, dailyCost, monthlyCost] = await Promise.all([
-    getPipelineRuns(supabase),
-    getCostForPeriod({ days: 1 }),
-    getCostForPeriod({ days: 30 }),
-  ]);
+  let runs: Awaited<ReturnType<typeof getPipelineRuns>> = [];
+  let dailyCost: Awaited<ReturnType<typeof getCostForPeriod>> = { totalCost: 0, totalInputTokens: 0, totalOutputTokens: 0, filingsAnalyzed: 0 };
+  let monthlyCost: Awaited<ReturnType<typeof getCostForPeriod>> = { totalCost: 0, totalInputTokens: 0, totalOutputTokens: 0, filingsAnalyzed: 0 };
+
+  try {
+    [runs, dailyCost, monthlyCost] = await Promise.all([
+      getPipelineRuns(supabase),
+      getCostForPeriod({ days: 1 }),
+      getCostForPeriod({ days: 30 }),
+    ]);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   const totalRuns = runs.length;
   const totalFilings = runs.reduce((sum, r) => sum + r.filings_processed, 0);

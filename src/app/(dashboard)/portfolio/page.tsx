@@ -4,6 +4,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getUserStocksWithCompanies } from "@/lib/supabase/queries";
 import { getTierInfo } from "@/lib/tier-gating";
+import { TIERS } from "@/lib/constants/tiers";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -27,10 +28,17 @@ export default async function PortfolioPage() {
     redirect("/auth/login");
   }
 
-  const [stocks, tierInfo] = await Promise.all([
-    getUserStocksWithCompanies(supabase, user.id),
-    getTierInfo(supabase, user.id),
-  ]);
+  let stocks: Awaited<ReturnType<typeof getUserStocksWithCompanies>> = [];
+  let tierInfo: Awaited<ReturnType<typeof getTierInfo>> = { tier: "free" as const, ...TIERS.free };
+
+  try {
+    [stocks, tierInfo] = await Promise.all([
+      getUserStocksWithCompanies(supabase, user.id),
+      getTierInfo(supabase, user.id),
+    ]);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   const stockLimit = tierInfo.stocks;
   const isUnlimited = stockLimit === -1;

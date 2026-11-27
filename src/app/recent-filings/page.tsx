@@ -76,17 +76,25 @@ export default async function RecentFilingsPage({
 
   const filingTypeFilter = filterType && filterType !== "All" ? filterType : undefined;
 
-  const [totalCount, filings] = await Promise.all([
-    countFilings(supabase, { filingType: filingTypeFilter }),
-    getRecentFilings(supabase, {
-      limit: PER_PAGE,
-      offset: (page - 1) * PER_PAGE,
-      filingType: filingTypeFilter,
-    }),
-  ]);
+  let totalCount = 0;
+  let filingsWithCompanies: Awaited<ReturnType<typeof getFilingsWithCompanies>> = [];
+
+  try {
+    const [count, filings] = await Promise.all([
+      countFilings(supabase, { filingType: filingTypeFilter }),
+      getRecentFilings(supabase, {
+        limit: PER_PAGE,
+        offset: (page - 1) * PER_PAGE,
+        filingType: filingTypeFilter,
+      }),
+    ]);
+    totalCount = count;
+    filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   const totalPages = Math.ceil(totalCount / PER_PAGE);
-  const filingsWithCompanies = await getFilingsWithCompanies(supabase, filings);
 
   return (
     <>

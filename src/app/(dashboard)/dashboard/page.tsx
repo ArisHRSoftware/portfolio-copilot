@@ -51,28 +51,45 @@ export default async function DashboardPage() {
   // Only redirect if the column exists AND is explicitly false.
   // If the column is missing or profile doesn't exist, skip onboarding
   // (the column may not have been migrated yet).
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single();
+  let needsOnboarding = false;
+  try {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
 
-  const profileRecord = profile as Record<string, unknown> | null;
-  if (
-    profileRecord &&
-    "onboarding_completed" in profileRecord &&
-    profileRecord.onboarding_completed === false
-  ) {
+    const profileRecord = profile as Record<string, unknown> | null;
+    if (
+      profileRecord &&
+      "onboarding_completed" in profileRecord &&
+      profileRecord.onboarding_completed === false
+    ) {
+      needsOnboarding = true;
+    }
+  } catch {
+    // Supabase down — skip onboarding check
+  }
+  if (needsOnboarding) {
     redirect("/onboarding");
   }
 
-  const [trackedStocks, recentAlerts, subscription, tierInfo] =
-    await Promise.all([
-      getUserStocksWithCompanies(supabase, user.id),
-      getUserAlertsWithFilings(supabase, user.id, 10),
-      getUserSubscription(supabase, user.id),
-      getTierInfo(supabase, user.id),
-    ]);
+  let trackedStocks: Awaited<ReturnType<typeof getUserStocksWithCompanies>> = [];
+  let recentAlerts: Awaited<ReturnType<typeof getUserAlertsWithFilings>> = [];
+  let subscription: Awaited<ReturnType<typeof getUserSubscription>> = null;
+  let tierInfo: Awaited<ReturnType<typeof getTierInfo>> = { tier: "free" as const, ...TIERS.free };
+
+  try {
+    [trackedStocks, recentAlerts, subscription, tierInfo] =
+      await Promise.all([
+        getUserStocksWithCompanies(supabase, user.id),
+        getUserAlertsWithFilings(supabase, user.id, 10),
+        getUserSubscription(supabase, user.id),
+        getTierInfo(supabase, user.id),
+      ]);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   // Count filings from today across tracked companies
   const today = new Date().toISOString().split("T")[0];
@@ -82,19 +99,23 @@ export default async function DashboardPage() {
   let highSignificanceCount = 0;
 
   if (trackedCompanyIds.length > 0) {
-    const recentFilings = await getRecentFilings(supabase, {
-      limit: 200,
-    });
+    try {
+      const recentFilings = await getRecentFilings(supabase, {
+        limit: 200,
+      });
 
-    const todayFilings = recentFilings.filter(
-      (f) =>
-        f.filed_date.startsWith(today) &&
-        trackedCompanyIds.includes(f.company_id)
-    );
-    todayFilingsCount = todayFilings.length;
-    highSignificanceCount = todayFilings.filter(
-      (f) => f.significance_score >= 7
-    ).length;
+      const todayFilings = recentFilings.filter(
+        (f) =>
+          f.filed_date.startsWith(today) &&
+          trackedCompanyIds.includes(f.company_id)
+      );
+      todayFilingsCount = todayFilings.length;
+      highSignificanceCount = todayFilings.filter(
+        (f) => f.significance_score >= 7
+      ).length;
+    } catch {
+      // Supabase down — show 0 filings today
+    }
   }
 
   // Usage calculations

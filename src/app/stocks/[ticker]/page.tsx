@@ -61,10 +61,11 @@ export async function generateMetadata({
       ? await getRecentFilings(supabase, { companyId: company.id, limit: 1 })
       : [];
   } catch {
-    // Supabase down — return generic metadata
+    // Supabase down — return generic metadata with noindex to prevent indexing error state
     return {
       title: `${upperTicker} — SEC Filings | Brefyr`,
       description: `SEC filing analysis for ${upperTicker}. Insider trades, AI summaries, significance scores.`,
+      robots: { index: false, follow: true },
     };
   }
 
@@ -246,20 +247,12 @@ export default async function StockPage({
     supabaseDown = true;
   }
 
+  // Genuinely missing → proper 404 (tells Google this page doesn't exist)
   if (!company && !supabaseDown) {
-    return (
-      <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 py-16">
-        <h1 className="text-3xl font-bold">Stock Not Found</h1>
-        <p className="text-muted-foreground">
-          We don&apos;t have data for ticker &quot;{upperTicker}&quot; yet.
-        </p>
-        <Button render={<Link href="/trending" />}>
-          Browse Trending Stocks
-        </Button>
-      </main>
-    );
+    notFound();
   }
 
+  // Supabase down → temporary fallback (generateMetadata already sets noindex for this case)
   if (supabaseDown || !company) {
     return (
       <main className="flex-1 flex flex-col items-center justify-center gap-6 px-4 py-16">

@@ -69,20 +69,26 @@ export default async function EarningsThisWeekPage() {
   const supabase = createStaticClient();
   const { start, end, days } = getWeekDates();
 
-  const allFilings = await getRecentFilings(supabase, {
-    hasEarnings: true,
-    limit: 100,
-  });
+  let filingsWithCompanies: FilingWithCompany[] = [];
 
-  // Filter to this week's date range
-  const startISO = formatDateISO(start);
-  const endISO = formatDateISO(end);
-  const weekFilings = allFilings.filter((f) => {
-    const d = f.filed_date.split("T")[0];
-    return d >= startISO && d <= endISO;
-  });
+  try {
+    const allFilings = await getRecentFilings(supabase, {
+      hasEarnings: true,
+      limit: 100,
+    });
 
-  const filingsWithCompanies = await getFilingsWithCompanies(supabase, weekFilings);
+    // Filter to this week's date range
+    const startISO = formatDateISO(start);
+    const endISO = formatDateISO(end);
+    const weekFilings = allFilings.filter((f) => {
+      const d = f.filed_date.split("T")[0];
+      return d >= startISO && d <= endISO;
+    });
+
+    filingsWithCompanies = await getFilingsWithCompanies(supabase, weekFilings);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   const filingsByDay = new Map<string, FilingWithCompany[]>();
   for (const day of days) {

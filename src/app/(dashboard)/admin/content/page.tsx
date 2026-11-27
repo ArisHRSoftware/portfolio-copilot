@@ -29,10 +29,17 @@ export default async function ContentApprovalPage() {
     redirect("/dashboard");
   }
 
-  const [items, blogPosts] = await Promise.all([
-    getContentQueue(supabase),
-    getPublishedBlogPosts(supabase),
-  ]);
+  let items: Awaited<ReturnType<typeof getContentQueue>> = [];
+  let blogPosts: Awaited<ReturnType<typeof getPublishedBlogPosts>> = [];
+
+  try {
+    [items, blogPosts] = await Promise.all([
+      getContentQueue(supabase),
+      getPublishedBlogPosts(supabase),
+    ]);
+  } catch {
+    // Supabase down — render with empty data instead of 500
+  }
 
   return (
     <main className="flex-1 px-4 py-8 max-w-6xl mx-auto w-full space-y-8">

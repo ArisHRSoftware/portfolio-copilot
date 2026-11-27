@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { NewsletterCTA } from "@/components/newsletter-cta";
 
 export const revalidate = 86400;
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return glossaryTerms.map((t) => ({ term: t.slug }));
